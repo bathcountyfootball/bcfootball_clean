@@ -21,6 +21,30 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
     </script>
+
+    <style>
+        .login-card input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 14px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+        }
+        .small-text {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        .small-text a {
+            color: #b30000;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        .small-text a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 
 <body>
@@ -32,14 +56,23 @@
 
 <section class="main-links">
 
-    <div class="link-card" style="max-width:400px; margin:auto;">
+    <div class="link-card login-card" style="max-width:400px; margin:auto;">
         <h2>Parent Portal Login</h2>
-        <p>Sign in to manage your players, update information, and access your dashboard.</p>
+        <p>Sign in to manage your players and update registration information.</p>
 
-        <button id="googleLogin" class="action-btn red">Sign in with Google</button>
+        <form id="loginForm">
+            <label>Email</label>
+            <input type="email" id="email" required>
 
-        <p class="small-text" style="margin-top:15px;">
-            Use your Google account to access the parent portal.
+            <label>Password</label>
+            <input type="password" id="password" required>
+
+            <button type="submit" class="action-btn red">Login</button>
+        </form>
+
+        <p class="small-text">
+            Need an account?  
+            <a href="register_parent.html">Create one here</a>
         </p>
     </div>
 
@@ -50,14 +83,17 @@
 </footer>
 
 <script>
-    document.getElementById("googleLogin").onclick = async () => {
-        const provider = new firebase.auth.GoogleAuthProvider();
+    document.getElementById("loginForm").onsubmit = async (e) => {
+        e.preventDefault();
+
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value;
 
         try {
-            await auth.signInWithPopup(provider);
+            await auth.signInWithEmailAndPassword(email, password);
             window.location.href = "parent-dashboard.html";
         } catch (err) {
-            alert("Google Login failed: " + err.message);
+            alert("Login failed: " + err.message);
         }
     };
 </script>
