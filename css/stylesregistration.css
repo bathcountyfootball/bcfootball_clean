@@ -189,3 +189,103 @@ textarea {
   color: #777;
   padding: 1rem 0;
 }
+
+/* --- MOBILE RESPONSIVENESS UPGRADE --- */
+
+/* Base spacing for all sections */
+.section-block {
+    padding: 16px;
+    margin-bottom: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Headings */
+.section-block h2 {
+    margin-bottom: 12px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #b30000; /* Bath County red */
+}
+
+/* Labels + inputs */
+.section-block label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+.section-block input,
+.section-block select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+/* Buttons */
+.button-row {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 20px;
+}
+
+.button-row button {
+    padding: 14px;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+/* Pay Now button */
+.pay-btn {
+    background: #b30000;
+    color: #fff;
+}
+
+/* Save Registration button */
+.save-btn {
+    background: #444;
+    color: #fff;
+}
+
+/* --- MOBILE BREAKPOINTS --- */
+@media (max-width: 600px) {
+
+    /* Increase spacing for readability */
+    .section-block {
+        padding: 20px;
+    }
+
+    /* Larger text for mobile */
+    .section-block h2 {
+        font-size: 1.3rem;
+    }
+
+    input, select {
+        font-size: 1.05rem;
+        padding: 12px;
+    }
+
+    /* Buttons full width */
+    .button-row {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .button-row button {
+        width: 100%;
+    }
+
+    /* Improve spacing between parent/player/payment blocks */
+    .parent-info,
+    .player-info,
+    .payment-info {
+        margin-bottom: 24px;
+    }
+}
+
