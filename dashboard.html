@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BC Football Admin Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px #ccc;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        select, #searchBox {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+
+        #searchBox {
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #b30000;
+            color: white;
+            cursor: pointer;
+        }
+
+        tr:hover {
+            background: #f1f1f1;
+        }
+
+        .summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        .summary-card {
+            flex: 1 1 200px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+        }
+
+        .summary-card h4 {
+            margin: 0 0 5px 0;
+        }
+
+        .buttons {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .buttons button {
+            padding: 10px 15px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            background: #b30000;
+            color: white;
+        }
+
+        .buttons button.secondary {
+            background: #555;
+        }
+
+        .section-title {
+            margin-top: 30px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        #scheduleArea {
+            width: 100%;
+            min-height: 120px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-family: inherit;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <h2>BC Football Admin Dashboard</h2>
+
+    <!-- Filters -->
+    <div class="filters">
+        <select id="leagueFilter">
+            <option value="">All Leagues</option>
+            <option value="Flag">Flag</option>
+            <option value="Jr Pro">Jr Pro</option>
+        </select>
+
+        <select id="gradeFilter">
+            <option value="">All Grades</option>
+        </select>
+
+        <select id="schoolFilter">
+            <option value="">All Schools</option>
+        </select>
+
+        <select id="paymentFilter">
+            <option value="">All Payment Status</option>
+            <option value="Pending">Pending</option>
+            <option value="Paid">Paid</option>
+            <option value="Split">Split</option>
+        </select>
+    </div>
+
+    <input type="text" id="searchBox" placeholder="Search players, parents, schools, allergies, etc.">
+
+    <!-- Summary / Payment Dashboard -->
+    <div class="summary">
+        <div class="summary-card">
+            <h4>Total Registrations</h4>
+            <div id="totalRegistrations">0</div>
+        </div>
+        <div class="summary-card">
+            <h4>Flag Registrations</h4>
+            <div id="flagRegistrations">0</div>
+        </div>
+        <div class="summary-card">
+            <h4>Jr Pro Registrations</h4>
+            <div id="jrproRegistrations">0</div>
+        </div>
+        <div class="summary-card">
+            <h4>Paid</h4>
+            <div id="paidCount">0</div>
+        </div>
+        <div class="summary-card">
+            <h4>Pending</h4>
+            <div id="pendingCount">0</div>
+        </div>
+        <div class="summary-card">
+            <h4>Split Payments</h4>
+            <div id="splitCount">0</div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div id="table_div"></div>
+
+    <!-- Buttons -->
+    <div class="buttons">
+        <button id="printRosterBtn">Print Current Roster</button>
+        <button id="markPresentBtn" class="secondary">Toggle Attendance Column</button>
+    </div>
+
+    <!-- Schedule Generator -->
+    <div class="section-title">Schedule Generator (Manual Entry)</div>
+    <textarea id="scheduleArea" placeholder="Example:
+Aug 15 – Flag Practice – 6:00 PM – Field 1
+Aug 18 – Jr Pro Practice – 6:00 PM – Field 2
+Aug 22 – Flag vs Jr Pro – 7:00 PM – Stadium"></textarea>
+
+    <div class="buttons">
+        <button id="printScheduleBtn" class="secondary">Print Schedule</button>
+    </div>
+</div>
+
+<script>
+    google.charts.load('current', {packages: ['table']});
+    google.charts.setOnLoadCallback(drawTable);
+
+    let dataTable;
+    let table;
+    let attendanceEnabled = false;
+
+    function drawTable() {
+        const query = new google.visualization.Query(
+            "https://docs.google.com/spreadsheets/d/1NeNFAmvWqaDlbCsvA678W6k0S2K_4266FwtxHWZ4ZYg/gviz/tq?sheet=Sheet1"
+        );
+
+        query.send(function (response) {
+            dataTable = response.getDataTable();
+            table = new google.visualization.Table(document.getElementById('table_div'));
+
+            populateFilterOptions();
+            updateSummary(dataTable);
+            table.draw(dataTable, {showRowNumber: true, width: '100%', height: '100%'});
+        });
+    }
+
+    function populateFilterOptions() {
+        const gradeSet = new Set();
+        const schoolSet = new Set();
+
+        for (let i = 0; i < dataTable.getNumberOfRows(); i++) {
+            gradeSet.add(dataTable.getValue(i, 9));   // Player Grade (J)
+            schoolSet.add(dataTable.getValue(i, 10)); // School (K)
+        }
+
+        const gradeFilter = document.getElementById("gradeFilter");
+        const schoolFilter = document.getElementById("schoolFilter");
+
+        gradeSet.forEach(g => {
+            if (g) {
+                const opt = document.createElement("option");
+                opt.value = g;
+                opt.textContent = g;
+                gradeFilter.appendChild(opt);
+            }
+        });
+
+        schoolSet.forEach(s => {
+            if (s) {
+                const opt = document.createElement("option");
+                opt.value = s;
+                opt.textContent = s;
+                schoolFilter.appendChild(opt);
+            }
+        });
+    }
+
+    function applyFiltersAndSearch() {
+        const leagueVal = document.getElementById("leagueFilter").value;
+        const gradeVal = document.getElementById("gradeFilter").value;
+        const schoolVal = document.getElementById("schoolFilter").value;
+        const paymentVal = document.getElementById("paymentFilter").value;
+        const searchTerm = document.getElementById("searchBox").value.toLowerCase();
+
+        const view = new google.visualization.DataView(dataTable);
+
+        const rows = [];
+        for (let i = 0; i < dataTable.getNumberOfRows(); i++) {
+            const league = dataTable.getValue(i, 1);   // League (B)
+            const grade = dataTable.getValue(i, 9);    // Player Grade (J)
+            const school = dataTable.getValue(i, 10);  // School (K)
+            const paymentStatus = dataTable.getValue(i, 17); // Payment Status (R)
+
+            const rowString = [
+                dataTable.getValue(i, 2),  // Parent Name
+                dataTable.getValue(i, 6),  // Player Name
+                grade,
+                school,
+                dataTable.getValue(i, 14), // Allergies
+                paymentStatus

@@ -1,107 +1,137 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BC Football Registration</title>
-  <link rel="stylesheet" href="css/stylesregistration.css" />
+    <meta charset="UTF-8">
+    <title>BC Football Registration</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px #ccc;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: bold;
+            margin-top: 15px;
+            display: block;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            margin-top: 20px;
+            width: 100%;
+            padding: 15px;
+            background: #b30000;
+            color: white;
+            font-size: 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #confirmation {
+            display: none;
+            text-align: center;
+        }
+    </style>
 </head>
 
 <body>
-  <div class="registration-container">
-    <h1>BC FOOTBALL Youth Football Registration</h1>
+<div class="container">
+    <h2>BC Football Registration</h2>
 
-    <!-- Progress Bar -->
-    <div id="progressBar">
-      <div class="step active">League</div>
-      <div class="step">Parent</div>
-      <div class="step">Player</div>
-      <div class="step">Medical</div>
-      <div class="step">Physical</div>
-      <div class="step">Signature</div>
-      <div class="step">Payment</div>
-      <div class="step">Confirm</div>
+    <form id="registrationForm">
+
+        <label>League</label>
+        <select id="league" required>
+            <option value="Flag">Flag</option>
+            <option value="Jr Pro">Jr Pro</option>
+        </select>
+
+        <label>Parent Name</label>
+        <input id="parentName" type="text" required>
+
+        <label>Parent Email</label>
+        <input id="parentEmail" type="email" required>
+
+        <label>Parent Phone Number</label>
+        <input id="parentPhone" type="text" required>
+
+        <label>Parent Address</label>
+        <input id="parentAddress" type="text" required>
+
+        <label>Player Name</label>
+        <input id="playerName" type="text" required>
+
+        <label>Player Birthdate</label>
+        <input id="playerBirthdate" type="date" required>
+
+        <label>Player Age</label>
+        <input id="playerAge" type="number" required>
+
+        <label>Player Grade</label>
+        <input id="playerGrade" type="text" required>
+
+        <label>School</label>
+        <input id="school" type="text" required>
+
+        <label>Gender</label>
+        <select id="gender" required>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+        </select>
+
+        <label>Doctor</label>
+        <input id="doctor" type="text">
+
+        <label>Doctor Phone Number</label>
+        <input id="doctorPhone" type="text">
+
+        <label>Allergies or Medical Conditions</label>
+        <textarea id="allergies"></textarea>
+
+        <label>Parent Signature</label>
+        <input id="signature" type="text" required>
+
+        <label>Payment Option</label>
+        <select id="paymentOption" required>
+            <option value="Pay Full">Pay Full</option>
+            <option value="Pay Split">Pay Split</option>
+        </select>
+
+        <button type="submit">Submit Registration</button>
+    </form>
+
+    <div id="confirmation">
+        <h2>Registration Submitted!</h2>
+        <p>Your registration has been received.</p>
+        <p>Please complete payment using the Square link provided.</p>
     </div>
+</div>
 
-    <!-- Step 1 -->
-    <div class="form-step" id="step1">
-      <h2>League</h2>
-      <label>Choose League:</label>
-      <select id="leagueSelect" required>
-        <option value="">Select League</option>
-        <option value="Flag">Flag Football (K–2)</option>
-        <option value="Junior">Junior Football (3–6)</option>
-      </select>
-      <button id="nextBtn">Next</button>
-    </div>
-
-    <!-- Step 2 -->
-    <div class="form-step" id="step2">
-      <h2>Parent Information</h2>
-      <input id="parentName" placeholder="Parent Name" required />
-      <input id="parentEmail" placeholder="Parent Email" type="email" required />
-      <button id="prevBtn2">Back</button>
-      <button id="nextBtn2">Next</button>
-    </div>
-
-    <!-- Step 3 -->
-    <div class="form-step" id="step3">
-      <h2>Player Information</h2>
-      <input id="playerName" placeholder="Player Name" required />
-      <input id="playerAge" placeholder="Player Age" type="number" required />
-      <button id="prevBtn3">Back</button>
-      <button id="nextBtn3">Next</button>
-    </div>
-
-    <!-- Step 4 -->
-    <div class="form-step" id="step4">
-      <h2>Medical</h2>
-      <textarea id="medicalInfo" placeholder="Medical Notes" required></textarea>
-      <button id="prevBtn4">Back</button>
-      <button id="nextBtn4">Next</button>
-    </div>
-
-    <!-- Step 5 -->
-    <div class="form-step" id="step5">
-      <h2>Physical</h2>
-      <textarea id="physicalInfo" placeholder="Physical Notes" required></textarea>
-      <button id="prevBtn5">Back</button>
-      <button id="nextBtn5">Next</button>
-    </div>
-
-    <!-- Step 6 -->
-    <div class="form-step" id="step6">
-      <h2>Signature</h2>
-      <input id="signature" placeholder="Type Full Name" required />
-      <button id="prevBtn6">Back</button>
-      <button id="nextBtn6">Next</button>
-    </div>
-
-    <!-- Step 7 (Payment) -->
-    <div class="form-step" id="step7">
-      <h2>Payment</h2>
-      <p>Registration Fee: $75</p>
-      <label>Choose Payment Option:</label>
-      <select id="paymentOption" required>
-        <option value="">Select Option</option>
-        <option value="PayFull">Pay in Full</option>
-        <option value="Pay2">Pay in 2 Payments</option>
-      </select>
-      <button id="prevBtn7">Back</button>
-      <button id="payBtn">Pay & Continue</button>
-    </div>
-
-    <!-- Step 8 (Confirm) -->
-    <div class="form-step" id="step8">
-      <h2>Registration Submitted</h2>
-      <p>Your player's season registration has been recorded.</p>
-      <p>You will receive an email with details.</p>
-      <p id="confirmDetails"></p>
-    </div>
-  </div>
-
-  <!-- Scripts -->
-  <script src="scripts/firebase.js"></script>
-  <script src="scripts/registration.js"></script>
+<script src="registration.js"></script>
 </body>
 </html>
