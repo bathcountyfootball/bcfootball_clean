@@ -1,29 +1,43 @@
+/****************************************************
+ * BC FOOTBALL – MULTI‑PLAYER REGISTRATION SYSTEM
+ * Sibling Discounts + Mixed Leagues + One Checkout
+ ****************************************************/
+
 const FLAG_PRICE = 57.00;
 const JRPRO_PRICE = 77.50;
 const GENERIC_PAY_LINK = "https://square.link/u/sS8n48d5?src=sheet";
 
+// ⭐ IMPORTANT — REPLACE THIS WITH YOUR REAL URL ⭐
+const APPS_SCRIPT_URL = "YOUR_WEB_APP_URL_HERE";
+
 let players = [];
 let batchId = Date.now().toString();
 
-const playersContainer = document.getElementById('players-container');
-const addPlayerBtn = document.getElementById('add-player-btn');
-const form = document.getElementById('registration-form');
+const playersContainer = document.getElementById("players-container");
+const addPlayerBtn = document.getElementById("add-player-btn");
+const form = document.getElementById("registration-form");
 
+/****************************************************
+ * CREATE PLAYER BLOCK
+ ****************************************************/
 function createPlayerBlock(index) {
-  const wrapper = document.createElement('div');
-  wrapper.className = 'player-block';
+  const wrapper = document.createElement("div");
+  wrapper.className = "player-block";
   wrapper.dataset.index = index;
 
   wrapper.innerHTML = `
     <h3>Player ${index + 1}</h3>
+
     <label>
       Player Name:
       <input type="text" class="player-name" required>
     </label>
+
     <label>
       Grade:
       <input type="text" class="player-grade" required>
     </label>
+
     <label>
       League:
       <select class="player-league" required>
@@ -32,6 +46,7 @@ function createPlayerBlock(index) {
         <option value="Jr Pro">Jr Pro</option>
       </select>
     </label>
+
     <label>
       Payment Type:
       <select class="player-payment" required>
@@ -45,32 +60,33 @@ function createPlayerBlock(index) {
   playersContainer.appendChild(wrapper);
 }
 
+/****************************************************
+ * ADD PLAYER BUTTON
+ ****************************************************/
 function addPlayerBlock() {
   const index = players.length;
   players.push({});
   createPlayerBlock(index);
 }
 
-addPlayerBtn.addEventListener('click', addPlayerBlock);
+addPlayerBtn.addEventListener("click", addPlayerBlock);
 
-// start with one player by default
+// Start with one player by default
 addPlayerBlock();
 
-function calculateDiscounts(existingCount, newPlayers) {
-  // existingCount: players already in sheet for this parent
-  // newPlayers: number of players in this batch
+/****************************************************
+ * SIBLING DISCOUNT LOGIC
+ ****************************************************/
+function calculateDiscounts(existingCount, newPlayersCount) {
   const discounts = [];
   let totalBeforeBatch = existingCount;
 
-  for (let i = 0; i < newPlayers; i++) {
-    const childNumber = totalBeforeBatch + 1; // 1-based
-    let discount = 0;
+  for (let i = 0; i < newPlayersCount; i++) {
+    const childNumber = totalBeforeBatch + 1;
 
-    if (childNumber === 2) {
-      discount = 5;
-    } else if (childNumber >= 3) {
-      discount = 10;
-    }
+    let discount = 0;
+    if (childNumber === 2) discount = 5;
+    if (childNumber >= 3) discount = 10;
 
     discounts.push(discount);
     totalBeforeBatch++;
@@ -79,25 +95,30 @@ function calculateDiscounts(existingCount, newPlayers) {
   return discounts;
 }
 
+/****************************************************
+ * GET EXISTING COUNT FROM GOOGLE SHEETS
+ ****************************************************/
 async function fetchExistingCount(parentEmail) {
-  const url = 'YOUR_APPS_SCRIPT_WEB_APP_URL'; // replace with deployed URL
-  const res = await fetch(url, {
-    method: 'POST',
+  const res = await fetch(APPS_SCRIPT_URL, {
+    method: "POST",
     body: JSON.stringify({
-      action: 'getExistingCount',
+      action: "getExistingCount",
       parentEmail
     })
   });
+
   const data = await res.json();
   return data.count || 0;
 }
 
+/****************************************************
+ * SAVE BATCH TO GOOGLE SHEETS
+ ****************************************************/
 async function saveBatchToSheet(parentInfo, players, total) {
-  const url = 'YOUR_APPS_SCRIPT_WEB_APP_URL'; // replace with deployed URL
-  await fetch(url, {
-    method: 'POST',
+  await fetch(APPS_SCRIPT_URL, {
+    method: "POST",
     body: JSON.stringify({
-      action: 'saveBatch',
+      action: "saveBatch",
       parentName: parentInfo.name,
       parentEmail: parentInfo.email,
       parentPhone: parentInfo.phone,
@@ -109,23 +130,26 @@ async function saveBatchToSheet(parentInfo, players, total) {
   });
 }
 
-form.addEventListener('submit', async (e) => {
+/****************************************************
+ * FORM SUBMIT HANDLER
+ ****************************************************/
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const parentName = document.getElementById('parent-name').value.trim();
-  const parentEmail = document.getElementById('parent-email').value.trim();
-  const parentPhone = document.getElementById('parent-phone').value.trim();
+  const parentName = document.getElementById("parent-name").value.trim();
+  const parentEmail = document.getElementById("parent-email").value.trim();
+  const parentPhone = document.getElementById("parent-phone").value.trim();
 
   const parentInfo = { name: parentName, email: parentEmail, phone: parentPhone };
 
-  const blocks = document.querySelectorAll('.player-block');
+  const blocks = document.querySelectorAll(".player-block");
   const currentBatchPlayers = [];
 
   blocks.forEach(block => {
-    const name = block.querySelector('.player-name').value.trim();
-    const grade = block.querySelector('.player-grade').value.trim();
-    const league = block.querySelector('.player-league').value;
-    const paymentType = block.querySelector('.player-payment').value;
+    const name = block.querySelector(".player-name").value.trim();
+    const grade = block.querySelector(".player-grade").value.trim();
+    const league = block.querySelector(".player-league").value;
+    const paymentType = block.querySelector(".player-payment").value;
 
     currentBatchPlayers.push({
       name,
@@ -136,58 +160,22 @@ form.addEventListener('submit', async (e) => {
   });
 
   if (currentBatchPlayers.length === 0) {
-    alert('Please add at least one player.');
+    alert("Please add at least one player.");
     return;
   }
 
-  // 1) get existing count for this parent
+  // 1️⃣ Get existing count
   const existingCount = await fetchExistingCount(parentEmail);
 
-  // 2) calculate discounts for this batch (only for Pay in Full)
-  const discounts = calculateDiscounts(
-    existingCount,
-    currentBatchPlayers.filter(p => p.paymentType === 'Pay in Full').length
-  );
+  // 2️⃣ Calculate discounts for Pay‑in‑Full players only
+  const fullPayPlayers = currentBatchPlayers.filter(p => p.paymentType === "Pay in Full");
+  const discounts = calculateDiscounts(existingCount, fullPayPlayers.length);
 
   let discountIndex = 0;
   let total = 0;
   const breakdownLines = [];
 
-  currentBatchPlayers.forEach((p, idx) => {
-    const basePrice = p.league === 'Flag' ? FLAG_PRICE : JRPRO_PRICE;
+  currentBatchPlayers.forEach((p) => {
+    const basePrice = p.league === "Flag" ? FLAG_PRICE : JRPRO_PRICE;
+
     let discountApplied = 0;
-
-    if (p.paymentType === 'Pay in Full') {
-      discountApplied = discounts[discountIndex] || 0;
-      discountIndex++;
-    }
-
-    const finalPrice = basePrice - discountApplied;
-    total += finalPrice;
-
-    breakdownLines.push(
-      `${p.name} – ${p.league} – $${finalPrice.toFixed(2)}`
-      + (discountApplied > 0 ? ` ($${discountApplied} sibling discount)` : '')
-      + (p.paymentType === 'Pay in 2' ? ' (Pay in 2 – no discount)' : '')
-    );
-
-    p.basePrice = basePrice;
-    p.discountApplied = discountApplied;
-    p.finalPrice = finalPrice;
-    p.batchId = batchId;
-  });
-
-  // 3) show review & pay
-  const reviewSection = document.getElementById('review-section');
-  const breakdownDiv = document.getElementById('breakdown');
-  const totalDueP = document.getElementById('total-due');
-
-  breakdownDiv.innerHTML = breakdownLines.map(l => `<p>${l}</p>`).join('');
-  totalDueP.textContent = `Total Due: $${total.toFixed(2)}`;
-  reviewSection.style.display = 'block';
-
-  // 4) save batch to sheet
-  await saveBatchToSheet(parentInfo, currentBatchPlayers, total);
-
-  alert('Registration saved. Please complete payment using the Pay Now button.');
-});
