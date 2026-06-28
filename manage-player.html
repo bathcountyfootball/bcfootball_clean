@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Player – Bath County Football</title>
-    <link rel="stylesheet" href="parent.css">
+    <link rel="stylesheet" href="home.css">
 
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
@@ -12,43 +12,99 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
 
     <script>
+        // TODO: Replace with your Firebase config
         const firebaseConfig = {
-            apiKey: "YOUR_KEY",
-            authDomain: "YOUR_DOMAIN",
-            projectId: "YOUR_PROJECT",
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID"
         };
+
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
     </script>
+
+    <style>
+        .edit-card {
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            max-width: 600px;
+            margin: auto;
+        }
+        .edit-card h2 {
+            color: #b30000;
+            margin-top: 0;
+            font-size: 1.6rem;
+            font-weight: 800;
+        }
+        .edit-card label {
+            font-weight: bold;
+            margin-top: 12px;
+            display: block;
+        }
+        .edit-card input,
+        .edit-card select {
+            width: 100%;
+            padding: 12px;
+            margin-top: 6px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+        }
+        .back-btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 18px;
+            background: #444;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        .back-btn:hover {
+            background: #000;
+        }
+    </style>
 </head>
 
 <body>
 
 <header class="hero">
-    <h1>Edit Player Information</h1>
+    <h1>Edit Player</h1>
+    <p>Update Player Information</p>
 </header>
 
-<section class="content">
+<section class="main-links">
 
-    <div class="card">
+    <div class="edit-card">
+        <h2>Player Details</h2>
+
         <form id="editPlayerForm">
+
             <label>Player Name</label>
-            <input type="text" id="playerName">
+            <input type="text" id="playerName" required>
 
             <label>Birthdate</label>
-            <input type="date" id="birthdate">
+            <input type="date" id="birthdate" required>
 
             <label>School</label>
-            <input type="text" id="school">
+            <input type="text" id="school" required>
 
             <label>Grade</label>
-            <input type="number" id="grade">
+            <input type="number" id="grade" required>
 
             <label>Gender</label>
             <select id="gender">
                 <option>Male</option>
                 <option>Female</option>
+            </select>
+
+            <label>League</label>
+            <select id="league">
+                <option>Flag</option>
+                <option>Jr Pro</option>
             </select>
 
             <label>Shirt Size</label>
@@ -71,11 +127,17 @@
             <label>Allergies / Medical Notes</label>
             <input type="text" id="allergies">
 
-            <button class="action-btn red">Save Changes</button>
+            <button class="action-btn red" style="margin-top:20px;">Save Changes</button>
         </form>
+
+        <a href="parent-dashboard.html" class="back-btn">← Back to Dashboard</a>
     </div>
 
 </section>
+
+<footer>
+    <p>© 2026 Bath County Youth Football</p>
+</footer>
 
 <script>
     const urlParams = new URLSearchParams(window.location.search);
@@ -90,15 +152,16 @@
         const doc = await db.collection("registrations").doc(playerId).get();
         const p = doc.data();
 
-        document.getElementById("playerName").value = p.playerName;
-        document.getElementById("birthdate").value = p.birthdate;
-        document.getElementById("school").value = p.school;
-        document.getElementById("grade").value = p.grade;
-        document.getElementById("gender").value = p.gender;
-        document.getElementById("shirtSize").value = p.shirtSize;
-        document.getElementById("doctorName").value = p.doctorName;
-        document.getElementById("doctorPhone").value = p.doctorPhone;
-        document.getElementById("allergies").value = p.allergies;
+        document.getElementById("playerName").value = p.playerName || "";
+        document.getElementById("birthdate").value = p.birthdate || "";
+        document.getElementById("school").value = p.school || "";
+        document.getElementById("grade").value = p.grade || "";
+        document.getElementById("gender").value = p.gender || "Male";
+        document.getElementById("league").value = p.league || "Flag";
+        document.getElementById("shirtSize").value = p.shirtSize || "YM";
+        document.getElementById("doctorName").value = p.doctorName || "";
+        document.getElementById("doctorPhone").value = p.doctorPhone || "";
+        document.getElementById("allergies").value = p.allergies || "";
     });
 
     document.getElementById("editPlayerForm").onsubmit = async (e) => {
@@ -110,13 +173,14 @@
             school: school.value,
             grade: grade.value,
             gender: gender.value,
+            league: league.value,
             shirtSize: shirtSize.value,
             doctorName: doctorName.value,
             doctorPhone: doctorPhone.value,
             allergies: allergies.value
         });
 
-        alert("Player updated!");
+        alert("Player updated successfully!");
         window.location.href = "parent-dashboard.html";
     };
 </script>
