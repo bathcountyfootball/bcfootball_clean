@@ -1,137 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>BC Football Registration</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f5f5f5;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 700px;
-            margin: auto;
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px #ccc;
-        }
-
-        h2 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        label {
-            font-weight: bold;
-            margin-top: 15px;
-            display: block;
-        }
-
-        input, select, textarea {
-            width: 100%;
-            padding: 10px;
-            margin-top: 5px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-        }
-
-        button {
-            margin-top: 20px;
-            width: 100%;
-            padding: 15px;
-            background: #b30000;
-            color: white;
-            font-size: 18px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        #confirmation {
-            display: none;
-            text-align: center;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>BC Football Registration</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
-
 <body>
-<div class="container">
-    <h2>BC Football Registration</h2>
+  <h1>BC Football Registration</h1>
 
-    <form id="registrationForm">
+  <form id="registration-form">
+    <fieldset>
+      <legend>Parent Information</legend>
+      <label>
+        Parent Name:
+        <input type="text" id="parent-name" required>
+      </label>
+      <label>
+        Parent Email:
+        <input type="email" id="parent-email" required>
+      </label>
+      <label>
+        Phone:
+        <input type="tel" id="parent-phone" required>
+      </label>
+    </fieldset>
 
-        <label>League</label>
-        <select id="league" required>
-            <option value="Flag">Flag</option>
-            <option value="Jr Pro">Jr Pro</option>
-        </select>
+    <h2>Players</h2>
+    <div id="players-container"></div>
 
-        <label>Parent Name</label>
-        <input id="parentName" type="text" required>
+    <button type="button" id="add-player-btn">Add Player</button>
 
-        <label>Parent Email</label>
-        <input id="parentEmail" type="email" required>
+    <section id="review-section" style="display:none; margin-top:20px;">
+      <h2>Review & Pay</h2>
+      <div id="breakdown"></div>
+      <p id="total-due" style="font-weight:bold;"></p>
+      <p>
+        <strong>Step 2:</strong> Click the button below and enter the
+        <strong>exact total</strong> shown above.
+      </p>
+      <p>
+        After payment, your registration is recorded automatically in our system.
+      </p>
+      <a id="pay-now-btn"
+         href="https://square.link/u/sS8n48d5?src=sheet"
+         target="_blank"
+         style="display:inline-block;padding:10px 20px;background:#007bff;color:#fff;text-decoration:none;border-radius:4px;">
+        Pay Now
+      </a>
+    </section>
 
-        <label>Parent Phone Number</label>
-        <input id="parentPhone" type="text" required>
+    <button type="submit" id="submit-btn" style="margin-top:20px;">
+      Save Registration
+    </button>
+  </form>
 
-        <label>Parent Address</label>
-        <input id="parentAddress" type="text" required>
-
-        <label>Player Name</label>
-        <input id="playerName" type="text" required>
-
-        <label>Player Birthdate</label>
-        <input id="playerBirthdate" type="date" required>
-
-        <label>Player Age</label>
-        <input id="playerAge" type="number" required>
-
-        <label>Player Grade</label>
-        <input id="playerGrade" type="text" required>
-
-        <label>School</label>
-        <input id="school" type="text" required>
-
-        <label>Gender</label>
-        <select id="gender" required>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-        </select>
-
-        <label>Doctor</label>
-        <input id="doctor" type="text">
-
-        <label>Doctor Phone Number</label>
-        <input id="doctorPhone" type="text">
-
-        <label>Allergies or Medical Conditions</label>
-        <textarea id="allergies"></textarea>
-
-        <label>Parent Signature</label>
-        <input id="signature" type="text" required>
-
-        <label>Payment Option</label>
-        <select id="paymentOption" required>
-            <option value="Pay Full">Pay Full</option>
-            <option value="Pay Split">Pay Split</option>
-        </select>
-
-        <button type="submit">Submit Registration</button>
-    </form>
-
-    <div id="confirmation">
-        <h2>Registration Submitted!</h2>
-        <p>Your registration has been received.</p>
-        <p>Please complete payment using the Square link provided.</p>
-    </div>
-</div>
-
-<script src="registration.js"></script>
+  <script src="registration.js"></script>
 </body>
 </html>
