@@ -1,13 +1,12 @@
 /****************************************************
  * BC FOOTBALL – MULTI‑PLAYER REGISTRATION SYSTEM
- * Sibling Discounts + Mixed Leagues + One Checkout
+ * Full Player Details + Sibling Discounts
  ****************************************************/
 
 const FLAG_PRICE = 57.00;
 const JRPRO_PRICE = 77.50;
 const GENERIC_PAY_LINK = "https://square.link/u/sS8n48d5?src=sheet";
 
-// ⭐ Your REAL deployed Apps Script URL ⭐
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzFonVe10t-NbnLSGOq885K405MkIJguS_7PnB6V95vXjUS32ite_xdLdZ3QdytNi6T/exec";
 
 let players = [];
@@ -18,7 +17,7 @@ const addPlayerBtn = document.getElementById("add-player-btn");
 const form = document.getElementById("registration-form");
 
 /****************************************************
- * CREATE PLAYER BLOCK
+ * CREATE PLAYER BLOCK (FULL DETAILS)
  ****************************************************/
 function createPlayerBlock(index) {
   const wrapper = document.createElement("div");
@@ -34,8 +33,71 @@ function createPlayerBlock(index) {
     </label>
 
     <label>
+      Birthdate:
+      <input type="date" class="player-birthdate" required>
+    </label>
+
+    <label>
+      Age:
+      <input type="number" class="player-age" min="4" max="18" required>
+    </label>
+
+    <label>
       Grade:
       <input type="text" class="player-grade" required>
+    </label>
+
+    <label>
+      School:
+      <input type="text" class="player-school" required>
+    </label>
+
+    <label>
+      Gender:
+      <select class="player-gender" required>
+        <option value="">Select</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Other">Other</option>
+      </select>
+    </label>
+
+    <label>
+      Shirt Size:
+      <select class="player-shirt-size" required>
+        <option value="">Select</option>
+        <option value="YS">YS</option>
+        <option value="YM">YM</option>
+        <option value="YL">YL</option>
+        <option value="AS">AS</option>
+        <option value="AM">AM</option>
+        <option value="AL">AL</option>
+        <option value="AXL">AXL</option>
+      </select>
+    </label>
+
+    <label>
+      Doctor Name:
+      <input type="text" class="player-doctor-name" required>
+    </label>
+
+    <label>
+      Doctor Phone:
+      <input type="tel" class="player-doctor-phone" required>
+    </label>
+
+    <label>
+      Allergies / Medical Conditions:
+      <input type="text" class="player-allergies" required>
+    </label>
+
+    <label>
+      Jr Pro Physical On File:
+      <select class="player-physical" required>
+        <option value="">Select</option>
+        <option value="Yes">Yes</option>
+        <option value="No">No</option>
+      </select>
     </label>
 
     <label>
@@ -122,6 +184,7 @@ async function saveBatchToSheet(parentInfo, players, total) {
       parentName: parentInfo.name,
       parentEmail: parentInfo.email,
       parentPhone: parentInfo.phone,
+      parentAddress: parentInfo.address,
       players,
       batchId,
       total,
@@ -139,24 +202,38 @@ form.addEventListener("submit", async (e) => {
   const parentName = document.getElementById("parent-name").value.trim();
   const parentEmail = document.getElementById("parent-email").value.trim();
   const parentPhone = document.getElementById("parent-phone").value.trim();
+  const parentAddress = document.getElementById("parent-address") 
+    ? document.getElementById("parent-address").value.trim() 
+    : "";
 
-  const parentInfo = { name: parentName, email: parentEmail, phone: parentPhone };
+  const parentInfo = { 
+    name: parentName, 
+    email: parentEmail, 
+    phone: parentPhone,
+    address: parentAddress
+  };
 
   const blocks = document.querySelectorAll(".player-block");
   const currentBatchPlayers = [];
 
   blocks.forEach(block => {
-    const name = block.querySelector(".player-name").value.trim();
-    const grade = block.querySelector(".player-grade").value.trim();
-    const league = block.querySelector(".player-league").value;
-    const paymentType = block.querySelector(".player-payment").value;
+    const player = {
+      name: block.querySelector(".player-name").value.trim(),
+      birthdate: block.querySelector(".player-birthdate").value.trim(),
+      age: block.querySelector(".player-age").value.trim(),
+      grade: block.querySelector(".player-grade").value.trim(),
+      school: block.querySelector(".player-school").value.trim(),
+      gender: block.querySelector(".player-gender").value,
+      shirtSize: block.querySelector(".player-shirt-size").value,
+      doctorName: block.querySelector(".player-doctor-name").value.trim(),
+      doctorPhone: block.querySelector(".player-doctor-phone").value.trim(),
+      allergies: block.querySelector(".player-allergies").value.trim(),
+      physicalOnFile: block.querySelector(".player-physical").value,
+      league: block.querySelector(".player-league").value,
+      paymentType: block.querySelector(".player-payment").value
+    };
 
-    currentBatchPlayers.push({
-      name,
-      grade,
-      league,
-      paymentType
-    });
+    currentBatchPlayers.push(player);
   });
 
   if (currentBatchPlayers.length === 0) {
