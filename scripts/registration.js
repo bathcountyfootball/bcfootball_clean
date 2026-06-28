@@ -7,7 +7,7 @@ const FLAG_PRICE = 57.00;
 const JRPRO_PRICE = 77.50;
 const GENERIC_PAY_LINK = "https://square.link/u/sS8n48d5?src=sheet";
 
-const APPS_SCRIPT_URL = "";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzFonVe10t-NbnLSGOq885K405MkIJguS_7PnB6V95vXjUS32ite_xdLdZ3QdytNi6T/exec";
 
 let players = [];
 let batchId = Date.now().toString();
