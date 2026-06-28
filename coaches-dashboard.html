@@ -130,5 +130,44 @@
     });
 </script>
 
+	<!-- ASSIGN PLAYERS MODAL -->
+<div id="assignModal" style="
+    display:none; 
+    position:fixed; 
+    top:0; left:0; 
+    width:100%; height:100%;
+    background:rgba(0,0,0,0.7);
+    padding-top:50px;
+    z-index:9999;
+">
+    <div style="
+        background:#fff; 
+        max-width:900px; 
+        margin:auto; 
+        padding:25px; 
+        border-radius:12px;
+        box-shadow:0 4px 12px rgba(0,0,0,0.25);
+    ">
+        <h2 style="color:#b30000;">Assign Players to Coaches & Teams</h2>
+
+        <label><b>Select Coach</b></label>
+        <select id="coachSelect" style="width:100%; padding:12px; margin-bottom:15px;"></select>
+
+        <label><b>Select Team #</b></label>
+        <select id="teamSelect" style="width:100%; padding:12px; margin-bottom:15px;">
+            <option value="1">Team 1</option>
+            <option value="2">Team 2</option>
+            <option value="3">Team 3</option>
+            <option value="4">Team 4</option>
+            <option value="5">Team 5</option>
+        </select>
+
+        <h3 style="margin-top:25px;">All Players</h3>
+        <div id="allPlayersList"></div>
+
+        <button id="closeAssignModal" class="action-btn" style="margin-top:20px;">Close</button>
+    </div>
+</div>
+
 </body>
 </html>
