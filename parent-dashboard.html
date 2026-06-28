@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Parent Dashboard – Bath County Football</title>
-    <link rel="stylesheet" href="parent.css">
+    <link rel="stylesheet" href="home.css">
 
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
@@ -12,15 +12,59 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
 
     <script>
+        // TODO: Replace with your Firebase config
         const firebaseConfig = {
-            apiKey: "YOUR_KEY",
-            authDomain: "YOUR_DOMAIN",
-            projectId: "YOUR_PROJECT",
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID"
         };
+
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
     </script>
+
+    <style>
+        .dashboard-card {
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            margin-bottom: 25px;
+        }
+        .dashboard-card h2 {
+            color: #b30000;
+            margin-top: 0;
+            font-size: 1.4rem;
+            font-weight: 800;
+        }
+        .player-card {
+            background: #fafafa;
+            padding: 18px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 6px solid #b30000;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        .player-card h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+        .logout-btn {
+            background: #444;
+            color: #fff;
+            padding: 12px 18px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        .logout-btn:hover {
+            background: #000;
+        }
+    </style>
 </head>
 
 <body>
@@ -30,19 +74,36 @@
     <p>Manage Your Players</p>
 </header>
 
-<section class="content">
+<section class="main-links" style="max-width:900px; margin:auto;">
 
-    <div class="card">
-        <h2>Your Players</h2>
-        <div id="playerList">Loading...</div>
+    <!-- Parent Info -->
+    <div class="dashboard-card">
+        <h2>Your Information</h2>
+        <p id="parentName">Loading...</p>
+        <p id="parentEmail"></p>
+        <p id="parentPhone"></p>
+        <p id="parentAddress"></p>
+
+        <a href="#" id="logoutBtn" class="logout-btn">Logout</a>
     </div>
 
-    <div class="card">
+    <!-- Player List -->
+    <div class="dashboard-card">
+        <h2>Your Players</h2>
+        <div id="playerList">Loading players...</div>
+    </div>
+
+    <!-- Add Player -->
+    <div class="dashboard-card">
         <h2>Add a New Player</h2>
         <a href="registration.html" class="action-btn red">Register Another Player</a>
     </div>
 
 </section>
+
+<footer>
+    <p>© 2026 Bath County Youth Football</p>
+</footer>
 
 <script>
     auth.onAuthStateChanged(async user => {
@@ -51,10 +112,20 @@
             return;
         }
 
-        const parentEmail = user.email;
+        const uid = user.uid;
 
+        // Load parent profile
+        const parentDoc = await db.collection("parents").doc(uid).get();
+        const parent = parentDoc.data();
+
+        document.getElementById("parentName").innerText = parent.parentName;
+        document.getElementById("parentEmail").innerText = "Email: " + parent.email;
+        document.getElementById("parentPhone").innerText = "Phone: " + parent.phone;
+        document.getElementById("parentAddress").innerText = "Address: " + (parent.address || "Not provided");
+
+        // Load players belonging to this parent
         const snapshot = await db.collection("registrations")
-            .where("parentEmail", "==", parentEmail)
+            .where("parentEmail", "==", parent.email)
             .get();
 
         const list = document.getElementById("playerList");
@@ -68,15 +139,22 @@
                 <h3>${p.playerName}</h3>
                 <p>Grade: ${p.grade}</p>
                 <p>League: ${p.league}</p>
+                <p>School: ${p.school}</p>
                 <a class="action-btn" href="manage-player.html?id=${doc.id}">Edit Player</a>
             `;
             list.appendChild(div);
         });
 
         if (snapshot.empty) {
-            list.innerHTML = "<p>No players found.</p>";
+            list.innerHTML = "<p>You have no players registered yet.</p>";
         }
     });
+
+    // Logout
+    document.getElementById("logoutBtn").onclick = async () => {
+        await auth.signOut();
+        window.location.href = "login.html";
+    };
 </script>
 
 </body>
