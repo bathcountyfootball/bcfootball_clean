@@ -1,103 +1,136 @@
-/* ============================================================
-   Firebase Cloud Functions + Stripe Backend
-   ============================================================ */
+/**
+ * Bath County Football Registration
+ * Firebase Cloud Functions Backend
+ * Node.js 20 — firebase-functions v2
+ */
 
-const functions = require("firebase-functions");
+const functions = require("firebase-functions/v2");
+const logger = require("firebase-functions/logger");
 const admin = require("firebase-admin");
-admin.initializeApp();
+const { defineSecret } = require("firebase-functions/params");
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
+// Initialize Firebase Admin
+admin.initializeApp();
 const db = admin.firestore();
 
-// Load Stripe using Firebase v7 secrets
-const stripe = require("stripe")(process.env.STRIPE_SECRET);
+// Stripe secret key stored in Firebase environment parameters
+const STRIPE_SECRET = defineSecret("STRIPE_SECRET_KEY");
 
-/* ============================================================
-   CREATE PAYMENT INTENT
-   Called by /javascript/stripe.js
-   ============================================================ */
-
-exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
-    res.set("Access-Control-Allow-Origin", "*");
-    res.set("Access-Control-Allow-Headers", "Content-Type");
-
-    if (req.method === "OPTIONS") {
-        res.status(204).send("");
-        return;
-    }
-
+/**
+ * Create Stripe Checkout Session
+ * Called from stripe.js → startCheckout()
+ */
+exports.createCheckoutSession = functions.https.onRequest(
+  { secrets: [STRIPE_SECRET] },
+  async (req, res) => {
     try {
-        const { registrationId, amount } = req.body;
+      const data = req.body;
 
-        if (!registrationId || !amount) {
-            return res.status(400).json({ error: "Missing fields" });
-        }
+      // Basic fee logic (same as frontend)
+      let base = 75;
+      if (data.league === "Flag") base = 50;
+      if (data.league === "Middle School") base = 100;
+      if (data.league === "High School") base = 125;
 
-        // Create Stripe Checkout Session
-        const session = await stripe.checkout.sessions.create({
-            payment_method_types: ["card"],
-            mode: "payment",
-            line_items: [
-                {
-                    price_data: {
-                        currency: "usd",
-                        product_data: {
-                            name: "Youth Football Registration"
-                        },
-                        unit_amount: amount * 100 // convert to cents
-                    },
-                    quantity: 1
-                }
-            ],
-            success_url: "https://bathcountyfootball.github.io/bcfootball/success.html?session_id={CHECKOUT_SESSION_ID}",
-            cancel_url: "https://bathcountyfootball.github.io/bcfootball/cancel.html",
-            metadata: {
-                registrationId: registrationId
-            }
-        });
+      const siblingDiscount = 0; // Expand later
+      const total = base - siblingDiscount;
 
-        res.json({ clientSecret: session.id });
+      // Create Stripe Checkout session
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ["card"],
+        mode: "payment",
+        line_items: [
+          {
+            price_data: {
+              currency: "usd",
+              product_data: {
+                name: `Bath County Football Registration — ${data.playerName}`,
+              },
+              unit_amount: total * 100,
+            },
+            quantity: 1,
+          },
+        ],
+        success_url: "https://bathcountyfootball.github.io/bcfootball_clean/registration-success.html",
+        cancel_url: "https://bathcountyfootball.github.io/bcfootball_clean/registration-cancel.html",
+        metadata: {
+          playerName: data.playerName,
+          guardianName: data.guardianName,
+          league: data.league,
+          firestoreId: data.firestoreId || "",
+        },
+      });
 
-    } catch (error) {
-        console.error("Error creating payment intent:", error);
-        res.status(500).json({ error: error.message });
+      res.json({ id: session.id });
+    } catch (err) {
+      logger.error("Stripe session error:", err);
+      res.status(500).json({ error: err.message });
     }
-});
+  }
+);
 
-/* ============================================================
-   STRIPE WEBHOOK — CONFIRM PAYMENT
-   ============================================================ */
-
-exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
-    const sig = req.headers["stripe-signature"];
+/**
+ * Stripe Webhook — confirms payment
+ * Updates Firestore: paymentStatus = "paid"
+ */
+exports.stripeWebhook = functions.https.onRequest(
+  { secrets: [STRIPE_SECRET] },
+  async (req, res) => {
     let event;
 
     try {
-        event = stripe.webhooks.constructEvent(
-            req.rawBody,
-            sig,
-            functions.config().stripe.webhook
-        );
+      const sig = req.headers["stripe-signature"];
+      event = stripe.webhooks.constructEvent(
+        req.rawBody,
+        sig,
+        process.env.STRIPE_WEBHOOK_SECRET
+      );
     } catch (err) {
-        console.error("Webhook signature error:", err);
-        return res.status(400).send("Webhook Error");
+      logger.error("Webhook signature error:", err);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 
     // Handle successful payment
     if (event.type === "checkout.session.completed") {
-        const session = event.data.object;
-        const registrationId = session.metadata.registrationId;
+      const session = event.data.object;
 
-        try {
-            await db.collection("registrations")
-                .doc(registrationId)
-                .update({ paymentStatus: "paid" });
+      const firestoreId = session.metadata.firestoreId;
 
-            console.log("Payment marked as paid:", registrationId);
+      if (firestoreId) {
+        await db.collection("registrations")
+          .doc(firestoreId)
+          .update({
+            paymentStatus: "paid",
+            stripeSessionId: session.id,
+            paidAt: new Date().toISOString(),
+          });
 
-        } catch (error) {
-            console.error("Error updating Firestore:", error);
-        }
+        logger.info(`Payment confirmed for ${firestoreId}`);
+      }
     }
 
     res.json({ received: true });
+  }
+);
+
+/**
+ * Save registration BEFORE payment
+ * Called from firebase.js → saveRegistration()
+ */
+exports.saveRegistration = functions.https.onCall(async (data) => {
+  try {
+    const timestamp = new Date().toISOString();
+
+    const docRef = await db.collection("registrations").add({
+      ...data,
+      timestamp,
+      paymentStatus: "pending",
+    });
+
+    return { firestoreId: docRef.id };
+  } catch (err) {
+    logger.error("Save registration error:", err);
+    throw new functions.https.HttpsError("internal", err.message);
+  }
 });
