@@ -3,57 +3,122 @@
 <head>
   <meta charset="UTF-8">
   <title>BC Football Registration</title>
-  <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f7f7f7;
+    }
+    h1, h2, h3 {
+      color: #b30000;
+    }
+    fieldset {
+      border: 2px solid #b30000;
+      padding: 15px;
+      margin-bottom: 20px;
+      background: #fff;
+    }
+    label {
+      display: block;
+      margin-bottom: 10px;
+    }
+    input, select {
+      padding: 8px;
+      width: 100%;
+      margin-top: 4px;
+    }
+    #add-player-btn, #submit-btn {
+      background: #b30000;
+      color: #fff;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    #add-player-btn:hover, #submit-btn:hover {
+      background: #800000;
+    }
+    .player-block {
+      background: #fff;
+      border: 2px solid #b30000;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+    #review-section {
+      background: #fff;
+      border: 2px solid #b30000;
+      padding: 15px;
+      margin-top: 20px;
+    }
+    #pay-now-btn {
+      display: inline-block;
+      padding: 12px 20px;
+      background: #007bff;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 4px;
+      margin-top: 10px;
+    }
+    #pay-now-btn:hover {
+      background: #0056b3;
+    }
+  </style>
 </head>
+
 <body>
+
   <h1>BC Football Registration</h1>
 
   <form id="registration-form">
+
+    <!-- Parent Info -->
     <fieldset>
       <legend>Parent Information</legend>
+
       <label>
         Parent Name:
         <input type="text" id="parent-name" required>
       </label>
+
       <label>
         Parent Email:
         <input type="email" id="parent-email" required>
       </label>
+
       <label>
-        Phone:
+        Parent Phone:
         <input type="tel" id="parent-phone" required>
       </label>
     </fieldset>
 
+    <!-- Players -->
     <h2>Players</h2>
     <div id="players-container"></div>
 
     <button type="button" id="add-player-btn">Add Player</button>
 
-    <section id="review-section" style="display:none; margin-top:20px;">
+    <!-- Review & Pay -->
+    <section id="review-section" style="display:none;">
       <h2>Review & Pay</h2>
       <div id="breakdown"></div>
       <p id="total-due" style="font-weight:bold;"></p>
-      <p>
-        <strong>Step 2:</strong> Click the button below and enter the
-        <strong>exact total</strong> shown above.
-      </p>
-      <p>
-        After payment, your registration is recorded automatically in our system.
-      </p>
+
+      <p><strong>Step 2:</strong> Click the button below and enter the exact total shown above.</p>
+
       <a id="pay-now-btn"
          href="https://square.link/u/sS8n48d5?src=sheet"
-         target="_blank"
-         style="display:inline-block;padding:10px 20px;background:#007bff;color:#fff;text-decoration:none;border-radius:4px;">
+         target="_blank">
         Pay Now
       </a>
     </section>
 
-    <button type="submit" id="submit-btn" style="margin-top:20px;">
-      Save Registration
-    </button>
+    <button type="submit" id="submit-btn">Save Registration</button>
+
   </form>
 
+  <!-- Load JS -->
   <script src="registration.js"></script>
+
 </body>
 </html>
