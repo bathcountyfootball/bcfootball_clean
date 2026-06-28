@@ -1,124 +1,275 @@
 <!DOCTYPE html>
 <!--
-    Web Creator: Kristie Jones
-    File Name: registration.html
+  Web Creator: Kristie Jones
+  File Name: registration.html
 -->
 <html lang="en">
   <head>
-    <title>Bath County Quarterback Club: Home</title>
     <meta charset="utf-8">
+    <title>Bath County Football Registration</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Main registration styles -->
     <link rel="stylesheet" href="css/stylesregistration.css">
   </head>
   <body>
-    <header>
-      <div id="header">
-        <div class="mobile">
-          <img src="images/bathcountyqbclub.jpg" width="1000" height="500">
-          <nav class="navbar">
-            <ul id="navlist">
-              <li><a href="index.html" style="color: inherit;">Home</a></li>
-              <li><a href="flag.html" style="color: inherit;">Flag Football</a></li>
-              <li><a href="jrpro.html" style="color: inherit;">Jr Pro Football</a></li>
-              <li><a href="middleschool.html" style="color: inherit;">Middle School</a></li>
-              <li><a href="highschool.html" style="color: inherit;">High School</a></li>
-            </ul>
-          </nav>
+    <header class="bc-header">
+      <div class="bc-header-inner">
+        <div class="bc-logo-title">
+          <div class="bc-logo-badge">BC</div>
+          <div class="bc-title-text">
+            <h1>Bath County Football</h1>
+            <h2>Youth Registration</h2>
+          </div>
         </div>
+        <nav class="bc-nav">
+          <a href="index.html">Home</a>
+          <a href="flag.html">Flag</a>
+          <a href="jrpro.html">Jr Pro</a>
+          <a href="middleschool.html">Middle School</a>
+          <a href="highschool.html">High School</a>
+        </nav>
       </div>
     </header>
-    <main>
 
-	  <br>
-	  <p>Please complete a form for EACH player. When you hit Submit, you will be taken to Square to pay for registration. You can pay for multiple players at the same time on that site.</p>
-      
-      <form id="playerForm">
-        <input name="playerName" placeholder="Player Name" required><br>
-        <input name="playerAddress" placeholder="Player Address" required><br>
-        <select name="gender">
-          <option value="Male">Male</option>
-          <option value="Female">Female</option>
-        </select><br>
-        Birthday
-        <input type="date" name="birthday" required><br>
-        <input name="age" placeholder="Age" required><br>
-        <input name="school" placeholder="School" required><br>
-        <input name="grade" placeholder="Grade" required><br>
-        <input name="guardianName" placeholder="Parent/Guardian Name" required><br>
-        <input name="guardianAddress" placeholder="Address" required><br>
-        <input name="guardianphone" placeholder="Phone" required><br>
-        <input name="guardianemail" placeholder="Email" required><br>        
-        <input name="medicalConditions" placeholder="Medical Conditions" required><br>
-        <input name="doctorName" placeholder="Doctor Name" required><br>
-        <input name="doctorPhone" placeholder="Doctor Phone" required><br>
-        <h3>Jr Pro Only</h3>
-        <h3>Does the player have an updated sports physical on file that releases him/her to participate in sports activities?</h3>
-        <select name="physical">
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select><br>
-        <br>
-        <h1>IMPORTANT! PARENT OR GUARDIAN MUST READ BEFORE SIGNING!</h1>
-        <h3>
-          I, the parent/guardian of the above named child, give my permission and approval for his/her participation in all activities during the football season. I do hereby waive, release, absolve and indemnify and agree to hold harmless local football league organizers, sponsors, supervisors, coaches, participants and person transporting my child to and from games, practices, etc. for any claim arising out of injury to my child whether the result of negligence or any other cause during practices, games or during transportation.
-        </h3>
-        <h3>
-          We, the parents/guardians also agree to return the uniform and/or equipment issued in the same condition as received, with the exception of wear experienced through normal use. If the uniform is not returned, I, by signing this form, understand that I must reimburse the league $250.00 for the cost of the uniform.
-        </h3>
-        <h3>The insurance provided through Bath County Jr. Pro is paid for out of the funds raised. The Bath County Jr Pro will not pay the deductible. It is a secondary policy when you have other medical and accidental insurance, but it is the primary coverage if the above named child is not otherwise insured.</h3>
-        <h3><strong>You should be aware that in spite of all reasonable precautions, injuries could happen. Football is a collision sport, and even the best equipment will sometimes not prevent injury.</strong></h3>
-        <br>
-        <input name="guardianSignature" placeholder="Parent/Guardian Signature" required><br>
-        <input name="date" placeholder="Date" required><br>
-        <br>
-        <button type="submit">Submit</button>
-      </form>
-      
-      <div id="thankYouMessage" style="display:none; text-align:center; margin-top:30px;">
-        <h2>Thank You for Registering!</h2>
-        <p>Your registration has been received.</p>
-		<h1>You will be redirected to our Square site for registration payment. If you are not redirected, please contact us.</h1>
+    <main class="bc-main">
+      <!-- Progress bar -->
+      <div class="bc-progress">
+        <div class="bc-progress-step active" data-step="1">League</div>
+        <div class="bc-progress-step" data-step="2">Parent</div>
+        <div class="bc-progress-step" data-step="3">Player</div>
+        <div class="bc-progress-step" data-step="4">Medical</div>
+        <div class="bc-progress-step" data-step="5">Physical</div>
+        <div class="bc-progress-step" data-step="6">Signature</div>
+        <div class="bc-progress-step" data-step="7">Payment</div>
+        <div class="bc-progress-step" data-step="8">Confirm</div>
       </div>
+
+      <section class="bc-card">
+        <form id="registrationForm">
+          <!-- Step 1: League -->
+          <div class="bc-step" data-step="1">
+            <h2 class="bc-step-title">Step 1: League Selection</h2>
+            <p>Select the league for this player.</p>
+
+            <label>
+              League
+              <select name="league" required>
+                <option value="">Select league</option>
+                <option value="Flag">Flag Football (K–2)</option>
+                <option value="Jr Pro">Jr Pro (3–6)</option>
+                <option value="Middle School">Middle School</option>
+                <option value="High School">High School</option>
+              </select>
+            </label>
+
+            <div class="bc-step-actions">
+              <button type="button" class="bc-next">Next</button>
+            </div>
+          </div>
+
+          <!-- Step 2: Parent -->
+          <div class="bc-step" data-step="2">
+            <h2 class="bc-step-title">Step 2: Parent / Guardian</h2>
+
+            <label>
+              Parent/Guardian Name
+              <input name="guardianName" required>
+            </label>
+
+            <label>
+              Address
+              <input name="guardianAddress" required>
+            </label>
+
+            <label>
+              Phone
+              <input name="guardianPhone" required>
+            </label>
+
+            <label>
+              Email
+              <input type="email" name="guardianEmail" required>
+            </label>
+
+            <div class="bc-step-actions">
+              <button type="button" class="bc-prev">Back</button>
+              <button type="button" class="bc-next">Next</button>
+            </div>
+          </div>
+
+          <!-- Step 3: Player -->
+          <div class="bc-step" data-step="3">
+            <h2 class="bc-step-title">Step 3: Player Information</h2>
+
+            <label>
+              Player Name
+              <input name="playerName" required>
+            </label>
+
+            <label>
+              Player Address
+              <input name="playerAddress" required>
+            </label>
+
+            <label>
+              Gender
+              <select name="gender" required>
+                <option value="">Select</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
+            </label>
+
+            <label>
+              Birthday
+              <input type="date" name="birthday" required>
+            </label>
+
+            <label>
+              Age
+              <input name="age" required>
+            </label>
+
+            <label>
+              School
+              <input name="school" required>
+            </label>
+
+            <label>
+              Grade
+              <input name="grade" required>
+            </label>
+
+            <div class="bc-step-actions">
+              <button type="button" class="bc-prev">Back</button>
+              <button type="button" class="bc-next">Next</button>
+            </div>
+          </div>
+
+          <!-- Step 4: Medical -->
+          <div class="bc-step" data-step="4">
+            <h2 class="bc-step-title">Step 4: Medical Information</h2>
+
+            <label>
+              Medical Conditions
+              <textarea name="medicalConditions" required></textarea>
+            </label>
+
+            <label>
+              Doctor Name
+              <input name="doctorName" required>
+            </label>
+
+            <label>
+              Doctor Phone
+              <input name="doctorPhone" required>
+            </label>
+
+            <div class="bc-step-actions">
+              <button type="button" class="bc-prev">Back</button>
+              <button type="button" class="bc-next">Next</button>
+            </div>
+          </div>
+
+          <!-- Step 5: Physical (Jr Pro only) -->
+          <div class="bc-step" data-step="5">
+            <h2 class="bc-step-title">Step 5: Sports Physical (Jr Pro)</h2>
+
+            <p>Jr Pro players must have an updated sports physical on file.</p>
+
+            <label>
+              Updated sports physical on file?
+              <select name="physicalStatus" required>
+                <option value="">Select</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </label>
+
+            <div class="bc-step-actions">
+              <button type="button" class="bc-prev">Back</button>
+              <button type="button" class="bc-next">Next</button>
+            </div>
+          </div>
+
+          <!-- Step 6: Signature -->
+          <div class="bc-step" data-step="6">
+            <h2 class="bc-step-title">Step 6: Parent / Guardian Agreement</h2>
+
+            <div class="bc-disclaimer">
+              <p>
+                I, the parent/guardian of the above named child, give my permission and approval for his/her participation in all activities during the football season. I do hereby waive, release, absolve and indemnify and agree to hold harmless local football league organizers, sponsors, supervisors, coaches, participants and persons transporting my child to and from games, practices, etc. for any claim arising out of injury to my child whether the result of negligence or any other cause during practices, games or during transportation.
+              </p>
+              <p>
+                We, the parents/guardians also agree to return the uniform and/or equipment issued in the same condition as received, with the exception of wear experienced through normal use. If the uniform is not returned, I understand that I must reimburse the league $250.00 for the cost of the uniform.
+              </p>
+              <p>
+                The insurance provided through Bath County Jr Pro is paid for out of the funds raised. The Bath County Jr Pro will not pay the deductible. It is a secondary policy when you have other medical and accidental insurance, but it is the primary coverage if the above named child is not otherwise insured.
+              </p>
+              <p><strong>
+                You should be aware that in spite of all reasonable precautions, injuries could happen. Football is a collision sport, and even the best equipment will sometimes not prevent injury.
+              </strong></p>
+            </div>
+
+            <label>
+              Parent/Guardian Signature (type full name)
+              <input name="guardianSignature" required>
+            </label>
+
+            <label>
+              Date
+              <input type="date" name="signatureDate" required>
+            </label>
+
+            <div class="bc-step-actions">
+              <button type="button" class="bc-prev">Back</button>
+              <button type="button" class="bc-next">Next</button>
+            </div>
+          </div>
+
+          <!-- Step 7: Payment -->
+          <div class="bc-step" data-step="7">
+            <h2 class="bc-step-title">Step 7: Payment</h2>
+
+            <p>Review your registration and proceed to secure online payment.</p>
+
+            <div class="bc-payment-summary" id="paymentSummary">
+              <!-- Filled by JS: league, base fee, sibling discount, total -->
+            </div>
+
+            <div class="bc-step-actions">
+              <button type="button" class="bc-prev">Back</button>
+              <button type="button" id="startPayment">Go to Payment</button>
+            </div>
+          </div>
+
+          <!-- Step 8: Confirm -->
+          <div class="bc-step" data-step="8">
+            <h2 class="bc-step-title">Step 8: Confirmation</h2>
+
+            <div id="confirmationMessage">
+              <p>Your player's season registration has been recorded.</p>
+              <p>You will receive an email with details.</p>
+              <p id="confirmationTotal"></p>
+            </div>
+
+            <div class="bc-step-actions">
+              <button type="button" class="bc-prev">Back</button>
+              <button type="submit">Finish</button>
+            </div>
+          </div>
+        </form>
+      </section>
     </main>
-    
-    <script>
-      document.getElementById("playerForm").addEventListener("submit", function(e) {
-        e.preventDefault();
-        
-        const form = e.target;
-        const data = {};
-        new FormData(form).forEach((value, key) => {
-          data[key] = value;
-        });
-        
-        // Post the form data to your Google Apps Script endpoint.
-        fetch("https://script.google.com/macros/s/AKfycbxW2NVdTspR15dzleu9Qf3_mbiLmdvEHBFtYWPX8RebgJij-HxxC0naQlVTJDZfad2M/exec", {
-          method: "POST",
-          mode: "no-cors",  // Use no-cors for local testing if needed.
-          body: JSON.stringify(data),
-          headers: { "Content-Type": "application/json" }
-        })
 
-        .then(response => {
-        form.style.display = "none";
-        document.getElementById("thankYouMessage").style.display = "block";
-
-       // Delay redirect by 5 seconds (5000 milliseconds)
-       setTimeout(() => {
-       window.location.href = "https://bcquarterbackstore.square.site";
-      }, 5000);
-      })
-
-        .catch(error => {
-          alert("Error submitting form: " + error);
-          // Even if there's an error, proceed to redirect.
-          window.location.href = "https://square.link/u/9QEd3JUn?src=sheet";
-        });
-      });
-    </script>
-    
-    <footer>
-      v1.2
+    <footer class="bc-footer">
+      Bath County Football • Youth Registration • v2.0
     </footer>
+
+    <!-- Scripts -->
+    <script src="scripts/firebase.js"></script>
+    <script src="scripts/stripe.js"></script>
+    <script src="scripts/registration.js"></script>
   </body>
 </html>
