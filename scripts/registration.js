@@ -7,7 +7,7 @@ const FLAG_PRICE = 57.00;
 const JRPRO_PRICE = 77.50;
 const GENERIC_PAY_LINK = "https://square.link/u/sS8n48d5?src=sheet";
 
-// ⭐ IMPORTANT — REPLACE THIS WITH YOUR REAL URL ⭐
+// ⭐ Your REAL deployed Apps Script URL ⭐
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzFonVe10t-NbnLSGOq885K405MkIJguS_7PnB6V95vXjUS32ite_xdLdZ3QdytNi6T/exec";
 
 let players = [];
@@ -179,3 +179,37 @@ form.addEventListener("submit", async (e) => {
     const basePrice = p.league === "Flag" ? FLAG_PRICE : JRPRO_PRICE;
 
     let discountApplied = 0;
+    if (p.paymentType === "Pay in Full") {
+      discountApplied = discounts[discountIndex] || 0;
+      discountIndex++;
+    }
+
+    const finalPrice = basePrice - discountApplied;
+    total += finalPrice;
+
+    breakdownLines.push(
+      `${p.name} – ${p.league} – $${finalPrice.toFixed(2)}`
+      + (discountApplied > 0 ? ` ($${discountApplied} sibling discount)` : "")
+      + (p.paymentType === "Pay in 2" ? " (Pay in 2 – no discount)" : "")
+    );
+
+    p.basePrice = basePrice;
+    p.discountApplied = discountApplied;
+    p.finalPrice = finalPrice;
+    p.batchId = batchId;
+  });
+
+  // 3️⃣ Show Review & Pay section
+  const reviewSection = document.getElementById("review-section");
+  const breakdownDiv = document.getElementById("breakdown");
+  const totalDueP = document.getElementById("total-due");
+
+  breakdownDiv.innerHTML = breakdownLines.map(l => `<p>${l}</p>`).join("");
+  totalDueP.textContent = `Total Due: $${total.toFixed(2)}`;
+  reviewSection.style.display = "block";
+
+  // 4️⃣ Save batch to Google Sheets
+  await saveBatchToSheet(parentInfo, currentBatchPlayers, total);
+
+  alert("Registration saved. Please complete payment using the Pay Now button.");
+});
