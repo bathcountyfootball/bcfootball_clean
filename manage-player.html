@@ -87,7 +87,7 @@
             return;
         }
 
-        const doc = await db.collection("players").doc(playerId).get();
+        const doc = await db.collection("registrations").doc(playerId).get();
         const p = doc.data();
 
         document.getElementById("playerName").value = p.playerName;
@@ -104,7 +104,7 @@
     document.getElementById("editPlayerForm").onsubmit = async (e) => {
         e.preventDefault();
 
-        await db.collection("players").doc(playerId).update({
+        await db.collection("registrations").doc(playerId).update({
             playerName: playerName.value,
             birthdate: birthdate.value,
             school: school.value,

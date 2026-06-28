@@ -53,7 +53,7 @@
 
         const parentEmail = user.email;
 
-        const snapshot = await db.collection("players")
+        const snapshot = await db.collection("registrations")
             .where("parentEmail", "==", parentEmail)
             .get();
 
