@@ -1,0 +1,19 @@
+/* Login Card */
+.login-card {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.login-card input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 14px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+.small-text {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    text-align: center;
+}
