@@ -5,6 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Parent Dashboard – Bath County Football</title>
     <link rel="stylesheet" href="parent.css">
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "YOUR_KEY",
+            authDomain: "YOUR_DOMAIN",
+            projectId: "YOUR_PROJECT",
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+    </script>
 </head>
 
 <body>
@@ -18,9 +34,7 @@
 
     <div class="card">
         <h2>Your Players</h2>
-        <div id="playerList">
-            <!-- Dynamically filled with JS -->
-        </div>
+        <div id="playerList">Loading...</div>
     </div>
 
     <div class="card">
@@ -30,9 +44,40 @@
 
 </section>
 
-<footer>
-    <p>© 2026 Bath County Youth Football</p>
-</footer>
+<script>
+    auth.onAuthStateChanged(async user => {
+        if (!user) {
+            window.location.href = "login.html";
+            return;
+        }
+
+        const parentEmail = user.email;
+
+        const snapshot = await db.collection("players")
+            .where("parentEmail", "==", parentEmail)
+            .get();
+
+        const list = document.getElementById("playerList");
+        list.innerHTML = "";
+
+        snapshot.forEach(doc => {
+            const p = doc.data();
+            const div = document.createElement("div");
+            div.className = "player-card";
+            div.innerHTML = `
+                <h3>${p.playerName}</h3>
+                <p>Grade: ${p.grade}</p>
+                <p>League: ${p.league}</p>
+                <a class="action-btn" href="manage-player.html?id=${doc.id}">Edit Player</a>
+            `;
+            list.appendChild(div);
+        });
+
+        if (snapshot.empty) {
+            list.innerHTML = "<p>No players found.</p>";
+        }
+    });
+</script>
 
 </body>
 </html>
