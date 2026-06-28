@@ -1,129 +1,212 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>BC Football Registration</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      background: #f7f7f7;
-    }
-    h1, h2, h3 {
-      color: #b30000;
-    }
-    fieldset {
-      border: 2px solid #b30000;
-      padding: 15px;
-      margin-bottom: 20px;
-      background: #fff;
-    }
-    label {
-      display: block;
-      margin-bottom: 10px;
-    }
-    input, select {
-      padding: 8px;
-      width: 100%;
-      margin-top: 4px;
-    }
-    #add-player-btn, #submit-btn {
-      background: #b30000;
-      color: #fff;
-      padding: 12px 20px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-    #add-player-btn:hover, #submit-btn:hover {
-      background: #800000;
-    }
-    .player-block {
-      background: #fff;
-      border: 2px solid #b30000;
-      padding: 15px;
-      margin-bottom: 20px;
-    }
-    #review-section {
-      background: #fff;
-      border: 2px solid #b30000;
-      padding: 15px;
-      margin-top: 20px;
-    }
-    #pay-now-btn {
-      display: inline-block;
-      padding: 12px 20px;
-      background: #007bff;
-      color: #fff;
-      text-decoration: none;
-      border-radius: 4px;
-      margin-top: 10px;
-    }
-    #pay-now-btn:hover {
-      background: #0056b3;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Registration – Bath County Football</title>
+    <link rel="stylesheet" href="home.css">
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+
+    <script>
+        // TODO: Replace with your Firebase config
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+    </script>
+
+    <style>
+        .reg-card {
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            max-width: 700px;
+            margin: auto;
+        }
+        .reg-card h2 {
+            color: #b30000;
+            margin-top: 0;
+            font-size: 1.6rem;
+            font-weight: 800;
+        }
+        .reg-card label {
+            font-weight: bold;
+            margin-top: 12px;
+            display: block;
+        }
+        .reg-card input,
+        .reg-card select {
+            width: 100%;
+            padding: 12px;
+            margin-top: 6px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+        }
+        .back-btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 18px;
+            background: #444;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        .back-btn:hover {
+            background: #000;
+        }
+    </style>
 </head>
 
 <body>
 
-  <h1>BC Football Registration</h1>
+<header class="hero">
+    <h1>Player Registration</h1>
+    <p>Bath County Flag & Jr Pro Football</p>
+</header>
 
-  <form id="registration-form">
+<section class="main-links">
 
-    <!-- Parent Info -->
-    <fieldset>
-      <legend>Parent Information</legend>
+    <div class="reg-card">
+        <h2>Register a Player</h2>
 
-      <label>
-        Parent Name:
-        <input type="text" id="parent-name" required>
-      </label>
+        <form id="regForm">
 
-      <label>
-        Parent Email:
-        <input type="email" id="parent-email" required>
-      </label>
+            <label>Player Name</label>
+            <input type="text" id="playerName" required>
 
-      <label>
-        Parent Phone:
-        <input type="tel" id="parent-phone" required>
-      </label>
+            <label>Birthdate</label>
+            <input type="date" id="birthdate" required>
 
-      <label>
-        Parent Address:
-        <input type="text" id="parent-address" required>
-      </label>
-    </fieldset>
+            <label>School</label>
+            <input type="text" id="school" required>
 
-    <!-- Players -->
-    <h2>Players</h2>
-    <div id="players-container"></div>
+            <label>Grade</label>
+            <input type="number" id="grade" required>
 
-    <button type="button" id="add-player-btn">Add Player</button>
+            <label>Gender</label>
+            <select id="gender">
+                <option>Male</option>
+                <option>Female</option>
+            </select>
 
-    <!-- Review & Pay -->
-    <section id="review-section" style="display:none;">
-      <h2>Review & Pay</h2>
-      <div id="breakdown"></div>
-      <p id="total-due" style="font-weight:bold;"></p>
+            <label>League</label>
+            <select id="league">
+                <option>Flag</option>
+                <option>Jr Pro</option>
+            </select>
 
-      <p><strong>Step 2:</strong> Click the button below and enter the exact total shown above.</p>
+            <label>Shirt Size</label>
+            <select id="shirtSize">
+                <option>YS</option>
+                <option>YM</option>
+                <option>YL</option>
+                <option>S</option>
+                <option>M</option>
+                <option>L</option>
+                <option>XL</option>
+            </select>
 
-      <a id="pay-now-btn"
-         href="https://square.link/u/sS8n48d5?src=sheet"
-         target="_blank">
-        Pay Now
-      </a>
-    </section>
+            <label>Doctor Name</label>
+            <input type="text" id="doctorName">
 
-    <button type="submit" id="submit-btn">Save Registration</button>
+            <label>Doctor Phone</label>
+            <input type="text" id="doctorPhone">
 
-  </form>
+            <label>Allergies / Medical Notes</label>
+            <input type="text" id="allergies">
 
-  <!-- Load JS -->
-  <script src="scripts/registration.js"></script>
+            <button class="action-btn red" style="margin-top:20px;">Submit Registration</button>
+        </form>
+
+        <a href="parent-dashboard.html" class="back-btn">← Back to Dashboard</a>
+    </div>
+
+</section>
+
+<footer>
+    <p>© 2026 Bath County Youth Football</p>
+</footer>
+
+<script>
+    let parentEmail = "";
+    let coachEmail = "";
+    let isCoach = false;
+
+    auth.onAuthStateChanged(async user => {
+        if (!user) {
+            window.location.href = "login.html";
+            return;
+        }
+
+        const email = user.email;
+
+        // Check if user is a parent
+        const parentDoc = await db.collection("parents").doc(user.uid).get();
+        if (parentDoc.exists) {
+            parentEmail = parentDoc.data().email;
+            isCoach = false;
+            return;
+        }
+
+        // Check if user is a coach
+        const coachDoc = await db.collection("coaches").doc(user.uid).get();
+        if (coachDoc.exists) {
+            coachEmail = coachDoc.data().email;
+            isCoach = true;
+            return;
+        }
+
+        // If neither, redirect
+        window.location.href = "login.html";
+    });
+
+    document.getElementById("regForm").onsubmit = async (e) => {
+        e.preventDefault();
+
+        const data = {
+            playerName: playerName.value,
+            birthdate: birthdate.value,
+            school: school.value,
+            grade: grade.value,
+            gender: gender.value,
+            league: league.value,
+            shirtSize: shirtSize.value,
+            doctorName: doctorName.value,
+            doctorPhone: doctorPhone.value,
+            allergies: allergies.value,
+            createdAt: new Date()
+        };
+
+        // Attach to parent or coach
+        if (isCoach) {
+            data.coachEmail = coachEmail;
+        } else {
+            data.parentEmail = parentEmail;
+        }
+
+        await db.collection("registrations").add(data);
+
+        alert("Player registered successfully!");
+
+        if (isCoach) {
+            window.location.href = "coaches-dashboard.html";
+        } else {
+            window.location.href = "parent-dashboard.html";
+        }
+    };
+</script>
 
 </body>
 </html>
