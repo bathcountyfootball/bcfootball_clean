@@ -1,16 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BC Football Registration</title>
-
-  <!-- Styles -->
-  <link rel="stylesheet" href="css/stylesregistration.css">
+  <link rel="stylesheet" href="css/stylesregistration.css" />
 </head>
 
 <body>
-
   <div class="registration-container">
     <h1>BC FOOTBALL Youth Football Registration</h1>
 
@@ -30,10 +27,10 @@
     <div class="form-step" id="step1">
       <h2>League</h2>
       <label>Choose League:</label>
-      <select id="leagueSelect">
+      <select id="leagueSelect" required>
+        <option value="">Select League</option>
         <option value="Flag">Flag Football (K–2)</option>
         <option value="Junior">Junior Football (3–6)</option>
-        <option value="Senior">Senior Football (7–12)</option>
       </select>
       <button id="nextBtn">Next</button>
     </div>
@@ -41,8 +38,8 @@
     <!-- Step 2 -->
     <div class="form-step" id="step2">
       <h2>Parent Information</h2>
-      <input id="parentName" placeholder="Parent Name">
-      <input id="parentEmail" placeholder="Parent Email">
+      <input id="parentName" placeholder="Parent Name" required />
+      <input id="parentEmail" placeholder="Parent Email" type="email" required />
       <button id="prevBtn2">Back</button>
       <button id="nextBtn2">Next</button>
     </div>
@@ -50,8 +47,8 @@
     <!-- Step 3 -->
     <div class="form-step" id="step3">
       <h2>Player Information</h2>
-      <input id="playerName" placeholder="Player Name">
-      <input id="playerAge" placeholder="Player Age">
+      <input id="playerName" placeholder="Player Name" required />
+      <input id="playerAge" placeholder="Player Age" type="number" required />
       <button id="prevBtn3">Back</button>
       <button id="nextBtn3">Next</button>
     </div>
@@ -59,7 +56,7 @@
     <!-- Step 4 -->
     <div class="form-step" id="step4">
       <h2>Medical</h2>
-      <textarea id="medicalInfo" placeholder="Medical Notes"></textarea>
+      <textarea id="medicalInfo" placeholder="Medical Notes" required></textarea>
       <button id="prevBtn4">Back</button>
       <button id="nextBtn4">Next</button>
     </div>
@@ -67,7 +64,7 @@
     <!-- Step 5 -->
     <div class="form-step" id="step5">
       <h2>Physical</h2>
-      <textarea id="physicalInfo" placeholder="Physical Notes"></textarea>
+      <textarea id="physicalInfo" placeholder="Physical Notes" required></textarea>
       <button id="prevBtn5">Back</button>
       <button id="nextBtn5">Next</button>
     </div>
@@ -75,7 +72,7 @@
     <!-- Step 6 -->
     <div class="form-step" id="step6">
       <h2>Signature</h2>
-      <input id="signature" placeholder="Type Full Name">
+      <input id="signature" placeholder="Type Full Name" required />
       <button id="prevBtn6">Back</button>
       <button id="nextBtn6">Next</button>
     </div>
@@ -84,6 +81,12 @@
     <div class="form-step" id="step7">
       <h2>Payment</h2>
       <p>Registration Fee: $75</p>
+      <label>Choose Payment Option:</label>
+      <select id="paymentOption" required>
+        <option value="">Select Option</option>
+        <option value="PayFull">Pay in Full</option>
+        <option value="Pay2">Pay in 2 Payments</option>
+      </select>
       <button id="prevBtn7">Back</button>
       <button id="payBtn">Pay & Continue</button>
     </div>
@@ -95,59 +98,10 @@
       <p>You will receive an email with details.</p>
       <p id="confirmDetails"></p>
     </div>
-
   </div>
 
   <!-- Scripts -->
   <script src="scripts/firebase.js"></script>
-  <script src="scripts/stripe.js"></script>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-
-      let currentStep = 1;
-
-      function showStep(step) {
-        document.querySelectorAll(".form-step").forEach(s => s.style.display = "none");
-        document.getElementById("step" + step).style.display = "block";
-        currentStep = step;
-      }
-
-      showStep(1);
-
-      // Step 1 → Step 2
-      document.getElementById("nextBtn").addEventListener("click", () => {
-        showStep(2);
-      });
-
-      // Step 2
-      document.getElementById("prevBtn2").addEventListener("click", () => showStep(1));
-      document.getElementById("nextBtn2").addEventListener("click", () => showStep(3));
-
-      // Step 3
-      document.getElementById("prevBtn3").addEventListener("click", () => showStep(2));
-      document.getElementById("nextBtn3").addEventListener("click", () => showStep(4));
-
-      // Step 4
-      document.getElementById("prevBtn4").addEventListener("click", () => showStep(3));
-      document.getElementById("nextBtn4").addEventListener("click", () => showStep(5));
-
-      // Step 5
-      document.getElementById("prevBtn5").addEventListener("click", () => showStep(4));
-      document.getElementById("nextBtn5").addEventListener("click", () => showStep(6));
-
-      // Step 6
-      document.getElementById("prevBtn6").addEventListener("click", () => showStep(5));
-      document.getElementById("nextBtn6").addEventListener("click", () => showStep(7));
-
-      // Step 7 (Payment)
-      document.getElementById("prevBtn7").addEventListener("click", () => showStep(6));
-      document.getElementById("payBtn").addEventListener("click", async () => {
-        await startStripeCheckout();
-      });
-
-    });
-  </script>
-
+  <script src="scripts/registration.js"></script>
 </body>
 </html>
