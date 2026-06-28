@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bath County Football Registration</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        .app-container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .bc-badge {
+            font-weight: 900;
+            font-size: 1.8rem;
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 8px;
+            background: #b30000;
+            color: #fff;
+            letter-spacing: 2px;
+        }
+
+        h1 {
+            margin-top: 10px;
+            font-size: 1.8rem;
+            color: #333;
+        }
+
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+
+        .progress-step {
+            flex: 1;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #777;
+            position: relative;
+        }
+
+        .progress-step::before {
+            content: "";
+            display: block;
+            height: 4px;
+            background: #ddd;
+            margin-bottom: 6px;
+            border-radius: 999px;
+        }
+
+        .progress-step.active::before {
+            background: #b30000;
+        }
+
+        .card {
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            max-width: 640px;
+            margin: 0 auto 30px auto;
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #b30000;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .card-subtitle {
+            text-align: center;
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        .league-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+        }
+
+        .league-card {
+            border: 2px solid #b30000;
+            border-radius: 10px;
+            padding: 16px;
+            cursor: pointer;
+            background: #fff;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+        }
+
+        .league-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+            background: #fff7f7;
+        }
+
+        .league-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #b30000;
+            margin-bottom: 6px;
+        }
+
+        .league-grade {
+            font-size: 0.95rem;
+            color: #444;
+            margin-bottom: 4px;
+        }
+
+        .league-price {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 180px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+            color: #444;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            min-height: 70px;
+        }
+
+        .btn-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            gap: 10px;
+        }
+
+        .primary-btn,
+        .secondary-btn {
+            flex: 1;
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .primary-btn {
+            background: #b30000;
+            color: #fff;
+        }
+
+        .primary-btn:hover {
+            background: #8a0000;
+        }
+
+        .secondary-btn {
+            background: #eee;
+            color: #333;
+        }
+
+        .secondary-btn:hover {
+            background: #ddd;
+        }
+
+        .summary-row, .summary-total {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 1rem;
+        }
+
+        .summary-total {
+            font-weight: bold;
+            border-top: 2px solid #eee;
+            margin-top: 10px;
+            padding-top: 12px;
+        }
+
+        .notice {
+            background: #fff7e6;
+            border: 1px solid #ffcc80;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+        }
+
+        .signature-input {
+            font-family: "Segoe Script", "Brush Script MT", cursive;
+        }
+
+        @media (max-width: 600px) {
+            .card {
+                padding: 18px;
+            }
+
+            .btn-row {
+                flex-direction: column;
+            }
+
+            .primary-btn,
+            .secondary-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <header>
+        <div class="bc-badge">BC FOOTBALL</div>
+        <h1>Youth Football Registration</h1>
+    </header>
+
+    <div class="progress-bar" id="progressBar">
+        <div class="progress-step active">League</div>
+        <div class="progress-step">Parent</div>
+        <div class="progress-step">Player</div>
+        <div class="progress-step">Medical</div>
+        <div class="progress-step">Physical</div>
+        <div class="progress-step">Signature</div>
+        <div class="progress-step">Payment</div>
+        <div class="progress-step">Confirm</div>
+    </div>
+
+    <!-- Step 0: League selection -->
+    <div class="card" id="stepLeague">
+        <div class="card-title">Choose Your League</div>
+        <div class="card-subtitle">Select the program your player will participate in.</div>
+
+        <div class="league-grid">
+            <div class="league-card" onclick="selectLeague('Flag')">
+                <div class="league-name">Flag Football</div>
+                <div class="league-grade">Grades K–2</div>
+                <div class="league-price">Season: $55</div>
+            </div>
+
+            <div class="league-card" onclick="selectLeague('JrPro')">
+                <div class="league-name">Jr Pro Football</div>
+                <div class="league-grade">Grades 3–6</div>
+                <div class="league-price">Season: $75</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 1: Parent info -->
+    <div class="card" id="stepParent" style="display:none;">
+        <div class="card-title">Parent / Guardian Information</div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="parentName">Full Name</label>
+                <input type="text" id="parentName">
+            </div>
+            <div class="form-group">
+                <label for="parentEmail">Email</label>
+                <input type="email" id="parentEmail">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="parentPhone">Phone</label>
+                <input type="tel" id="parentPhone">
+            </div>
+            <div class="form-group">
+                <label for="parentAddress">Address</label>
+                <input type="text" id="parentAddress">
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <button class="secondary-btn" onclick="goBackToLeague()">Back</button>
+            <button class="primary-btn" onclick="goToPlayer()">Next: Player Info</button>
+        </div>
+    </div>
+
+    <!-- Step 2: Player info -->
+    <div class="card" id="stepPlayer" style="display:none;">
+        <div class="card-title">Player Information</div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="playerName">Player Name</label>
+                <input type="text" id="playerName">
+            </div>
+            <div class="form-group">
+                <label for="playerGrade">Grade</label>
+                <input type="number" id="playerGrade" min="K" max="12">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="playerDob">Date of Birth</label>
+                <input type="text" id="playerDob" placeholder="MM/DD/YYYY">
+            </div>
+            <div class="form-group">
+                <label for="playerJersey">Preferred Jersey Number (optional)</label>
+                <input type="number" id="playerJersey">
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <button class="secondary-btn" onclick="goToParent()">Back</button>
+            <button class="primary-btn" onclick="goToMedical()">Next: Medical</button>
+        </div>
+    </div>
+
+    <!-- Step 3: Medical info -->
+    <div class="card" id="stepMedical" style="display:none;">
+        <div class="card-title">Medical Information</div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="medicalConditions">Medical Conditions / Allergies</label>
+                <textarea id="medicalConditions"></textarea>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="emergencyContact">Emergency Contact Name</label>
+                <input type="text" id="emergencyContact">
+            </div>
+            <div class="form-group">
+                <label for="emergencyPhone">Emergency Contact Phone</label>
+                <input type="tel" id="emergencyPhone">
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <button class="secondary-btn" onclick="goToPlayer()">Back</button>
+            <button class="primary-btn" onclick="goToPhysical()">Next: Physical</button>
+        </div>
+    </div>
+
+    <!-- Step 4: Jr Pro physical (Flag skips this logically) -->
+    <div class="card" id="stepPhysical" style="display:none;">
+        <div class="card-title">Physical Form (Jr Pro Only)</div>
+
+        <div class="notice" id="physicalNotice">
+            Jr Pro players are required to have a current physical on file before full participation.
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Does your player currently have a valid physical?</label>
+                <select id="physicalStatus">
+                    <option value="">Select...</option>
+                    <option value="yes">Yes, physical is current</option>
+                    <option value="no">No, physical is not current</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="notice" id="physicalWarning" style="display:none;">
+            You can continue registration, but your player will not be fully cleared until a physical is submitted.
+        </div>
+
+        <div class="btn-row">
+            <button class="secondary-btn" onclick="goToMedical()">Back</button>
+            <button class="primary-btn" onclick="goToSignature()">Next: Signature</button>
+        </div>
+    </div>
+
+    <!-- Step 5: Digital signature -->
+    <div class="card" id="stepSignature" style="display:none;">
+        <div class="card-title">Digital Consent & Signature</div>
+
+        <div class="notice">
+            By signing below, you acknowledge the risks of participation, agree to league rules, and confirm that the information provided is accurate.
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="signatureName">Type your full name as your digital signature</label>
+                <input type="text" id="signatureName" class="signature-input">
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <button class="secondary-btn" onclick="goBackFromSignature()">Back</button>
+            <button class="primary-btn" onclick="goToPayment()">Next: Payment</button>
+        </div>
+    </div>
+
+    <!-- Step 6: Payment (Season auto-selected) -->
+    <div class="card" id="stepPayment" style="display:none;">
+        <div class="card-title">Season Registration Payment</div>
+
+        <div class="card-subtitle">Season is automatically selected. Camp is free and not part of registration.</div>
+
+        <div class="summary-row">
+            <span>League:</span>
+            <span id="summaryLeague"></span>
+        </div>
+
+        <div class="summary-row">
+            <span>Season Price:</span>
+            <span id="summaryPrice"></span>
+        </div>
+
+        <div class="summary-row" id="discountRow" style="display:none;">
+            <span>Sibling Discount:</span>
+            <span id="summaryDiscount"></span>
+        </div>
+
+        <div class="summary-total">
+            <span>Total Due:</span>
+            <span id="summaryTotal"></span>
+        </div>
+
+        <div class="notice">
+            Payment must be completed by August 15 to secure your player's spot for the season.
+        </div>
+
+        <div class="btn-row">
+            <button class="secondary-btn" onclick="goBackFromPayment()">Back</button>
+            <button class="primary-btn" onclick="submitRegistration()">Continue to Payment</button>
+        </div>
+    </div>
+
+    <!-- Step 7: Confirmation -->
+    <div class="card" id="stepConfirm" style="display:none;">
+        <div class="card-title">Registration Submitted</div>
+
+        <p class="card-subtitle">
+            Thank you! Your player's season registration has been recorded. You will receive an email with details.
+        </p>
+
+        <div class="summary-row">
+            <span>League:</span>
+            <span id="confirmLeague"></span>
+        </div>
+        <div class="summary-row">
+            <span>Player:</span>
+            <span id="confirmPlayer"></span>
+        </div>
+        <div class="summary-row">
+            <span>Parent:</span>
+            <span id="confirmParent"></span>
+        </div>
+        <div class="summary-row">
+            <span>Total Paid:</span>
+            <span id="confirmTotal"></span>
+        </div>
+
+        <div class="notice">
+            Coaches and admins will see this registration in the Bath County Football admin dashboard.
+        </div>
+    </div>
+</div>
+
+<script>
+    const registrationData = {
+        league: null,
+        registrationType: "Season",
+        price: 0,
+        discount: 0,
+        total: 0,
+        parent: {},
+        player: {},
+        medical: {},
+        physicalStatus: null,
+        signature: null
+    };
+
+    function setProgress(stepIndex) {
+        const steps = document.querySelectorAll("#progressBar .progress-step");
+        steps.forEach((s, i) => {
+            s.classList.toggle("active", i <= stepIndex);
+        });
+    }
+
+    function showStep(stepId, index) {
+        const allSteps = [
+            "stepLeague",
+            "stepParent",
+            "stepPlayer",
+            "stepMedical",
+            "stepPhysical",
+            "stepSignature",
+            "stepPayment",
+            "stepConfirm"
+        ];
+        allSteps.forEach(id => {
+            document.getElementById(id).style.display = (id === stepId) ? "block" : "none";
+        });
+        setProgress(index);
+    }
+
+    // League selection
+    function selectLeague(league) {
+        registrationData.league = league;
+        showStep("stepParent", 1);
+    }
+
+    function goBackToLeague() {
+        showStep("stepLeague", 0);
+    }
+
+    // Parent step
+    function goToPlayer() {
+        registrationData.parent = {
+            name: document.getElementById("parentName").value,
+            email: document.getElementById("parentEmail").value,
+            phone: document.getElementById("parentPhone").value,
+            address: document.getElementById("parentAddress").value
+        };
+        showStep("stepPlayer", 2);
+    }
+
+    function goToParent() {
+        showStep("stepParent", 1);
+    }
+
+    // Player step
+    function goToMedical() {
+        registrationData.player = {
+            name: document.getElementById("playerName").value,
+            grade: document.getElementById("playerGrade").value,
+            dob: document.getElementById("playerDob").value,
+            jersey: document.getElementById("playerJersey").value
+        };
+        showStep("stepMedical", 3);
+    }
+
+    function goToPlayer() {
+        showStep("stepPlayer", 2);
+    }
+
+    // Medical step
+    function goToPhysical() {
+        registrationData.medical = {
+            conditions: document.getElementById("medicalConditions").value,
+            emergencyName: document.getElementById("emergencyContact").value,
+            emergencyPhone: document.getElementById("emergencyPhone").value
+        };
+
+        if (registrationData.league === "JrPro") {
+            document.getElementById("physicalNotice").style.display = "block";
+            showStep("stepPhysical", 4);
+        } else {
+            // Flag skips physical step
+            showStep("stepSignature", 5);
+        }
+    }
+
+    function goToMedical() {
+        showStep("stepMedical", 3);
+    }
+
+    // Physical step
+    function goToSignature() {
+        const status = document.getElementById("physicalStatus").value;
+        registrationData.physicalStatus = status;
+
+        if (status === "no") {
+            document.getElementById("physicalWarning").style.display = "block";
+        } else {
+            document.getElementById("physicalWarning").style.display = "none";
+        }
+
+        showStep("stepSignature", 5);
+    }
+
+    function goBackFromSignature() {
+        if (registrationData.league === "JrPro") {
+            showStep("stepPhysical", 4);
+        } else {
+            showStep("stepMedical", 3);
+        }
+    }
+
+    // Signature step
+    function goToPayment() {
+        registrationData.signature = document.getElementById("signatureName").value;
+
+        // Auto-select Season and set price
+        const basePrice = (registrationData.league === "JrPro") ? 75 : 55;
+        registrationData.price = basePrice;
+
+        // Placeholder sibling discount logic (you can replace this)
+        const discount = calculateSiblingDiscount();
+        registrationData.discount = discount;
+        registrationData.total = basePrice - discount;
+
+        // Update payment summary UI
+        document.getElementById("summaryLeague").textContent =
+            registrationData.league === "JrPro" ? "Jr Pro" : "Flag";
+        document.getElementById("summaryPrice").textContent = `$${basePrice}`;
+
+        if (discount > 0) {
+            document.getElementById("discountRow").style.display = "flex";
+            document.getElementById("summaryDiscount").textContent = `-$${discount}`;
+        } else {
+            document.getElementById("discountRow").style.display = "none";
+        }
+
+        document.getElementById("summaryTotal").textContent = `$${registrationData.total}`;
+
+        showStep("stepPayment", 6);
+    }
+
+    function goBackFromPayment() {
+        showStep("stepSignature", 5);
+    }
+
+    // Simple placeholder sibling discount (you can wire real logic)
+    function calculateSiblingDiscount() {
+        // TODO: integrate with backend / family lookup
+        // For now, always 0
+        return 0;
+    }
+
+    // Final submit (this is where you’ll call Firebase + Stripe)
+    function submitRegistration() {
+        // TODO: replace with actual Firebase/Stripe integration
+        console.log("Registration data:", registrationData);
+
+        document.getElementById("confirmLeague").textContent =
+            registrationData.league === "JrPro" ? "Jr Pro Season" : "Flag Season";
+        document.getElementById("confirmPlayer").textContent = registrationData.player.name || "";
+        document.getElementById("confirmParent").textContent = registrationData.parent.name || "";
+        document.getElementById("confirmTotal").textContent = `$${registrationData.total}`;
+
+        showStep("stepConfirm", 7);
+    }
+</script>
+</body>
+</html>

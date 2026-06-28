@@ -1,0 +1,136 @@
+/*
+Student Name: Kristie Jones 
+File Name: styles.css
+
+/* General Page Reset & Setup */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-image: url('images/Tunnelbgrd/800x600.jpg'); /* <-- ensure the image file has .jpg or proper extension */
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center;
+    color: #fff;
+    min-height: 100vh;
+}
+
+/* Header */
+header {
+    background-color: rgb(221, 3, 3); /* semi-transparent navy */
+    padding: 20px 0;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+}
+
+header h1 {
+    font-size: 2.5em;
+    color: #060606; /* Wildcat gold */
+    margin-bottom: 10px;
+}
+
+/* Navigation */
+.navbar ul {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 10px 0;
+}
+
+.navbar a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+.navbar a:hover {
+    color: #ff0000;
+}
+
+/* Main Content */
+main .container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+    padding: 40px 20px;
+    background-color: rgba(0, 0, 0, 0.6); /* overlay to improve readability */
+    border-radius: 12px;
+    margin: 40px auto;
+    max-width: 800px;
+}
+
+/* Coach Profile Cards */
+.coachicon {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 2px solid #b0a9a9;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    width: 240px;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.coachicon img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    border: 3px solid #fff;
+}
+
+.coachicon h1 {
+    font-size: 1.5em;
+    margin-top: 15px;
+    color: black;
+}
+
+.coachicon h3 {
+    font-size: 1em;
+    color: #ccc;
+}
+
+.coachicon:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px #0e0d0d;
+}
+
+/* Divider Lines */
+hr {
+    display: none; /* visually not needed with card layout */
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 20px;
+    background-color: rgba(0, 0, 50, 0.7);
+    color: #fff;
+    font-size: 0.9em;
+}
+
+footer a {
+    color: #fefcfc;
+    text-decoration: none;
+}
+
+footer a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .navbar ul {
+        flex-direction: column;
+    }
+
+    .coachicon {
+        width: 80%;
+    }
+}

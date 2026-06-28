@@ -1,0 +1,166 @@
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Body and background */
+body {
+  font-family: 'Arial', sans-serif;
+  background-image: url('images/tunnel.jpg'); /* Replace with your actual wildcat image path */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: white;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Dark overlay for readability */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(66, 66, 66, 0.6);
+  z-index: -1;
+}
+
+/* Container */
+.container {
+  max-width: 1000px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: rgba(30, 30, 30, 0.7);
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(179, 0, 0, 0.7);
+
+  display: flex;            /* Enable flexbox */
+  flex-wrap: wrap;          /* Wrap cards to next line if needed */
+  gap: 20px;                /* Space between cards */
+  justify-content: center;  /* Center cards horizontally */
+}
+
+/* Header */
+#header {
+  background-color: rgba(0, 0, 0, 0.8);
+  padding: 20px 30px;
+  border-bottom: 4px solid #b30000; /* Red border */
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+#header h1 {
+  color: #fff;
+  font-size: 2.5rem;
+  text-shadow: 1px 1px 3px black;
+}
+
+/* Navigation bar */
+.navbar ul#navlist {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 10px;
+}
+
+.navbar ul#navlist li a {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 1.1rem;
+  padding: 8px 15px;
+  border-radius: 5px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.navbar ul#navlist li a:hover,
+.navbar ul#navlist li a:focus {
+  background-color: #b30000; /* red background */
+  color: white;
+  border-color: white;
+}
+
+/* Player icons */
+.playericon {
+  flex: 1 1 200px;          /* Flex-grow, flex-shrink, flex-basis */
+  max-width: 220px;         /* Max width per card */
+  text-align: center;
+  padding: 15px;
+  background-color: rgba(254, 3, 3, 0.7);
+  border: 2px solid #fbf8f8;
+  border-radius: 10px;
+  transition: transform 0.3s ease;
+  box-sizing: border-box;
+}
+
+.playericon:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px #b30000;
+}
+
+.playericon img {
+  width: 200px;
+  height: 200px;
+  border-radius: 10px; /* square-ish corners instead of 50% circle */
+  border: 3px solid white;
+  object-fit: contain; /* or 'cover' if you want it cropped to fill */
+  margin-bottom: 10px;
+  transition: transform 0.3s ease;
+}
+
+.playericon h3 {
+  color: #fff;
+  font-size: 1.4rem;
+  margin-bottom: 5px;
+}
+
+.playericon h4 {
+  color: #ccc;
+  font-size: 1.1rem;
+}
+
+/* Horizontal rule styling */
+hr {
+  border: 0;
+  height: 1px;
+  background: #b30000;
+  margin: 25px 0;
+  opacity: 0.8;
+}
+
+/* Footer */
+footer {
+  background-color: rgba(0, 0, 0, 0.8);
+  text-align: center;
+  padding: 15px 10px;
+  color: #ddd;
+  font-size: 0.9rem;
+  border-top: 3px solid #b30000;
+  margin-top: 40px;
+}
+
+footer a {
+  color: #b30000;
+  text-decoration: none;
+}
+
+footer a:hover,
+footer a:focus {
+  text-decoration: underline;
+  color: #ff0000;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .navbar ul#navlist {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .playericon img {
+    width: 120px;
+    height: 120px;
+  }
+}
