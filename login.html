@@ -1,3 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Parent Login</title>
+    <link rel="stylesheet" href="home.css">
+</head>
+
+<body>
+
+<nav class="top-nav">
+    <a href="youth.index.html" class="nav-link">Home</a>
+    <a href="login.html" class="nav-link">Parent Login</a>
+    <a href="coaches.html" class="nav-link">Coach Login</a>
+    <a href="admin.html" class="nav-link">Admin Login</a>
+</nav>
+
+<header class="hero">
+    <h1>Parent Login</h1>
+</header>
+
+<section class="form-container">
+    <form id="loginForm" class="login-form">
+        <label>Email</label>
+        <input type="email" id="email" required>
+
+        <label>Password</label>
+        <input type="password" id="password" required>
+
+        <button type="submit" class="action-btn">Login</button>
+    </form>
+</section>
+
+<script>
 const API_URL = "https://script.google.com/macros/s/AKfycbxnIbz_eMUCwMyCa52oZbJTbC6PRb77FDKG6g6CMPTHt9sOd53SYd5lceIca0xH96wpBg/exec";
 
 document.getElementById("loginForm").onsubmit = async (e) => {
@@ -27,3 +60,7 @@ document.getElementById("loginForm").onsubmit = async (e) => {
 
     window.location.href = "parent-dashboard.html";
 };
+</script>
+
+</body>
+</html>
