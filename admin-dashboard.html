@@ -2,39 +2,16 @@
 <html>
 <head>
     <title>Admin Dashboard</title>
-    <link rel="stylesheet" href="home.css">
+
+    <!-- GLOBAL MODERN ATHLETIC THEME -->
+    <link rel="stylesheet" href="theme.css">
+
     <style>
-        .modal {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-        }
-        .modal-content {
-            background: white;
+        .section-container {
+            max-width: 1000px;
+            margin: auto;
             padding: 20px;
-            width: 95%;
-            max-width: 800px;
-            border-radius: 10px;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-        th, td {
-            border: 1px solid #ccc;
-            padding: 6px;
-            font-size: 13px;
-        }
-        th {
-            background: #f5f5f5;
-        }
-        label { font-weight: bold; margin-top: 8px; display: block; }
     </style>
 </head>
 
@@ -42,35 +19,39 @@
 
 <script>
 if (!localStorage.getItem("adminUser")) {
-    // you can set adminUser in your login page when role === "admin"
     window.location.href = "admin-login.html";
 }
 </script>
 
+<!-- ⭐ CENTERED ATHLETIC HEADER -->
 <header class="hero">
-    <h1>Admin Dashboard</h1>
+    <h1>BATH COUNTY YOUTH FOOTBALL</h1>
 </header>
 
-<section class="main-links">
-    <h2>Admin Tools</h2>
+<div class="section-container">
 
-    <div class="link-card">
-        <h3>Your Admin Profile</h3>
-        <p id="adminProfile">Loading...</p>
-        <button class="action-btn red" onclick="logout()">Logout</button>
-    </div>
+    <!-- ⭐ ADMIN PROFILE -->
+    <section class="main-links">
+        <h2>Admin Tools</h2>
 
-    <div class="link-card">
-        <h3>All Registrations</h3>
-        <button class="action-btn red" onclick="loadRegistrations()">Load Registrations</button>
-        <div id="registrationsTable"></div>
-    </div>
+        <div class="link-card">
+            <h3>Your Admin Profile</h3>
+            <p id="adminProfile">Loading...</p>
+            <button class="action-btn" onclick="logout()">Logout</button>
+        </div>
 
-    <div class="link-card">
-        <h3>Jr Pro Equipment & Jerseys</h3>
-        <button class="action-btn red" onclick="openEquipment()">Manage Jr Pro Equipment</button>
-    </div>
-</section>
+        <div class="link-card">
+            <h3>All Registrations</h3>
+            <button class="action-btn" onclick="loadRegistrations()">Load Registrations</button>
+            <div id="registrationsTable"></div>
+        </div>
+
+        <div class="link-card">
+            <h3>Jr Pro Equipment & Jerseys</h3>
+            <button class="action-btn" onclick="openEquipment()">Manage Jr Pro Equipment</button>
+        </div>
+    </section>
+</div>
 
 <!-- ⭐ EQUIPMENT MODAL -->
 <div id="equipmentModal" class="modal">
@@ -80,11 +61,11 @@ if (!localStorage.getItem("adminUser")) {
     <label>Search Jr Pro Player</label>
     <input type="text" id="equipSearchAdmin" placeholder="Type name">
 
-    <button class="action-btn red" onclick="loadEquipmentPlayerAdmin()">Search</button>
+    <button class="action-btn" onclick="loadEquipmentPlayerAdmin()">Search</button>
 
     <div id="equipmentFormAdmin" style="margin-top:20px;"></div>
 
-    <button class="action-btn red" onclick="closeEquipment()">Close</button>
+    <button class="action-btn" onclick="closeEquipment()">Close</button>
   </div>
 </div>
 
@@ -106,7 +87,7 @@ function logout() {
     window.location.href = "admin-login.html";
 }
 
-/* ⭐ REGISTRATIONS TABLE */
+/* ⭐ LOAD REGISTRATIONS */
 async function loadRegistrations() {
     const res = await fetch(API_URL, {
         method: "POST",
@@ -153,7 +134,7 @@ async function loadRegistrations() {
     registrationsTable.innerHTML = html;
 }
 
-/* ⭐ EQUIPMENT MANAGER (JR PRO ONLY) */
+/* ⭐ EQUIPMENT MANAGER */
 function openEquipment() { equipmentModal.style.display = "flex"; }
 function closeEquipment() { equipmentModal.style.display = "none"; }
 
@@ -226,7 +207,7 @@ async function loadEquipmentPlayerAdmin() {
         <label>Jersey Returned</label>
         <input type="text" id="jerseyReturnAdmin" value="${eq.jerseyReturn}">
 
-        <button class="action-btn red"
+        <button class="action-btn"
             onclick="saveEquipmentAdmin('${player.name}', '${player.grade}', '${player.team}')">
             Save Equipment
         </button>
