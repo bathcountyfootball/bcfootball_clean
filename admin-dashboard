@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard – Bath County Football</title>
+    <link rel="stylesheet" href="home.css">
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+
+    <script>
+        // TODO: Replace with your Firebase config
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+    </script>
+
+    <style>
+        .admin-card {
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            margin-bottom: 25px;
+            max-width: 900px;
+            margin: auto;
+        }
+        .admin-card h2 {
+            color: #b30000;
+            margin-top: 0;
+            font-size: 1.6rem;
+            font-weight: 800;
+        }
+        .admin-card label {
+            font-weight: bold;
+            margin-top: 12px;
+            display: block;
+        }
+        .admin-card input,
+        .admin-card select {
+            width: 100%;
+            padding: 12px;
+            margin-top: 6px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+        }
+        .player-card {
+            background: #fafafa;
+            padding: 18px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 6px solid #b30000;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        .logout-btn {
+            background: #444;
+            color: #fff;
+            padding: 12px 18px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        .logout-btn:hover {
+            background: #000;
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="hero">
+    <h1>Admin Dashboard</h1>
+    <p>In‑Person Registrations & Management</p>
+</header>
+
+<section class="main-links">
+
+    <!-- ADMIN INFO -->
+    <div class="admin-card">
+        <h2>Admin Profile</h2>
+        <p id="adminName">Loading...</p>
+        <p id="adminEmail"></p>
+        <a href="#" id="logoutBtn" class="logout-btn">Logout</a>
+    </div>
+
+    <!-- IN-PERSON REGISTRATION -->
+    <div class="admin-card">
+        <h2>Enter In‑Person Registration</h2>
+
+        <form id="adminRegForm">
+
+            <label>Player Name</label>
+            <input type="text" id="playerName" required>
+
+            <label>Birthdate</label>
+            <input type="date" id="birthdate" required>
+
+            <label>School</label>
+            <input type="text" id="school" required>
+
+            <label>Grade</label>
+            <input type="number" id="grade" required>
+
+            <label>Gender</label>
+            <select id="gender">
+                <option>Male</option>
+                <option>Female</option>
+            </select>
+
+            <label>League</label>
+            <select id="league">
+                <option>Flag</option>
+                <option>Jr Pro</option>
+            </select>
+
+            <label>Shirt Size</label>
+            <select id="shirtSize">
+                <option>YS</option>
+                <option>YM</option>
+                <option>YL</option>
+                <option>S</option>
+                <option>M</option>
+                <option>L</option>
+                <option>XL</option>
+            </select>
+
+            <label>Doctor Name</label>
+            <input type="text" id="doctorName">
+
+            <label>Doctor Phone</label>
+            <input type="text" id="doctorPhone">
+
+            <label>Allergies / Medical Notes</label>
+            <input type="text" id="allergies">
+
+            <label><b>Payment Type</b></label>
+            <select id="paymentType">
+                <option value="cash">Cash</option>
+                <option value="check">Check</option>
+                <option value="square">Square</option>
+                <option value="scholarship">Scholarship (No Payment)</option>
+            </select>
+
+            <label>Amount Paid (if applicable)</label>
+            <input type="number" id="amountPaid" placeholder="0.00">
+
+            <button class="action-btn red" style="margin-top:20px;">Submit Registration</button>
+        </form>
+    </div>
+
+    <!-- ALL REGISTRATIONS -->
+    <div class="admin-card">
+        <h2>All Registrations</h2>
+        <div id="allRegistrationsList">Loading...</div>
+    </div>
+
+</section>
+
+<footer>
+    <p>© 2026 Bath County Youth Football</p>
+</footer>
+
+<script>
+auth.onAuthStateChanged(async user => {
+    if (!user) {
+        window.location.href = "admin.html";
+        return;
+    }
+
+    const uid = user.uid;
+
+    // Load admin profile
+    const adminDoc = await db.collection("admins").doc(uid).get();
+    const admin = adminDoc.data();
+
+    document.getElementById("adminName").innerText = admin.adminName;
+    document.getElementById("adminEmail").innerText = "Email: " + admin.email;
+
+    // Load all registrations
+    const regSnap = await db.collection("registrations").get();
+    const list = document.getElementById("allRegistrationsList");
+    list.innerHTML = "";
+
+    regSnap.forEach(doc => {
+        const p = doc.data();
+        list.innerHTML += `
+            <div class="player-card">
+                <h3>${p.playerName}</h3>
+                <p>League: ${p.league}</p>
+                <p>Grade: ${p.grade}</p>
+                <p>Payment: ${p.paymentType || "Online"}</p>
+                <p>Amount Paid: $${p.amountPaid || "0.00"}</p>
+            </div>
+        `;
+    });
+});
+
+// Logout
+document.getElementById("logoutBtn").onclick = async () => {
+    await auth.signOut();
+    window.location.href = "admin.html";
+};
+
+// Submit in-person registration
+document.getElementById("adminRegForm").onsubmit = async (e) => {
+    e.preventDefault();
+
+    const data = {
+        playerName: playerName.value,
+        birthdate: birthdate.value,
+        school: school.value,
+        grade: grade.value,
+        gender: gender.value,
+        league: league.value,
+        shirtSize: shirtSize.value,
+        doctorName: doctorName.value,
+        doctorPhone: doctorPhone.value,
+        allergies: allergies.value,
+        paymentType: paymentType.value,
+        amountPaid: amountPaid.value || 0,
+        createdAt: new Date(),
+        registeredByAdmin: true
+    };
+
+    await db.collection("registrations").add(data);
+
+    alert("In‑person registration added!");
+    window.location.reload();
+};
+</script>
+
+</body>
+</html>
