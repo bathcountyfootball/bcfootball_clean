@@ -179,6 +179,22 @@ document.getElementById("playerForm").onsubmit = async (e) => {
         alert("Registration failed. Please try again.");
     }
 };
+<!-- ⭐ ASSIGN PLAYERS MODAL -->
+<div id="assignModal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <h2>Assign Players to Coaches & Teams</h2>
+
+    <label>Search Player</label>
+    <input type="text" id="assignSearch" placeholder="Enter player name">
+
+    <button class="action-btn red" onclick="loadAssignPlayers()">Search</button>
+
+    <div id="assignResults" style="margin-top:20px;"></div>
+
+    <button class="action-btn red" onclick="closeAssign()">Close</button>
+  </div>
+</div>
+
 </script>
 
 </body>
