@@ -14,6 +14,12 @@
             padding: 20px;
         }
     </style>
+	<style>
+    .hidden {
+        display: none !important;
+    }
+</style>
+
 </head>
 
 <body>
@@ -56,62 +62,54 @@ if (!localStorage.getItem("coachUser")) {
             <button class="action-btn" onclick="openEquipment()">Manage Equipment</button>
         </div>
     </section>
+<div id="registerPlayerSection" class="hidden">
+    <h2>Register a Player</h2>
 
-    <!-- ⭐ PLAYER REGISTRATION -->
-    <section style="margin-top:40px;">
-        <h2>Register a Player</h2>
+    <label>Player First Name</label>
+    <input type="text" id="playerFirstName">
 
-        <form id="playerForm">
+    <label>Player Last Name</label>
+    <input type="text" id="playerLastName">
 
-            <label>Player First Name</label>
-            <input type="text" id="playerFirst" required>
+    <label>Birthdate</label>
+    <input type="text" id="birthdate" placeholder="mm / dd / yyyy">
 
-            <label>Player Last Name</label>
-            <input type="text" id="playerLast" required>
+    <label>Grade</label>
+    <input type="text" id="grade">
 
-            <label>Birthdate</label>
-            <input type="date" id="birthdate" required>
+    <label>School</label>
+    <input type="text" id="school">
 
-            <label>Grade</label>
-            <input type="text" id="grade" required>
+    <label>Shirt Size</label>
+    <input type="text" id="shirtSize">
 
-            <label>School</label>
-            <input type="text" id="school" required>
+    <label>Medical Conditions</label>
+    <input type="text" id="medicalConditions" placeholder="None">
 
-            <label>Shirt Size</label>
-            <input type="text" id="shirtSize" required>
+    <label>Allergies</label>
+    <input type="text" id="allergies" placeholder="None">
 
-            <label>Medical Conditions</label>
-            <input type="text" id="medical" placeholder="None">
+    <label>Emergency Contact Name</label>
+    <input type="text" id="emergencyContactName">
 
-            <label>Allergies</label>
-            <input type="text" id="allergies" placeholder="None">
+    <label>Emergency Contact Phone</label>
+    <input type="text" id="emergencyContactPhone">
 
-            <label>Emergency Contact Name</label>
-            <input type="text" id="emergencyName" required>
+    <label>Team</label>
+    <select id="team">
+        <option>Select Team</option>
+        <!-- your team options stay here -->
+    </select>
 
-            <label>Emergency Contact Phone</label>
-            <input type="text" id="emergencyPhone" required>
+    <label>Experience</label>
+    <select id="experience">
+        <option>Select</option>
+        <!-- your experience options stay here -->
+    </select>
 
-            <label>Team</label>
-            <select id="team" required>
-                <option value="">Select Team</option>
-                <option value="Flag">Flag</option>
-                <option value="Jr Pro">Jr Pro</option>
-                <option value="Sr Pro">Sr Pro</option>
-            </select>
-
-            <label>Experience</label>
-            <select id="experience" required>
-                <option value="">Select</option>
-                <option value="Yes">Yes</option>
-                <option value="No">No</option>
-            </select>
-
-            <button type="submit" class="action-btn">Register Player</button>
-        </form>
-    </section>
+    <button id="registerPlayerBtn" class="hidden">Register Player</button>
 </div>
+
 
 <!-- ⭐ ASSIGN PLAYERS MODAL -->
 <div id="assignModal" class="modal">
