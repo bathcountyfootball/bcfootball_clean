@@ -5,7 +5,6 @@
     <link rel="stylesheet" href="home.css">
 
     <style>
-        /* Modal */
         .modal {
             position: fixed;
             top: 0; left: 0;
@@ -23,9 +22,6 @@
             max-width: 600px;
             border-radius: 10px;
         }
-        .modal-content h2 {
-            margin-top: 0;
-        }
         .modal-content ul {
             list-style: none;
             padding-left: 0;
@@ -35,13 +31,13 @@
             padding-bottom: 10px;
             border-bottom: 1px solid #ccc;
         }
+        label { font-weight: bold; margin-top: 10px; display: block; }
     </style>
 </head>
 
 <body>
 
 <script>
-// Protect dashboard
 if (!localStorage.getItem("coachUser")) {
     window.location.href = "coaches.html";
 }
@@ -61,37 +57,22 @@ if (!localStorage.getItem("coachUser")) {
     </div>
 
     <div class="link-card">
-        <h3>Your Children</h3>
-        <p id="coachKids">Loading...</p>
-    </div>
-
-    <div class="link-card">
         <h3>Your Team Roster</h3>
         <button class="action-btn red" onclick="openRoster()">View Team Roster</button>
     </div>
 
     <div class="link-card">
-        <h3>Assign Players to Coaches & Teams</h3>
+        <h3>Assign Players</h3>
         <button class="action-btn red" onclick="openAssign()">Assign Players</button>
     </div>
 
     <div class="link-card">
-        <h3>Attendance Tracking</h3>
-        <button class="action-btn red" onclick="openAttendance()">Open Attendance Tool</button>
-    </div>
-
-    <div class="link-card">
-        <h3>Team Schedule</h3>
-        <button class="action-btn red" onclick="openSchedule()">View Schedule</button>
-    </div>
-
-    <div class="link-card">
-        <h3>Player Cards</h3>
-        <button class="action-btn red" onclick="openCards()">View Player Cards</button>
+        <h3>Equipment & Jersey Tracking (Jr Pro)</h3>
+        <button class="action-btn red" onclick="openEquipment()">Manage Equipment</button>
     </div>
 </section>
 
-<!-- ⭐ COACH PLAYER REGISTRATION -->
+<!-- ⭐ PLAYER REGISTRATION -->
 <section class="registration-section" style="max-width:600px; margin:auto;">
     <h2>Register a Player</h2>
 
@@ -152,7 +133,7 @@ if (!localStorage.getItem("coachUser")) {
     <h2>Assign Players</h2>
 
     <label>Search Player</label>
-    <input type="text" id="assignSearch" placeholder="Enter player name">
+    <input type="text" id="assignSearch">
 
     <button class="action-btn red" onclick="loadAssignPlayers()">Search</button>
 
@@ -182,6 +163,22 @@ if (!localStorage.getItem("coachUser")) {
   </div>
 </div>
 
+<!-- ⭐ EQUIPMENT MODAL -->
+<div id="equipmentModal" class="modal">
+  <div class="modal-content">
+    <h2>Equipment & Jersey Tracking (Jr Pro)</h2>
+
+    <label>Search Jr Pro Player</label>
+    <input type="text" id="equipSearch">
+
+    <button class="action-btn red" onclick="loadEquipmentPlayer()">Search</button>
+
+    <div id="equipmentForm" style="margin-top:20px;"></div>
+
+    <button class="action-btn red" onclick="closeEquipment()">Close</button>
+  </div>
+</div>
+
 <footer>
     <p>© 2026 Bath County Youth Football</p>
 </footer>
@@ -189,7 +186,6 @@ if (!localStorage.getItem("coachUser")) {
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbxnIbz_eMUCwMyCa52oZbJTbC6PRb77FDKG6g6CMPTHt9sOd53SYd5lceIca0xH96wpBg/exec";
 
-// Profile
 document.getElementById("coachProfile").innerText =
     localStorage.getItem("coachName") + " (" + localStorage.getItem("coachEmail") + ")";
 
@@ -200,84 +196,65 @@ function logout() {
     window.location.href = "coaches.html";
 }
 
-// Placeholder tools
-function openAttendance() { alert("Attendance tool coming soon."); }
-function openSchedule() { alert("Schedule tool coming soon."); }
-function openCards() { alert("Player Cards coming soon."); }
-
-// ⭐ PLAYER REGISTRATION
+/* ⭐ PLAYER REGISTRATION */
 document.getElementById("playerForm").onsubmit = async (e) => {
     e.preventDefault();
 
     const payload = {
         action: "registerPlayer",
-
         coachName: localStorage.getItem("coachName"),
         coachEmail: localStorage.getItem("coachEmail"),
         coachUser: localStorage.getItem("coachUser"),
 
-        playerFirst: document.getElementById("playerFirst").value.trim(),
-        playerLast: document.getElementById("playerLast").value.trim(),
-        birthdate: document.getElementById("birthdate").value,
-        grade: document.getElementById("grade").value.trim(),
-        school: document.getElementById("school").value.trim(),
-        shirtSize: document.getElementById("shirtSize").value.trim(),
-        medical: document.getElementById("medical").value.trim(),
-        allergies: document.getElementById("allergies").value.trim(),
-        emergencyName: document.getElementById("emergencyName").value.trim(),
-        emergencyPhone: document.getElementById("emergencyPhone").value.trim(),
-        team: document.getElementById("team").value,
-        experience: document.getElementById("experience").value
+        playerFirst: playerFirst.value.trim(),
+        playerLast: playerLast.value.trim(),
+        birthdate: birthdate.value,
+        grade: grade.value.trim(),
+        school: school.value.trim(),
+        shirtSize: shirtSize.value.trim(),
+        medical: medical.value.trim(),
+        allergies: allergies.value.trim(),
+        emergencyName: emergencyName.value.trim(),
+        emergencyPhone: emergencyPhone.value.trim(),
+        team: team.value,
+        experience: experience.value
     };
 
-    const res = await fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify(payload)
-    });
-
+    const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
     const data = await res.json();
 
     if (data.success) {
-        alert("Player registered successfully!");
-        document.getElementById("playerForm").reset();
+        alert("Player registered!");
+        playerForm.reset();
     } else {
-        alert("Registration failed. Please try again.");
+        alert("Registration failed.");
     }
 };
 
-// ⭐ ASSIGN PLAYERS
-function openAssign() {
-    document.getElementById("assignModal").style.display = "flex";
-}
-function closeAssign() {
-    document.getElementById("assignModal").style.display = "none";
-}
+/* ⭐ ASSIGN PLAYERS */
+function openAssign() { assignModal.style.display = "flex"; }
+function closeAssign() { assignModal.style.display = "none"; }
 
 async function loadAssignPlayers() {
-    const search = document.getElementById("assignSearch").value.trim();
+    const search = assignSearch.value.trim();
 
     const res = await fetch(API_URL, {
         method: "POST",
-        body: JSON.stringify({
-            action: "searchAllPlayers",
-            search
-        })
+        body: JSON.stringify({ action: "searchAllPlayers", search })
     });
 
     const data = await res.json();
 
     if (!data.success || data.players.length === 0) {
-        document.getElementById("assignResults").innerHTML = "<p>No players found.</p>";
+        assignResults.innerHTML = "<p>No players found.</p>";
         return;
     }
 
     let html = "<ul>";
-
     data.players.forEach(p => {
         html += `
             <li>
-                <strong>${p.name}</strong> (Grade ${p.grade})
-                <br><br>
+                <strong>${p.name}</strong> (Grade ${p.grade})<br><br>
 
                 <label>Assign Coach:</label>
                 <select id="coach_${p.id}">
@@ -295,10 +272,9 @@ async function loadAssignPlayers() {
             </li>
         `;
     });
-
     html += "</ul>";
 
-    document.getElementById("assignResults").innerHTML = html;
+    assignResults.innerHTML = html;
 }
 
 async function assignPlayer(id) {
@@ -307,51 +283,34 @@ async function assignPlayer(id) {
 
     const res = await fetch(API_URL, {
         method: "POST",
-        body: JSON.stringify({
-            action: "assignPlayer",
-            id,
-            coachEmail,
-            team
-        })
+        body: JSON.stringify({ action: "assignPlayer", id, coachEmail, team })
     });
 
     const data = await res.json();
 
-    if (data.success) {
-        alert("Player assigned!");
-    } else {
-        alert("Failed to assign player.");
-    }
+    alert(data.success ? "Player assigned!" : "Failed to assign.");
 }
 
-// ⭐ TEAM ROSTER VIEW
-function openRoster() {
-    document.getElementById("rosterModal").style.display = "flex";
-}
-function closeRoster() {
-    document.getElementById("rosterModal").style.display = "none";
-}
+/* ⭐ TEAM ROSTER */
+function openRoster() { rosterModal.style.display = "flex"; }
+function closeRoster() { rosterModal.style.display = "none"; }
 
 async function loadTeamRoster() {
-    const team = document.getElementById("rosterTeam").value;
+    const team = rosterTeam.value;
 
     const res = await fetch(API_URL, {
         method: "POST",
-        body: JSON.stringify({
-            action: "getTeamRoster",
-            team
-        })
+        body: JSON.stringify({ action: "getTeamRoster", team })
     });
 
     const data = await res.json();
 
     if (!data.success || data.players.length === 0) {
-        document.getElementById("rosterResults").innerHTML = "<p>No players found for this team.</p>";
+        rosterResults.innerHTML = "<p>No players found.</p>";
         return;
     }
 
     let html = "<ul>";
-
     data.players.forEach(p => {
         html += `
             <li>
@@ -362,10 +321,116 @@ async function loadTeamRoster() {
             </li>
         `;
     });
-
     html += "</ul>";
 
-    document.getElementById("rosterResults").innerHTML = html;
+    rosterResults.innerHTML = html;
+}
+
+/* ⭐ EQUIPMENT TRACKING */
+function openEquipment() { equipmentModal.style.display = "flex"; }
+function closeEquipment() { equipmentModal.style.display = "none"; }
+
+async function loadEquipmentPlayer() {
+    const search = equipSearch.value.trim().toLowerCase();
+
+    const res = await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "getAllRegistrations" })
+    });
+
+    const data = await res.json();
+
+    const jrProPlayers = data.rows.filter(p =>
+        p.team === "Jr Pro" && p.name.toLowerCase().includes(search)
+    );
+
+    if (jrProPlayers.length === 0) {
+        equipmentForm.innerHTML = "<p>No Jr Pro players found.</p>";
+        return;
+    }
+
+    const player = jrProPlayers[0];
+
+    const equipRes = await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "getEquipment", name: player.name })
+    });
+
+    const equipData = await equipRes.json();
+
+    const eq = equipData.success ? equipData.equipment : {
+        helmetIssued: "",
+        helmetReturn: "",
+        padsIssued: "",
+        padsReturn: "",
+        pantsIssued: "",
+        pantsReturn: "",
+        jerseyNumber: "",
+        jerseyReturn: ""
+    };
+
+    equipmentForm.innerHTML = `
+        <h3>${player.name}</h3>
+        Grade: ${player.grade}<br>
+        School: ${player.school}<br><br>
+
+        <label>Helmet Issued</label>
+        <input type="text" id="helmetIssued" value="${eq.helmetIssued}">
+
+        <label>Helmet Returned</label>
+        <input type="text" id="helmetReturn" value="${eq.helmetReturn}">
+
+        <label>Pads Issued</label>
+        <input type="text" id="padsIssued" value="${eq.padsIssued}">
+
+        <label>Pads Returned</label>
+        <input type="text" id="padsReturn" value="${eq.padsReturn}">
+
+        <label>Pants Issued</label>
+        <input type="text" id="pantsIssued" value="${eq.pantsIssued}">
+
+        <label>Pants Returned</label>
+        <input type="text" id="pantsReturn" value="${eq.pantsReturn}">
+
+        <label>Jersey Number</label>
+        <input type="text" id="jerseyNumber" value="${eq.jerseyNumber}">
+
+        <label>Jersey Returned</label>
+        <input type="text" id="jerseyReturn" value="${eq.jerseyReturn}">
+
+        <button class="action-btn red" onclick="saveEquipment('${player.name}', '${player.grade}', '${player.team}')">
+            Save Equipment
+        </button>
+    `;
+}
+
+async function saveEquipment(name, grade, team) {
+    const payload = {
+        action: "saveEquipment",
+        name,
+        grade,
+        team,
+
+        helmetIssued: helmetIssued.value,
+        helmetReturn: helmetReturn.value,
+        padsIssued: padsIssued.value,
+        padsReturn: padsReturn.value,
+        pantsIssued: pantsIssued.value,
+        pantsReturn: pantsReturn.value,
+        jerseyNumber: jerseyNumber.value,
+        jerseyReturn: jerseyReturn.value,
+
+        updatedBy: localStorage.getItem("coachEmail")
+    };
+
+    const res = await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+
+    alert(data.success ? "Equipment saved!" : "Failed to save.");
 }
 </script>
 
