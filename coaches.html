@@ -7,6 +7,13 @@
 
 <body>
 
+<nav class="top-nav">
+    <a href="youth.index.html" class="nav-link">Home</a>
+    <a href="login.html" class="nav-link">Parent Login</a>
+    <a href="coaches.html" class="nav-link">Coach Login</a>
+    <a href="admin.html" class="nav-link">Admin Login</a>
+</nav>
+
 <header class="hero">
     <h1>Coach Login</h1>
 </header>
@@ -36,9 +43,15 @@ document.getElementById("loginForm").onsubmit = async (e) => {
     const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value;
 
+    const payload = {
+        action: "login",
+        username,
+        password
+    };
+
     const res = await fetch(API_URL, {
         method: "POST",
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify(payload)
     });
 
     const data = await res.json();
@@ -57,7 +70,7 @@ document.getElementById("loginForm").onsubmit = async (e) => {
     localStorage.setItem("coachName", data.name);
     localStorage.setItem("coachEmail", data.email);
 
-    window.location.href = "coaches-dashboard.html";
+    window.location.href = "coach-dashboard.html";  // FIXED
 };
 </script>
 
