@@ -153,7 +153,7 @@ function submitRegistration() {
     };
 
     // TODO: replace with your actual Apps Script endpoint
-    const SHEETS_ENDPOINT = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec";
+    const SHEETS_ENDPOINT = "https://script.google.com/macros/s/AKfycbzQrgAYG45pcW1jg1HVuN8pwxjQwk3wa3CQPYGN8YwwdHH4T6qZb_CyR3_JDOaGiXG6/exec";
 
     fetch(SHEETS_ENDPOINT, {
         method: "POST",
