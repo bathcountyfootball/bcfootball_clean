@@ -43,6 +43,7 @@ document.getElementById("loginForm").onsubmit = async (e) => {
     const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value;
 
+    // ⭐ REQUIRED for Apps Script to recognize the login request
     const payload = {
         action: "login",
         username,
@@ -66,11 +67,13 @@ document.getElementById("loginForm").onsubmit = async (e) => {
         return;
     }
 
+    // Save coach session
     localStorage.setItem("coachUser", username);
     localStorage.setItem("coachName", data.name);
     localStorage.setItem("coachEmail", data.email);
 
-    window.location.href = "coach-dashboard.html";  // FIXED
+    // ⭐ FIXED redirect filename
+    window.location.href = "coach-dashboard.html";
 };
 </script>
 
