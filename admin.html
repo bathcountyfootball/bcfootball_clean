@@ -7,6 +7,13 @@
 
 <body>
 
+<nav class="top-nav">
+    <a href="youth.index.html" class="nav-link">Home</a>
+    <a href="login.html" class="nav-link">Parent Login</a>
+    <a href="coaches.html" class="nav-link">Coach Login</a>
+    <a href="admin.html" class="nav-link">Admin Login</a>
+</nav>
+
 <header class="hero">
     <h1>Admin Login</h1>
 </header>
@@ -15,7 +22,7 @@
     <div class="link-card" style="max-width:400px; margin:auto;">
         <h2>Admin Access</h2>
 
-        <form id="loginForm">
+        <form id="adminLoginForm">
             <label>Username</label>
             <input type="text" id="username" required>
 
@@ -30,15 +37,21 @@
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbxnIbz_eMUCwMyCa52oZbJTbC6PRb77FDKG6g6CMPTHt9sOd53SYd5lceIca0xH96wpBg/exec";
 
-document.getElementById("loginForm").onsubmit = async (e) => {
+document.getElementById("adminLoginForm").onsubmit = async (e) => {
     e.preventDefault();
 
     const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value;
 
+    const payload = {
+        action: "login",
+        username,
+        password
+    };
+
     const res = await fetch(API_URL, {
         method: "POST",
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify(payload)
     });
 
     const data = await res.json();
