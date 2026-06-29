@@ -4,107 +4,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Player Registration – Bath County Football</title>
-    <link rel="stylesheet" href="home.css">
-
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
-
-    <script>
-        // TODO: Replace with your Firebase config
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-    </script>
-
-    <style>
-        .reg-card {
-            background: #fff;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            max-width: 700px;
-            margin: auto;
-        }
-        .reg-card h2 {
-            color: #b30000;
-            margin-top: 0;
-            font-size: 1.6rem;
-            font-weight: 800;
-        }
-        .reg-card label {
-            font-weight: bold;
-            margin-top: 12px;
-            display: block;
-        }
-        .reg-card input,
-        .reg-card select {
-            width: 100%;
-            padding: 12px;
-            margin-top: 6px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            font-size: 1rem;
-        }
-        .back-btn {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 12px 18px;
-            background: #444;
-            color: #fff;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: bold;
-        }
-        .back-btn:hover {
-            background: #000;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
 
-<header class="hero">
+<div class="container">
     <h1>Player Registration</h1>
-    <p>Bath County Flag & Jr Pro Football</p>
-</header>
+    <h2>Bath County Flag & Jr Pro Football</h2>
 
-<section class="main-links">
+    <!-- STEP CONTAINER -->
+    <div id="step-container">
 
-    <div class="reg-card">
-        <h2>Register a Player</h2>
+        <!-- STEP 1: Parent Info -->
+        <div class="step" id="step1">
+            <h3>Parent Information</h3>
 
-        <form id="regForm">
+            <label>Parent Name</label>
+            <input type="text" id="parentName">
+
+            <label>Parent Email</label>
+            <input type="email" id="parentEmail">
+
+            <label>Parent Phone</label>
+            <input type="text" id="parentPhone">
+
+            <button class="next-btn" onclick="nextStep()">Next</button>
+        </div>
+
+        <!-- STEP 2: Player Info -->
+        <div class="step" id="step2">
+            <h3>Player Information</h3>
 
             <label>Player Name</label>
-            <input type="text" id="playerName" required>
+            <input type="text" id="playerName">
 
             <label>Birthdate</label>
-            <input type="date" id="birthdate" required>
+            <input type="date" id="birthdate">
 
             <label>School</label>
-            <input type="text" id="school" required>
+            <input type="text" id="school">
 
             <label>Grade</label>
-            <input type="number" id="grade" required>
+            <input type="number" id="grade">
 
             <label>Gender</label>
             <select id="gender">
-                <option>Male</option>
-                <option>Female</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
             </select>
 
             <label>League</label>
             <select id="league">
-                <option>Flag</option>
-                <option>Jr Pro</option>
+                <option value="Flag">Flag</option>
+                <option value="Jr Pro">Jr Pro</option>
             </select>
 
             <label>Shirt Size</label>
@@ -118,6 +71,14 @@
                 <option>XL</option>
             </select>
 
+            <button class="back-btn" onclick="prevStep()">Back</button>
+            <button class="next-btn" onclick="nextStep()">Next</button>
+        </div>
+
+        <!-- STEP 3: Medical Info -->
+        <div class="step" id="step3">
+            <h3>Medical Information</h3>
+
             <label>Doctor Name</label>
             <input type="text" id="doctorName">
 
@@ -125,88 +86,44 @@
             <input type="text" id="doctorPhone">
 
             <label>Allergies / Medical Notes</label>
-            <input type="text" id="allergies">
+            <textarea id="allergies"></textarea>
 
-            <button class="action-btn red" style="margin-top:20px;">Submit Registration</button>
-        </form>
+            <button class="back-btn" onclick="prevStep()">Back</button>
+            <button class="next-btn" onclick="nextStep()">Next</button>
+        </div>
 
-        <a href="parent-dashboard.html" class="back-btn">← Back to Dashboard</a>
+        <!-- STEP 4: Payment Plan -->
+        <div class="step" id="step4">
+            <h3>Payment Plan</h3>
+
+            <label>Select Payment Option</label>
+            <select id="paymentPlan">
+                <option value="full">Pay in Full</option>
+                <option value="split">Pay in 2 Payments</option>
+            </select>
+
+            <p id="siblingNote" class="info-note">
+                Sibling discount applies only to Pay-in-Full.
+            </p>
+
+            <button class="back-btn" onclick="prevStep()">Back</button>
+            <button class="next-btn" onclick="nextStep()">Next</button>
+        </div>
+
+        <!-- STEP 5: Review & Pay -->
+        <div class="step" id="step5">
+            <h3>Review & Pay</h3>
+
+            <div id="reviewBox"></div>
+
+            <button class="back-btn" onclick="prevStep()">Back</button>
+            <button class="submit-btn" onclick="submitRegistration()">Submit & Pay</button>
+        </div>
+
     </div>
+</div>
 
-</section>
-
-<footer>
-    <p>© 2026 Bath County Youth Football</p>
-</footer>
-
-<script>
-    let parentEmail = "";
-    let coachEmail = "";
-    let isCoach = false;
-
-    auth.onAuthStateChanged(async user => {
-        if (!user) {
-            window.location.href = "login.html";
-            return;
-        }
-
-        const email = user.email;
-
-        // Check if user is a parent
-        const parentDoc = await db.collection("parents").doc(user.uid).get();
-        if (parentDoc.exists) {
-            parentEmail = parentDoc.data().email;
-            isCoach = false;
-            return;
-        }
-
-        // Check if user is a coach
-        const coachDoc = await db.collection("coaches").doc(user.uid).get();
-        if (coachDoc.exists) {
-            coachEmail = coachDoc.data().email;
-            isCoach = true;
-            return;
-        }
-
-        // If neither, redirect
-        window.location.href = "login.html";
-    });
-
-    document.getElementById("regForm").onsubmit = async (e) => {
-        e.preventDefault();
-
-        const data = {
-            playerName: playerName.value,
-            birthdate: birthdate.value,
-            school: school.value,
-            grade: grade.value,
-            gender: gender.value,
-            league: league.value,
-            shirtSize: shirtSize.value,
-            doctorName: doctorName.value,
-            doctorPhone: doctorPhone.value,
-            allergies: allergies.value,
-            createdAt: new Date()
-        };
-
-        // Attach to parent or coach
-        if (isCoach) {
-            data.coachEmail = coachEmail;
-        } else {
-            data.parentEmail = parentEmail;
-        }
-
-        await db.collection("registrations").add(data);
-
-        alert("Player registered successfully!");
-
-        if (isCoach) {
-            window.location.href = "coaches-dashboard.html";
-        } else {
-            window.location.href = "parent-dashboard.html";
-        }
-    };
-</script>
+<script src="registration.js"></script>
 
 </body>
 </html>
