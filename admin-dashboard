@@ -12,7 +12,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
 
     <script>
-        // TODO: Replace with your Firebase config
         const firebaseConfig = {
             apiKey: "YOUR_API_KEY",
             authDomain: "YOUR_AUTH_DOMAIN",
@@ -20,7 +19,6 @@
         };
 
         firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
         const db = firebase.firestore();
     </script>
 
@@ -91,7 +89,7 @@
     <div class="admin-card">
         <h2>Admin Profile</h2>
         <p id="adminName">Loading...</p>
-        <p id="adminEmail"></p>
+        <p id="adminUsername"></p>
         <a href="#" id="logoutBtn" class="logout-btn">Logout</a>
     </div>
 
@@ -173,43 +171,24 @@
 </footer>
 
 <script>
-auth.onAuthStateChanged(async user => {
-    if (!user) {
-        window.location.href = "admin.html";
-        return;
-    }
+// REQUIRE ADMIN LOGIN
+const adminUser = localStorage.getItem("adminUser");
+if (!adminUser) {
+    window.location.href = "admin.html";
+}
 
-    const uid = user.uid;
-
-    // Load admin profile
-    const adminDoc = await db.collection("admins").doc(uid).get();
+// Load admin profile
+(async () => {
+    const adminDoc = await db.collection("admins").doc(adminUser).get();
     const admin = adminDoc.data();
 
-    document.getElementById("adminName").innerText = admin.adminName;
-    document.getElementById("adminEmail").innerText = "Email: " + admin.email;
-
-    // Load all registrations
-    const regSnap = await db.collection("registrations").get();
-    const list = document.getElementById("allRegistrationsList");
-    list.innerHTML = "";
-
-    regSnap.forEach(doc => {
-        const p = doc.data();
-        list.innerHTML += `
-            <div class="player-card">
-                <h3>${p.playerName}</h3>
-                <p>League: ${p.league}</p>
-                <p>Grade: ${p.grade}</p>
-                <p>Payment: ${p.paymentType || "Online"}</p>
-                <p>Amount Paid: $${p.amountPaid || "0.00"}</p>
-            </div>
-        `;
-    });
-});
+    document.getElementById("adminName").innerText = admin.name;
+    document.getElementById("adminUsername").innerText = "Username: " + adminUser;
+})();
 
 // Logout
-document.getElementById("logoutBtn").onclick = async () => {
-    await auth.signOut();
+document.getElementById("logoutBtn").onclick = () => {
+    localStorage.removeItem("adminUser");
     window.location.href = "admin.html";
 };
 
@@ -231,7 +210,7 @@ document.getElementById("adminRegForm").onsubmit = async (e) => {
         paymentType: paymentType.value,
         amountPaid: amountPaid.value || 0,
         createdAt: new Date(),
-        registeredByAdmin: true
+        registeredByAdmin: adminUser
     };
 
     await db.collection("registrations").add(data);
@@ -239,6 +218,27 @@ document.getElementById("adminRegForm").onsubmit = async (e) => {
     alert("In‑person registration added!");
     window.location.reload();
 };
+
+// Load all registrations
+(async () => {
+    const regSnap = await db.collection("registrations").get();
+    const list = document.getElementById("allRegistrationsList");
+    list.innerHTML = "";
+
+    regSnap.forEach(doc => {
+        const p = doc.data();
+        list.innerHTML += `
+            <div class="player-card">
+                <h3>${p.playerName}</h3>
+                <p>League: ${p.league}</p>
+                <p>Grade: ${p.grade}</p>
+                <p>Payment: ${p.paymentType || "Online"}</p>
+                <p>Amount Paid: $${p.amountPaid || "0.00"}</p>
+                <p>Registered By: ${p.registeredByAdmin || "Parent"}</p>
+            </div>
+        `;
+    });
+})();
 </script>
 
 </body>
