@@ -12,6 +12,11 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
 
     <script>
+		const coachUser = localStorage.getItem("coachUser");
+if (!coachUser) {
+    window.location.href = "coaches.html";
+}
+
         // TODO: Replace with your Firebase config
         const firebaseConfig = {
             apiKey: "YOUR_API_KEY",
@@ -176,11 +181,12 @@ auth.onAuthStateChanged(async user => {
     const uid = user.uid;
 
     // Load coach profile
-    const coachDoc = await db.collection("coaches").doc(uid).get();
-    const coach = coachDoc.data();
+    const coachDoc = await db.collection("coaches").doc(coachUser).get();
+const coach = coachDoc.data();
 
-    document.getElementById("coachName").innerText = coach.coachName;
-    document.getElementById("coachEmail").innerText = "Email: " + coach.email;
+document.getElementById("coachName").innerText = coach.coachName;
+document.getElementById("coachEmail").innerText = "Username: " + coachUser;
+
 
     // Load coach's own kids
     const kidsSnap = await db.collection("registrations")
@@ -231,10 +237,11 @@ auth.onAuthStateChanged(async user => {
 });
 
 // Logout
-document.getElementById("logoutBtn").onclick = async () => {
-    await auth.signOut();
+document.getElementById("logoutBtn").onclick = () => {
+    localStorage.removeItem("coachUser");
     window.location.href = "coaches.html";
 };
+
 
 // OPEN ASSIGN MODAL
 document.getElementById("openAssignModal").onclick = async () => {

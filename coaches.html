@@ -9,54 +9,89 @@
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
 
     <script>
         const firebaseConfig = {
-            apiKey: "YOUR_KEY",
-            authDomain: "YOUR_DOMAIN",
-            projectId: "YOUR_PROJECT",
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID"
         };
+
         firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
+        const db = firebase.firestore();
     </script>
+
+    <style>
+        .login-card input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 14px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+        }
+    </style>
 </head>
 
 <body>
 
 <header class="hero">
-    <h1>Bath County Flag & Jr Pro Football</h1>
-    <p>Coach Login</p>
+    <h1>Coach Login</h1>
+    <p>Bath County Football</p>
 </header>
 
 <section class="main-links">
+    <div class="link-card login-card" style="max-width:400px; margin:auto;">
+        <h2>Coach Access</h2>
+        <p>Enter your coach username and password.</p>
 
-    <div class="link-card" style="max-width:400px; margin:auto;">
-        <h2>Coach Portal Login</h2>
-        <p>Sign in to access rosters, schedules, attendance tools, and coaching resources.</p>
+        <form id="coachLoginForm">
+            <label>Username</label>
+            <input type="text" id="username" required>
 
-        <button id="googleLogin" class="action-btn red">Sign in with Google</button>
+            <label>Password</label>
+            <input type="password" id="password" required>
 
-        <p class="small-text" style="margin-top:15px;">
-            Only authorized coaches and staff may access this portal.
+            <button type="submit" class="action-btn red">Login</button>
+        </form>
+
+        <p style="margin-top:10px; font-size:0.9rem;">
+            Only authorized coaches may access this page.
         </p>
     </div>
-
 </section>
 
-<footer>
-    <p>© 2026 Bath County Youth Football</p>
-</footer>
-
 <script>
-    document.getElementById("googleLogin").onclick = async () => {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        try {
-            await auth.signInWithPopup(provider);
-            window.location.href = "coaches-dashboard.html";
-        } catch (err) {
-            alert("Login failed: " + err.message);
+document.getElementById("coachLoginForm").onsubmit = async (e) => {
+    e.preventDefault();
+
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
+
+    try {
+        const coachDoc = await db.collection("coaches").doc(username).get();
+
+        if (!coachDoc.exists) {
+            alert("Invalid coach username.");
+            return;
         }
-    };
+
+        const coach = coachDoc.data();
+
+        if (coach.password !== password) {
+            alert("Incorrect password.");
+            return;
+        }
+
+        localStorage.setItem("coachUser", username);
+
+        window.location.href = "coaches-dashboard.html";
+
+    } catch (err) {
+        alert("Login failed: " + err.message);
+    }
+};
 </script>
 
 </body>
