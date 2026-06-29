@@ -2,44 +2,122 @@
 <html>
 <head>
     <title>Bath County Youth Football</title>
-    <link rel="stylesheet" href="home.css">
+
+    <!-- GLOBAL MODERN ATHLETIC THEME -->
+    <link rel="stylesheet" href="theme.css">
+
+    <style>
+        .home-container {
+            max-width: 1100px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        .intro-card {
+            background: var(--white);
+            padding: 30px;
+            border-radius: 14px;
+            box-shadow: 0 6px 16px var(--shadow);
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .intro-card h2 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .intro-card p {
+            font-size: 17px;
+            color: #444;
+            margin-top: 10px;
+        }
+
+        .login-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .login-card {
+            background: var(--white);
+            padding: 25px;
+            border-radius: 14px;
+            box-shadow: 0 6px 16px var(--shadow);
+            text-align: center;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .login-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px var(--shadow);
+        }
+
+        .login-card h3 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+
+        .login-card p {
+            font-size: 15px;
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        .login-card .action-btn {
+            width: 100%;
+        }
+    </style>
 </head>
 
 <body>
 
-<nav class="top-nav">
-    <a href="youth.index.html" class="nav-link">Home</a>
-    <a href="login.html" class="nav-link">Parent Login</a>
-    <a href="coaches.html" class="nav-link">Coach Login</a>
-    <a href="admin.html" class="nav-link">Admin Login</a>
-</nav>
-
+<!-- ⭐ CENTERED ATHLETIC HEADER -->
 <header class="hero">
-    <h1>Bath County Youth Football</h1>
-    <p>Choose your login area</p>
+    <h1>BATH COUNTY YOUTH FOOTBALL</h1>
 </header>
 
-<section class="login-grid">
+<div class="home-container">
 
-    <div class="login-card">
-        <h2>Parent Login</h2>
-        <p>Register players, update info, view schedules.</p>
-        <a href="login.html" class="action-btn">Parent Login</a>
+    <!-- ⭐ INTRO CARD -->
+    <div class="intro-card">
+        <h2>Welcome to Bath County Youth Football</h2>
+        <p>Your official portal for registration, team management, equipment tracking, and parent access.</p>
     </div>
 
-    <div class="login-card">
-        <h2>Coach Login</h2>
-        <p>Access rosters, attendance, schedules, and tools.</p>
-        <a href="coaches.html" class="action-btn">Coach Login</a>
-    </div>
+    <!-- ⭐ LOGIN GRID -->
+    <div class="login-grid">
 
-    <div class="login-card">
-        <h2>Admin Login</h2>
-        <p>Manage league operations, players, payments, and teams.</p>
-        <a href="admin.html" class="action-btn">Admin Login</a>
-    </div>
+        <!-- Parent Login -->
+        <div class="login-card">
+            <h3>Parent Portal</h3>
+            <p>View your players, registration info, and updates.</p>
+            <button class="action-btn" onclick="location.href='parent-login.html'">Parent Login</button>
+        </div>
 
-</section>
+        <!-- Coach Login -->
+        <div class="login-card">
+            <h3>Coach Portal</h3>
+            <p>Manage rosters, equipment, and team assignments.</p>
+            <button class="action-btn" onclick="location.href='coaches.html'">Coach Login</button>
+        </div>
+
+        <!-- Admin Login -->
+        <div class="login-card">
+            <h3>Admin Portal</h3>
+            <p>Manage registrations, equipment, and system tools.</p>
+            <button class="action-btn" onclick="location.href='admin-login.html'">Admin Login</button>
+        </div>
+
+    </div>
+</div>
+
+<footer>
+    <p style="text-align:center; margin-top:40px;">© 2026 Bath County Youth Football</p>
+</footer>
 
 </body>
 </html>
