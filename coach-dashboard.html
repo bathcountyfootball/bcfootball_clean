@@ -2,36 +2,17 @@
 <html>
 <head>
     <title>Coach Dashboard</title>
-    <link rel="stylesheet" href="home.css">
+
+    <!-- GLOBAL MODERN ATHLETIC THEME -->
+    <link rel="stylesheet" href="theme.css">
 
     <style>
-        .modal {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-        }
-        .modal-content {
-            background: white;
+        /* Page-specific tweaks (minimal) */
+        .section-container {
+            max-width: 900px;
+            margin: auto;
             padding: 20px;
-            width: 90%;
-            max-width: 600px;
-            border-radius: 10px;
         }
-        .modal-content ul {
-            list-style: none;
-            padding-left: 0;
-        }
-        .modal-content li {
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #ccc;
-        }
-        label { font-weight: bold; margin-top: 10px; display: block; }
     </style>
 </head>
 
@@ -43,89 +24,94 @@ if (!localStorage.getItem("coachUser")) {
 }
 </script>
 
+<!-- ⭐ CENTERED ATHLETIC HEADER -->
 <header class="hero">
-    <h1>Coach Dashboard</h1>
+    <h1>BATH COUNTY YOUTH FOOTBALL</h1>
 </header>
 
-<section class="main-links">
-    <h2>Team Management & Tools</h2>
+<div class="section-container">
 
-    <div class="link-card">
-        <h3>Your Coaching Profile</h3>
-        <p id="coachProfile">Loading...</p>
-        <button class="action-btn red" onclick="logout()">Logout</button>
-    </div>
+    <!-- ⭐ MAIN LINKS -->
+    <section class="main-links">
+        <h2>Coach Tools</h2>
 
-    <div class="link-card">
-        <h3>Your Team Roster</h3>
-        <button class="action-btn red" onclick="openRoster()">View Team Roster</button>
-    </div>
+        <div class="link-card">
+            <h3>Your Coaching Profile</h3>
+            <p id="coachProfile">Loading...</p>
+            <button class="action-btn" onclick="logout()">Logout</button>
+        </div>
 
-    <div class="link-card">
-        <h3>Assign Players</h3>
-        <button class="action-btn red" onclick="openAssign()">Assign Players</button>
-    </div>
+        <div class="link-card">
+            <h3>Your Team Roster</h3>
+            <button class="action-btn" onclick="openRoster()">View Team Roster</button>
+        </div>
 
-    <div class="link-card">
-        <h3>Equipment & Jersey Tracking (Jr Pro)</h3>
-        <button class="action-btn red" onclick="openEquipment()">Manage Equipment</button>
-    </div>
-</section>
+        <div class="link-card">
+            <h3>Assign Players</h3>
+            <button class="action-btn" onclick="openAssign()">Assign Players</button>
+        </div>
 
-<!-- ⭐ PLAYER REGISTRATION -->
-<section class="registration-section" style="max-width:600px; margin:auto;">
-    <h2>Register a Player</h2>
+        <div class="link-card">
+            <h3>Equipment & Jersey Tracking (Jr Pro)</h3>
+            <button class="action-btn" onclick="openEquipment()">Manage Equipment</button>
+        </div>
+    </section>
 
-    <form id="playerForm">
+    <!-- ⭐ PLAYER REGISTRATION -->
+    <section style="margin-top:40px;">
+        <h2>Register a Player</h2>
 
-        <label>Player First Name</label>
-        <input type="text" id="playerFirst" required>
+        <form id="playerForm">
 
-        <label>Player Last Name</label>
-        <input type="text" id="playerLast" required>
+            <label>Player First Name</label>
+            <input type="text" id="playerFirst" required>
 
-        <label>Birthdate</label>
-        <input type="date" id="birthdate" required>
+            <label>Player Last Name</label>
+            <input type="text" id="playerLast" required>
 
-        <label>Grade</label>
-        <input type="text" id="grade" required>
+            <label>Birthdate</label>
+            <input type="date" id="birthdate" required>
 
-        <label>School</label>
-        <input type="text" id="school" required>
+            <label>Grade</label>
+            <input type="text" id="grade" required>
 
-        <label>Shirt Size</label>
-        <input type="text" id="shirtSize" required>
+            <label>School</label>
+            <input type="text" id="school" required>
 
-        <label>Medical Conditions</label>
-        <input type="text" id="medical" placeholder="None">
+            <label>Shirt Size</label>
+            <input type="text" id="shirtSize" required>
 
-        <label>Allergies</label>
-        <input type="text" id="allergies" placeholder="None">
+            <label>Medical Conditions</label>
+            <input type="text" id="medical" placeholder="None">
 
-        <label>Emergency Contact Name</label>
-        <input type="text" id="emergencyName" required>
+            <label>Allergies</label>
+            <input type="text" id="allergies" placeholder="None">
 
-        <label>Emergency Contact Phone</label>
-        <input type="text" id="emergencyPhone" required>
+            <label>Emergency Contact Name</label>
+            <input type="text" id="emergencyName" required>
 
-        <label>Team</label>
-        <select id="team" required>
-            <option value="">Select Team</option>
-            <option value="Flag">Flag</option>
-            <option value="Jr Pro">Jr Pro</option>
-            <option value="Sr Pro">Sr Pro</option>
-        </select>
+            <label>Emergency Contact Phone</label>
+            <input type="text" id="emergencyPhone" required>
 
-        <label>Experience</label>
-        <select id="experience" required>
-            <option value="">Select</option>
-            <option value="Yes">Yes</option>
-            <option value="No">No</option>
-        </select>
+            <label>Team</label>
+            <select id="team" required>
+                <option value="">Select Team</option>
+                <option value="Flag">Flag</option>
+                <option value="Jr Pro">Jr Pro</option>
+                <option value="Sr Pro">Sr Pro</option>
+            </select>
 
-        <button type="submit" class="action-btn red">Register Player</button>
-    </form>
-</section>
+            <label>Experience</label>
+            <select id="experience" required>
+                <option value="">Select</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+            </select>
+
+            <button type="submit" class="action-btn">Register Player</button>
+        </form>
+    </section>
+</div>
 
 <!-- ⭐ ASSIGN PLAYERS MODAL -->
 <div id="assignModal" class="modal">
@@ -135,11 +121,11 @@ if (!localStorage.getItem("coachUser")) {
     <label>Search Player</label>
     <input type="text" id="assignSearch">
 
-    <button class="action-btn red" onclick="loadAssignPlayers()">Search</button>
+    <button class="action-btn" onclick="loadAssignPlayers()">Search</button>
 
     <div id="assignResults" style="margin-top:20px;"></div>
 
-    <button class="action-btn red" onclick="closeAssign()">Close</button>
+    <button class="action-btn" onclick="closeAssign()">Close</button>
   </div>
 </div>
 
@@ -155,11 +141,11 @@ if (!localStorage.getItem("coachUser")) {
         <option value="Sr Pro">Sr Pro</option>
     </select>
 
-    <button class="action-btn red" onclick="loadTeamRoster()">Load Roster</button>
+    <button class="action-btn" onclick="loadTeamRoster()">Load Roster</button>
 
     <div id="rosterResults" style="margin-top:20px;"></div>
 
-    <button class="action-btn red" onclick="closeRoster()">Close</button>
+    <button class="action-btn" onclick="closeRoster()">Close</button>
   </div>
 </div>
 
@@ -171,11 +157,11 @@ if (!localStorage.getItem("coachUser")) {
     <label>Search Jr Pro Player</label>
     <input type="text" id="equipSearch">
 
-    <button class="action-btn red" onclick="loadEquipmentPlayer()">Search</button>
+    <button class="action-btn" onclick="loadEquipmentPlayer()">Search</button>
 
     <div id="equipmentForm" style="margin-top:20px;"></div>
 
-    <button class="action-btn red" onclick="closeEquipment()">Close</button>
+    <button class="action-btn" onclick="closeEquipment()">Close</button>
   </div>
 </div>
 
@@ -223,12 +209,7 @@ document.getElementById("playerForm").onsubmit = async (e) => {
     const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
     const data = await res.json();
 
-    if (data.success) {
-        alert("Player registered!");
-        playerForm.reset();
-    } else {
-        alert("Registration failed.");
-    }
+    alert(data.success ? "Player registered!" : "Registration failed.");
 };
 
 /* ⭐ ASSIGN PLAYERS */
@@ -268,7 +249,7 @@ async function loadAssignPlayers() {
                     <option value="Sr Pro">Sr Pro</option>
                 </select>
 
-                <button class="action-btn red" onclick="assignPlayer('${p.id}')">Save</button>
+                <button class="action-btn" onclick="assignPlayer('${p.id}')">Save</button>
             </li>
         `;
     });
@@ -398,7 +379,8 @@ async function loadEquipmentPlayer() {
         <label>Jersey Returned</label>
         <input type="text" id="jerseyReturn" value="${eq.jerseyReturn}">
 
-        <button class="action-btn red" onclick="saveEquipment('${player.name}', '${player.grade}', '${player.team}')">
+        <button class="action-btn"
+            onclick="saveEquipment('${player.name}', '${player.grade}', '${player.team}')">
             Save Equipment
         </button>
     `;
