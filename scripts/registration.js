@@ -1,292 +1,182 @@
-/****************************************************
- * BC FOOTBALL – MULTI‑PLAYER REGISTRATION SYSTEM
- * Full Player Details + Sibling Discounts
- ****************************************************/
+// ----- CONFIG: SQUARE LINKS -----
+const SQUARE_LINKS = {
+    Flag: {
+        full: "https://square.link/u/1mXmf0Qd?src=sheet",
+        split1: "https://square.link/u/Dp5uuZbF?src=sheet",
+        split2: "https://square.link/u/uEwaB8fa?src=sheet"
+    },
+    "Jr Pro": {
+        full: "https://square.link/u/erwjam6I?src=sheet",
+        split1: "https://square.link/u/Vvt4QEPx?src=sheet",
+        split2: "https://square.link/u/YmwuYeY8?src=sheet"
+    }
+};
 
-const FLAG_PRICE = 57.00;
-const JRPRO_PRICE = 77.50;
-const GENERIC_PAY_LINK = "https://square.link/u/sS8n48d5?src=sheet";
+// Payment 2 due date (display only)
+const PAYMENT2_DUE_DISPLAY = "August 7";
 
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzQrgAYG45pcW1jg1HVuN8pwxjQwk3wa3CQPYGN8YwwdHH4T6qZb_CyR3_JDOaGiXG6/exec";
+// ----- WIZARD STATE -----
+let currentStep = 1;
 
-let players = [];
-let batchId = Date.now().toString();
+// ----- INIT -----
+document.addEventListener("DOMContentLoaded", () => {
+    showStep(currentStep);
+    autoFillParentInfo();
+});
 
-const playersContainer = document.getElementById("players-container");
-const addPlayerBtn = document.getElementById("add-player-btn");
-const form = document.getElementById("registration-form");
-
-/****************************************************
- * CREATE PLAYER BLOCK (FULL DETAILS)
- ****************************************************/
-function createPlayerBlock(index) {
-  const wrapper = document.createElement("div");
-  wrapper.className = "player-block";
-  wrapper.dataset.index = index;
-
-  wrapper.innerHTML = `
-    <h3>Player ${index + 1}</h3>
-
-    <label>
-      Player Name:
-      <input type="text" class="player-name" required>
-    </label>
-
-    <label>
-      Birthdate:
-      <input type="date" class="player-birthdate" required>
-    </label>
-
-    <label>
-      Age:
-      <input type="number" class="player-age" min="4" max="18" required>
-    </label>
-
-    <label>
-      Grade:
-      <input type="text" class="player-grade" required>
-    </label>
-
-    <label>
-      School:
-      <input type="text" class="player-school" required>
-    </label>
-
-    <label>
-      Gender:
-      <select class="player-gender" required>
-        <option value="">Select</option>
-        <option value="Male">Male</option>
-        <option value="Female">Female</option>
-        <option value="Other">Other</option>
-      </select>
-    </label>
-
-    <label>
-      Shirt Size:
-      <select class="player-shirt-size" required>
-        <option value="">Select</option>
-        <option value="YS">YS</option>
-        <option value="YM">YM</option>
-        <option value="YL">YL</option>
-        <option value="AS">AS</option>
-        <option value="AM">AM</option>
-        <option value="AL">AL</option>
-        <option value="AXL">AXL</option>
-      </select>
-    </label>
-
-    <label>
-      Doctor Name:
-      <input type="text" class="player-doctor-name" required>
-    </label>
-
-    <label>
-      Doctor Phone:
-      <input type="tel" class="player-doctor-phone" required>
-    </label>
-
-    <label>
-      Allergies / Medical Conditions:
-      <input type="text" class="player-allergies" required>
-    </label>
-
-    <label>
-      Jr Pro Physical On File:
-      <select class="player-physical" required>
-        <option value="">Select</option>
-        <option value="Yes">Yes</option>
-        <option value="No">No</option>
-      </select>
-    </label>
-
-    <label>
-      League:
-      <select class="player-league" required>
-        <option value="">Select</option>
-        <option value="Flag">Flag</option>
-        <option value="Jr Pro">Jr Pro</option>
-      </select>
-    </label>
-
-    <label>
-      Payment Type:
-      <select class="player-payment" required>
-        <option value="">Select</option>
-        <option value="Pay in Full">Pay in Full</option>
-        <option value="Pay in 2">Pay in 2</option>
-      </select>
-    </label>
-  `;
-
-  playersContainer.appendChild(wrapper);
+// ----- STEP NAVIGATION -----
+function showStep(step) {
+    const steps = document.querySelectorAll(".step");
+    steps.forEach((s, index) => {
+        s.classList.toggle("active", index + 1 === step);
+    });
 }
 
-/****************************************************
- * ADD PLAYER BUTTON
- ****************************************************/
-function addPlayerBlock() {
-  const index = players.length;
-  players.push({});
-  createPlayerBlock(index);
+function nextStep() {
+    if (currentStep < 5) {
+        currentStep++;
+        if (currentStep === 5) buildReview();
+        showStep(currentStep);
+    }
 }
 
-addPlayerBtn.addEventListener("click", addPlayerBlock);
-
-// Start with one player by default
-addPlayerBlock();
-
-/****************************************************
- * SIBLING DISCOUNT LOGIC
- ****************************************************/
-function calculateDiscounts(existingCount, newPlayersCount) {
-  const discounts = [];
-  let totalBeforeBatch = existingCount;
-
-  for (let i = 0; i < newPlayersCount; i++) {
-    const childNumber = totalBeforeBatch + 1;
-
-    let discount = 0;
-    if (childNumber === 2) discount = 5;
-    if (childNumber >= 3) discount = 10;
-
-    discounts.push(discount);
-    totalBeforeBatch++;
-  }
-
-  return discounts;
+function prevStep() {
+    if (currentStep > 1) {
+        currentStep--;
+        showStep(currentStep);
+    }
 }
 
-/****************************************************
- * GET EXISTING COUNT FROM GOOGLE SHEETS
- ****************************************************/
-async function fetchExistingCount(parentEmail) {
-  const res = await fetch(APPS_SCRIPT_URL, {
-    method: "POST",
-    body: JSON.stringify({
-      action: "getExistingCount",
-      parentEmail
-    })
-  });
+// ----- AUTO-FILL PARENT INFO -----
+function autoFillParentInfo() {
+    const parentName = localStorage.getItem("parentName") || "";
+    const parentEmail = localStorage.getItem("parentEmail") || "";
+    const parentPhone = localStorage.getItem("parentPhone") || "";
 
-  const data = await res.json();
-  return data.count || 0;
+    document.getElementById("parentName").value = parentName;
+    document.getElementById("parentEmail").value = parentEmail;
+    document.getElementById("parentPhone").value = parentPhone;
 }
 
-/****************************************************
- * SAVE BATCH TO GOOGLE SHEETS
- ****************************************************/
-async function saveBatchToSheet(parentInfo, players, total) {
-  await fetch(APPS_SCRIPT_URL, {
-    method: "POST",
-    body: JSON.stringify({
-      action: "saveBatch",
-      parentName: parentInfo.name,
-      parentEmail: parentInfo.email,
-      parentPhone: parentInfo.phone,
-      parentAddress: parentInfo.address,
-      players,
-      batchId,
-      total,
-      payLink: GENERIC_PAY_LINK
-    })
-  });
-}
+// ----- BUILD REVIEW STEP -----
+function buildReview() {
+    const reviewBox = document.getElementById("reviewBox");
 
-/****************************************************
- * FORM SUBMIT HANDLER
- ****************************************************/
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
+    const parentName = document.getElementById("parentName").value;
+    const parentEmail = document.getElementById("parentEmail").value;
+    const parentPhone = document.getElementById("parentPhone").value;
 
-  const parentName = document.getElementById("parent-name").value.trim();
-  const parentEmail = document.getElementById("parent-email").value.trim();
-  const parentPhone = document.getElementById("parent-phone").value.trim();
-  const parentAddress = document.getElementById("parent-address") 
-    ? document.getElementById("parent-address").value.trim() 
-    : "";
+    const playerName = document.getElementById("playerName").value;
+    const birthdate = document.getElementById("birthdate").value;
+    const school = document.getElementById("school").value;
+    const grade = document.getElementById("grade").value;
+    const gender = document.getElementById("gender").value;
+    const league = document.getElementById("league").value;
+    const shirtSize = document.getElementById("shirtSize").value;
 
-  const parentInfo = { 
-    name: parentName, 
-    email: parentEmail, 
-    phone: parentPhone,
-    address: parentAddress
-  };
+    const doctorName = document.getElementById("doctorName").value;
+    const doctorPhone = document.getElementById("doctorPhone").value;
+    const allergies = document.getElementById("allergies").value;
 
-  const blocks = document.querySelectorAll(".player-block");
-  const currentBatchPlayers = [];
+    const paymentPlan = document.getElementById("paymentPlan").value;
 
-  blocks.forEach(block => {
-    const player = {
-      name: block.querySelector(".player-name").value.trim(),
-      birthdate: block.querySelector(".player-birthdate").value.trim(),
-      age: block.querySelector(".player-age").value.trim(),
-      grade: block.querySelector(".player-grade").value.trim(),
-      school: block.querySelector(".player-school").value.trim(),
-      gender: block.querySelector(".player-gender").value,
-      shirtSize: block.querySelector(".player-shirt-size").value,
-      doctorName: block.querySelector(".player-doctor-name").value.trim(),
-      doctorPhone: block.querySelector(".player-doctor-phone").value.trim(),
-      allergies: block.querySelector(".player-allergies").value.trim(),
-      physicalOnFile: block.querySelector(".player-physical").value,
-      league: block.querySelector(".player-league").value,
-      paymentType: block.querySelector(".player-payment").value
-    };
-
-    currentBatchPlayers.push(player);
-  });
-
-  if (currentBatchPlayers.length === 0) {
-    alert("Please add at least one player.");
-    return;
-  }
-
-  // 1️⃣ Get existing count
-  const existingCount = await fetchExistingCount(parentEmail);
-
-  // 2️⃣ Calculate discounts for Pay‑in‑Full players only
-  const fullPayPlayers = currentBatchPlayers.filter(p => p.paymentType === "Pay in Full");
-  const discounts = calculateDiscounts(existingCount, fullPayPlayers.length);
-
-  let discountIndex = 0;
-  let total = 0;
-  const breakdownLines = [];
-
-  currentBatchPlayers.forEach((p) => {
-    const basePrice = p.league === "Flag" ? FLAG_PRICE : JRPRO_PRICE;
-
-    let discountApplied = 0;
-    if (p.paymentType === "Pay in Full") {
-      discountApplied = discounts[discountIndex] || 0;
-      discountIndex++;
+    let paymentText = "";
+    if (paymentPlan === "full") {
+        paymentText = "Pay in Full (Sibling discount applies if eligible).";
+    } else {
+        paymentText = `Pay in 2 Payments. Payment 1 now, Payment 2 due ${PAYMENT2_DUE_DISPLAY}. No sibling discount on split payments.`;
     }
 
-    const finalPrice = basePrice - discountApplied;
-    total += finalPrice;
+    reviewBox.innerHTML = `
+        <h4>Parent</h4>
+        <p><strong>Name:</strong> ${parentName}</p>
+        <p><strong>Email:</strong> ${parentEmail}</p>
+        <p><strong>Phone:</strong> ${parentPhone}</p>
 
-    breakdownLines.push(
-      `${p.name} – ${p.league} – $${finalPrice.toFixed(2)}`
-      + (discountApplied > 0 ? ` ($${discountApplied} sibling discount)` : "")
-      + (p.paymentType === "Pay in 2" ? " (Pay in 2 – no discount)" : "")
-    );
+        <h4>Player</h4>
+        <p><strong>Name:</strong> ${playerName}</p>
+        <p><strong>Birthdate:</strong> ${birthdate}</p>
+        <p><strong>School:</strong> ${school}</p>
+        <p><strong>Grade:</strong> ${grade}</p>
+        <p><strong>Gender:</strong> ${gender}</p>
+        <p><strong>League:</strong> ${league}</p>
+        <p><strong>Shirt Size:</strong> ${shirtSize}</p>
 
-    p.basePrice = basePrice;
-    p.discountApplied = discountApplied;
-    p.finalPrice = finalPrice;
-    p.batchId = batchId;
-  });
+        <h4>Medical</h4>
+        <p><strong>Doctor:</strong> ${doctorName}</p>
+        <p><strong>Doctor Phone:</strong> ${doctorPhone}</p>
+        <p><strong>Allergies / Notes:</strong> ${allergies}</p>
 
-  // 3️⃣ Show Review & Pay section
-  const reviewSection = document.getElementById("review-section");
-  const breakdownDiv = document.getElementById("breakdown");
-  const totalDueP = document.getElementById("total-due");
+        <h4>Payment</h4>
+        <p>${paymentText}</p>
+    `;
+}
 
-  breakdownDiv.innerHTML = breakdownLines.map(l => `<p>${l}</p>`).join("");
-  totalDueP.textContent = `Total Due: $${total.toFixed(2)}`;
-  reviewSection.style.display = "block";
+// ----- SUBMIT & PAY -----
+function submitRegistration() {
+    const parentName = document.getElementById("parentName").value;
+    const parentEmail = document.getElementById("parentEmail").value;
+    const parentPhone = document.getElementById("parentPhone").value;
 
-  // 4️⃣ Save batch to Google Sheets
-  await saveBatchToSheet(parentInfo, currentBatchPlayers, total);
+    const playerName = document.getElementById("playerName").value;
+    const birthdate = document.getElementById("birthdate").value;
+    const school = document.getElementById("school").value;
+    const grade = document.getElementById("grade").value;
+    const gender = document.getElementById("gender").value;
+    const league = document.getElementById("league").value;
+    const shirtSize = document.getElementById("shirtSize").value;
 
-  alert("Registration saved. Please complete payment using the Pay Now button.");
-});
+    const doctorName = document.getElementById("doctorName").value;
+    const doctorPhone = document.getElementById("doctorPhone").value;
+    const allergies = document.getElementById("allergies").value;
+
+    const paymentPlan = document.getElementById("paymentPlan").value;
+
+    // Build payload for Google Sheets
+    const payload = {
+        action: "saveRegistration",
+        parentName,
+        parentEmail,
+        parentPhone,
+        playerName,
+        birthdate,
+        school,
+        grade,
+        gender,
+        league,
+        shirtSize,
+        doctorName,
+        doctorPhone,
+        allergies,
+        paymentPlan,
+        payment2Due: PAYMENT2_DUE_DISPLAY
+    };
+
+    // TODO: replace with your actual Apps Script endpoint
+    const SHEETS_ENDPOINT = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec";
+
+    fetch(SHEETS_ENDPOINT, {
+        method: "POST",
+        mode: "no-cors",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+    }).catch(err => {
+        console.error("Error saving registration:", err);
+    });
+
+    // Decide Square link
+    const leagueKey = league === "Flag" ? "Flag" : "Jr Pro";
+    let redirectUrl = "";
+
+    if (paymentPlan === "full") {
+        redirectUrl = SQUARE_LINKS[leagueKey].full;
+    } else {
+        redirectUrl = SQUARE_LINKS[leagueKey].split1;
+        // Payment 2 link & due date will be shown in parent dashboard:
+        // "Pay Remaining Balance (Due August 7)" using split2.
+    }
+
+    window.location.href = redirectUrl;
+}
