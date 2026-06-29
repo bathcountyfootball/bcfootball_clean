@@ -29,7 +29,7 @@
             <label>Password</label>
             <input type="password" id="password" required>
 
-            <button class="action-btn red">Login</button>
+            <button type="submit" class="action-btn red">Login</button>
         </form>
     </div>
 </section>
@@ -43,34 +43,42 @@ document.getElementById("adminLoginForm").onsubmit = async (e) => {
     const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value;
 
+    // ✅ Include the action field so Apps Script recognizes the request
     const payload = {
         action: "login",
         username,
         password
     };
 
-    const res = await fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify(payload)
-    });
+    try {
+        const res = await fetch(API_URL, {
+            method: "POST",
+            body: JSON.stringify(payload)
+        });
 
-    const data = await res.json();
+        const data = await res.json();
 
-    if (!data.success) {
-        alert("Invalid username or password");
-        return;
+        if (!data.success) {
+            alert("Invalid username or password");
+            return;
+        }
+
+        if (data.role !== "admin") {
+            alert("You are not authorized as an admin");
+            return;
+        }
+
+        // ✅ Store admin session info
+        localStorage.setItem("adminUser", username);
+        localStorage.setItem("adminName", data.name);
+        localStorage.setItem("adminEmail", data.email);
+
+        // ✅ Redirect to your admin dashboard
+        window.location.href = "admin-dashboard.html";
+    } catch (err) {
+        alert("Login failed. Please try again.");
+        console.error(err);
     }
-
-    if (data.role !== "admin") {
-        alert("You are not authorized as an admin");
-        return;
-    }
-
-    localStorage.setItem("adminUser", username);
-    localStorage.setItem("adminName", data.name);
-    localStorage.setItem("adminEmail", data.email);
-
-    window.location.href = "admin-dashboard.html";
 };
 </script>
 
