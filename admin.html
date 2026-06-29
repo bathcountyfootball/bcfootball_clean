@@ -1,99 +1,63 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login – Bath County Football</title>
+    <title>Admin Login</title>
     <link rel="stylesheet" href="home.css">
-
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
-
-    <script>
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-    </script>
-
-    <style>
-        .login-card input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 14px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            font-size: 1rem;
-        }
-    </style>
 </head>
 
 <body>
 
 <header class="hero">
     <h1>Admin Login</h1>
-    <p>Bath County Football</p>
 </header>
 
 <section class="main-links">
-    <div class="link-card login-card" style="max-width:400px; margin:auto;">
+    <div class="link-card" style="max-width:400px; margin:auto;">
         <h2>Admin Access</h2>
-        <p>Enter your admin username and password.</p>
 
-        <form id="adminLoginForm">
+        <form id="loginForm">
             <label>Username</label>
             <input type="text" id="username" required>
 
             <label>Password</label>
             <input type="password" id="password" required>
 
-            <button type="submit" class="action-btn red">Login</button>
+            <button class="action-btn red">Login</button>
         </form>
-
-        <p style="margin-top:10px; font-size:0.9rem;">
-            Only authorized league admins may access this page.
-        </p>
     </div>
 </section>
 
 <script>
-document.getElementById("adminLoginForm").onsubmit = async (e) => {
+const API_URL = "https://script.google.com/macros/s/AKfycbxnIbz_eMUCwMyCa52oZbJTbC6PRb77FDKG6g6CMPTHt9sOd53SYd5lceIca0xH96wpBg/exec";
+
+document.getElementById("loginForm").onsubmit = async (e) => {
     e.preventDefault();
 
     const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value;
 
-    try {
-        // Admin usernames are stored in Firestore
-        const adminDoc = await db.collection("admins").doc(username).get();
+    const res = await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({ username, password })
+    });
 
-        if (!adminDoc.exists) {
-            alert("Invalid admin username.");
-            return;
-        }
+    const data = await res.json();
 
-        const admin = adminDoc.data();
-
-        if (admin.password !== password) {
-            alert("Incorrect password.");
-            return;
-        }
-
-        // Store admin session
-        localStorage.setItem("adminUser", username);
-
-        window.location.href = "admin-dashboard.html";
-
-    } catch (err) {
-        alert("Login failed: " + err.message);
+    if (!data.success) {
+        alert("Invalid username or password");
+        return;
     }
+
+    if (data.role !== "admin") {
+        alert("You are not authorized as an admin");
+        return;
+    }
+
+    localStorage.setItem("adminUser", username);
+    localStorage.setItem("adminName", data.name);
+    localStorage.setItem("adminEmail", data.email);
+
+    window.location.href = "admin-dashboard.html";
 };
 </script>
 
