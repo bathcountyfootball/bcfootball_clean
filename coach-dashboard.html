@@ -5,7 +5,7 @@
     <link rel="stylesheet" href="home.css">
 
     <style>
-        /* Modal for Assign Players */
+        /* Modal */
         .modal {
             position: fixed;
             top: 0; left: 0;
@@ -31,7 +31,7 @@
             padding-left: 0;
         }
         .modal-content li {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             padding-bottom: 10px;
             border-bottom: 1px solid #ccc;
         }
@@ -67,7 +67,7 @@ if (!localStorage.getItem("coachUser")) {
 
     <div class="link-card">
         <h3>Your Team Roster</h3>
-        <p id="teamRoster">Loading roster...</p>
+        <button class="action-btn red" onclick="openRoster()">View Team Roster</button>
     </div>
 
     <div class="link-card">
@@ -162,6 +162,26 @@ if (!localStorage.getItem("coachUser")) {
   </div>
 </div>
 
+<!-- ⭐ TEAM ROSTER MODAL -->
+<div id="rosterModal" class="modal">
+  <div class="modal-content">
+    <h2>Team Roster</h2>
+
+    <label>Select Team</label>
+    <select id="rosterTeam">
+        <option value="Flag">Flag</option>
+        <option value="Jr Pro">Jr Pro</option>
+        <option value="Sr Pro">Sr Pro</option>
+    </select>
+
+    <button class="action-btn red" onclick="loadTeamRoster()">Load Roster</button>
+
+    <div id="rosterResults" style="margin-top:20px;"></div>
+
+    <button class="action-btn red" onclick="closeRoster()">Close</button>
+  </div>
+</div>
+
 <footer>
     <p>© 2026 Bath County Youth Football</p>
 </footer>
@@ -169,11 +189,10 @@ if (!localStorage.getItem("coachUser")) {
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbxnIbz_eMUCwMyCa52oZbJTbC6PRb77FDKG6g6CMPTHt9sOd53SYd5lceIca0xH96wpBg/exec";
 
-// Load coach profile
+// Profile
 document.getElementById("coachProfile").innerText =
     localStorage.getItem("coachName") + " (" + localStorage.getItem("coachEmail") + ")";
 
-// Logout
 function logout() {
     localStorage.removeItem("coachUser");
     localStorage.removeItem("coachName");
@@ -181,7 +200,7 @@ function logout() {
     window.location.href = "coaches.html";
 }
 
-// Placeholder functions
+// Placeholder tools
 function openAttendance() { alert("Attendance tool coming soon."); }
 function openSchedule() { alert("Schedule tool coming soon."); }
 function openCards() { alert("Player Cards coming soon."); }
@@ -226,11 +245,10 @@ document.getElementById("playerForm").onsubmit = async (e) => {
     }
 };
 
-// ⭐ ASSIGN PLAYERS TOOL
+// ⭐ ASSIGN PLAYERS
 function openAssign() {
     document.getElementById("assignModal").style.display = "flex";
 }
-
 function closeAssign() {
     document.getElementById("assignModal").style.display = "none";
 }
@@ -258,7 +276,7 @@ async function loadAssignPlayers() {
     data.players.forEach(p => {
         html += `
             <li>
-                <strong>${p.playerFirst} ${p.playerLast}</strong> (Grade ${p.grade})
+                <strong>${p.name}</strong> (Grade ${p.grade})
                 <br><br>
 
                 <label>Assign Coach:</label>
@@ -304,6 +322,50 @@ async function assignPlayer(id) {
     } else {
         alert("Failed to assign player.");
     }
+}
+
+// ⭐ TEAM ROSTER VIEW
+function openRoster() {
+    document.getElementById("rosterModal").style.display = "flex";
+}
+function closeRoster() {
+    document.getElementById("rosterModal").style.display = "none";
+}
+
+async function loadTeamRoster() {
+    const team = document.getElementById("rosterTeam").value;
+
+    const res = await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({
+            action: "getTeamRoster",
+            team
+        })
+    });
+
+    const data = await res.json();
+
+    if (!data.success || data.players.length === 0) {
+        document.getElementById("rosterResults").innerHTML = "<p>No players found for this team.</p>";
+        return;
+    }
+
+    let html = "<ul>";
+
+    data.players.forEach(p => {
+        html += `
+            <li>
+                <strong>${p.name}</strong><br>
+                Grade: ${p.grade}<br>
+                School: ${p.school}<br>
+                Shirt Size: ${p.shirtSize}
+            </li>
+        `;
+    });
+
+    html += "</ul>";
+
+    document.getElementById("rosterResults").innerHTML = html;
 }
 </script>
 
