@@ -3,6 +3,39 @@
 <head>
     <title>Coach Dashboard</title>
     <link rel="stylesheet" href="home.css">
+
+    <style>
+        /* Modal for Assign Players */
+        .modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .modal-content {
+            background: white;
+            padding: 20px;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 10px;
+        }
+        .modal-content h2 {
+            margin-top: 0;
+        }
+        .modal-content ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        .modal-content li {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+    </style>
 </head>
 
 <body>
@@ -58,7 +91,7 @@ if (!localStorage.getItem("coachUser")) {
     </div>
 </section>
 
-<!-- ⭐ NEW: Coach Player Registration Section -->
+<!-- ⭐ COACH PLAYER REGISTRATION -->
 <section class="registration-section" style="max-width:600px; margin:auto;">
     <h2>Register a Player</h2>
 
@@ -113,6 +146,22 @@ if (!localStorage.getItem("coachUser")) {
     </form>
 </section>
 
+<!-- ⭐ ASSIGN PLAYERS MODAL -->
+<div id="assignModal" class="modal">
+  <div class="modal-content">
+    <h2>Assign Players</h2>
+
+    <label>Search Player</label>
+    <input type="text" id="assignSearch" placeholder="Enter player name">
+
+    <button class="action-btn red" onclick="loadAssignPlayers()">Search</button>
+
+    <div id="assignResults" style="margin-top:20px;"></div>
+
+    <button class="action-btn red" onclick="closeAssign()">Close</button>
+  </div>
+</div>
+
 <footer>
     <p>© 2026 Bath County Youth Football</p>
 </footer>
@@ -132,25 +181,22 @@ function logout() {
     window.location.href = "coaches.html";
 }
 
-// Placeholder functions for your existing tools
-function openAssign() { alert("Assign Players tool coming soon."); }
+// Placeholder functions
 function openAttendance() { alert("Attendance tool coming soon."); }
 function openSchedule() { alert("Schedule tool coming soon."); }
 function openCards() { alert("Player Cards coming soon."); }
 
-// ⭐ Handle Player Registration
+// ⭐ PLAYER REGISTRATION
 document.getElementById("playerForm").onsubmit = async (e) => {
     e.preventDefault();
 
     const payload = {
         action: "registerPlayer",
 
-        // Auto-filled parent info
         coachName: localStorage.getItem("coachName"),
         coachEmail: localStorage.getItem("coachEmail"),
         coachUser: localStorage.getItem("coachUser"),
 
-        // Player info
         playerFirst: document.getElementById("playerFirst").value.trim(),
         playerLast: document.getElementById("playerLast").value.trim(),
         birthdate: document.getElementById("birthdate").value,
@@ -179,22 +225,86 @@ document.getElementById("playerForm").onsubmit = async (e) => {
         alert("Registration failed. Please try again.");
     }
 };
-<!-- ⭐ ASSIGN PLAYERS MODAL -->
-<div id="assignModal" class="modal" style="display:none;">
-  <div class="modal-content">
-    <h2>Assign Players to Coaches & Teams</h2>
 
-    <label>Search Player</label>
-    <input type="text" id="assignSearch" placeholder="Enter player name">
+// ⭐ ASSIGN PLAYERS TOOL
+function openAssign() {
+    document.getElementById("assignModal").style.display = "flex";
+}
 
-    <button class="action-btn red" onclick="loadAssignPlayers()">Search</button>
+function closeAssign() {
+    document.getElementById("assignModal").style.display = "none";
+}
 
-    <div id="assignResults" style="margin-top:20px;"></div>
+async function loadAssignPlayers() {
+    const search = document.getElementById("assignSearch").value.trim();
 
-    <button class="action-btn red" onclick="closeAssign()">Close</button>
-  </div>
-</div>
+    const res = await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({
+            action: "searchAllPlayers",
+            search
+        })
+    });
 
+    const data = await res.json();
+
+    if (!data.success || data.players.length === 0) {
+        document.getElementById("assignResults").innerHTML = "<p>No players found.</p>";
+        return;
+    }
+
+    let html = "<ul>";
+
+    data.players.forEach(p => {
+        html += `
+            <li>
+                <strong>${p.playerFirst} ${p.playerLast}</strong> (Grade ${p.grade})
+                <br><br>
+
+                <label>Assign Coach:</label>
+                <select id="coach_${p.id}">
+                    ${data.coaches.map(c => `<option value="${c.email}">${c.name}</option>`).join("")}
+                </select>
+
+                <label>Team:</label>
+                <select id="team_${p.id}">
+                    <option value="Flag">Flag</option>
+                    <option value="Jr Pro">Jr Pro</option>
+                    <option value="Sr Pro">Sr Pro</option>
+                </select>
+
+                <button class="action-btn red" onclick="assignPlayer('${p.id}')">Save</button>
+            </li>
+        `;
+    });
+
+    html += "</ul>";
+
+    document.getElementById("assignResults").innerHTML = html;
+}
+
+async function assignPlayer(id) {
+    const coachEmail = document.getElementById(`coach_${id}`).value;
+    const team = document.getElementById(`team_${id}`).value;
+
+    const res = await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({
+            action: "assignPlayer",
+            id,
+            coachEmail,
+            team
+        })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+        alert("Player assigned!");
+    } else {
+        alert("Failed to assign player.");
+    }
+}
 </script>
 
 </body>
