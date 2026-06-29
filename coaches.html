@@ -1,96 +1,63 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coach Login – Bath County Football</title>
+    <title>Coach Login</title>
     <link rel="stylesheet" href="home.css">
-
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
-
-    <script>
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-    </script>
-
-    <style>
-        .login-card input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 14px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            font-size: 1rem;
-        }
-    </style>
 </head>
 
 <body>
 
 <header class="hero">
     <h1>Coach Login</h1>
-    <p>Bath County Football</p>
 </header>
 
 <section class="main-links">
-    <div class="link-card login-card" style="max-width:400px; margin:auto;">
+    <div class="link-card" style="max-width:400px; margin:auto;">
         <h2>Coach Access</h2>
-        <p>Enter your coach username and password.</p>
 
-        <form id="coachLoginForm">
+        <form id="loginForm">
             <label>Username</label>
             <input type="text" id="username" required>
 
             <label>Password</label>
             <input type="password" id="password" required>
 
-            <button type="submit" class="action-btn red">Login</button>
+            <button class="action-btn red">Login</button>
         </form>
-
-        <p style="margin-top:10px; font-size:0.9rem;">
-            Only authorized coaches may access this page.
-        </p>
     </div>
 </section>
 
 <script>
-document.getElementById("coachLoginForm").onsubmit = async (e) => {
+const API_URL = "YOUR_WEB_APP_URL_HERE";
+
+document.getElementById("loginForm").onsubmit = async (e) => {
     e.preventDefault();
 
     const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value;
 
-    try {
-        const coachDoc = await db.collection("coaches").doc(username).get();
+    const res = await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({ username, password })
+    });
 
-        if (!coachDoc.exists) {
-            alert("Invalid coach username.");
-            return;
-        }
+    const data = await res.json();
 
-        const coach = coachDoc.data();
-
-        if (coach.password !== password) {
-            alert("Incorrect password.");
-            return;
-        }
-
-        localStorage.setItem("coachUser", username);
-
-        window.location.href = "coaches-dashboard.html";
-
-    } catch (err) {
-        alert("Login failed: " + err.message);
+    if (!data.success) {
+        alert("Invalid username or password");
+        return;
     }
+
+    if (data.role !== "coach") {
+        alert("You are not authorized as a coach");
+        return;
+    }
+
+    localStorage.setItem("coachUser", username);
+    localStorage.setItem("coachName", data.name);
+    localStorage.setItem("coachEmail", data.email);
+
+    window.location.href = "coaches-dashboard.html";
 };
 </script>
 
