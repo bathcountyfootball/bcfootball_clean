@@ -12,40 +12,57 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
 
     <script>
+        // TODO: Replace with your Firebase config
         const firebaseConfig = {
-            apiKey: "YOUR_KEY",
-            authDomain: "YOUR_DOMAIN",
-            projectId: "YOUR_PROJECT",
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID"
         };
+
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
     </script>
 
     <style>
-        .coach-section {
-            margin-bottom: 30px;
+        .coach-card, .dashboard-card {
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            margin-bottom: 25px;
         }
-        .coach-section h2 {
+        .coach-card h2, .dashboard-card h2 {
             color: #b30000;
-            margin-bottom: 10px;
+            margin-top: 0;
+            font-size: 1.4rem;
+            font-weight: 800;
         }
         .player-card {
-            background: #fff;
-            padding: 15px;
-            margin-bottom: 12px;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            background: #fafafa;
+            padding: 18px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 6px solid #b30000;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
-        .attendance-btn {
-            margin-top: 10px;
-            display: inline-block;
-            padding: 10px 14px;
-            background: #b30000;
+        .player-card h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+        .logout-btn {
+            background: #444;
             color: #fff;
-            border-radius: 6px;
+            padding: 12px 18px;
+            border-radius: 8px;
             text-decoration: none;
             font-weight: bold;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        .logout-btn:hover {
+            background: #000;
         }
     </style>
 </head>
@@ -57,35 +74,52 @@
     <p>Team Management & Tools</p>
 </header>
 
-<section class="content">
+<section class="main-links" style="max-width:900px; margin:auto;">
+
+    <!-- COACH INFO -->
+    <div class="coach-card">
+        <h2>Your Coaching Profile</h2>
+        <p id="coachName">Loading...</p>
+        <p id="coachEmail"></p>
+
+        <a href="#" id="logoutBtn" class="logout-btn">Logout</a>
+    </div>
+
+    <!-- COACH'S OWN KIDS -->
+    <div class="dashboard-card">
+        <h2>Your Children</h2>
+        <div id="coachKidsList">Loading...</div>
+    </div>
 
     <!-- TEAM ROSTER -->
-    <div class="card coach-section">
+    <div class="dashboard-card">
         <h2>Your Team Roster</h2>
-        <div id="rosterList">Loading roster...</div>
+        <div id="teamRosterList">Loading roster...</div>
+    </div>
+
+    <!-- ASSIGN PLAYERS -->
+    <div class="dashboard-card">
+        <h2>Assign Players to Coaches & Teams</h2>
+        <a href="#" id="openAssignModal" class="action-btn red">Assign Players</a>
     </div>
 
     <!-- ATTENDANCE -->
-    <div class="card coach-section">
+    <div class="dashboard-card">
         <h2>Attendance Tracking</h2>
-        <p>Mark players present or absent for practices and games.</p>
-        <a href="attendance.html" class="attendance-btn">Open Attendance Tool</a>
+        <a href="attendance.html" class="action-btn">Open Attendance Tool</a>
     </div>
 
     <!-- SCHEDULE -->
-    <div class="card coach-section">
+    <div class="dashboard-card">
         <h2>Team Schedule</h2>
-        <p>View upcoming practices and games.</p>
         <a href="schedule.html" class="action-btn">View Schedule</a>
     </div>
 
     <!-- PLAYER CARDS -->
-    <div class="card coach-section">
+    <div class="dashboard-card">
         <h2>Player Cards</h2>
-        <p>Printable player cards with emergency info.</p>
         <a href="player-cards.html" class="action-btn">View Player Cards</a>
     </div>
-	<a href="#" id="openAssignModal" class="action-btn red">Assign Players</a>
 
 </section>
 
@@ -93,44 +127,7 @@
     <p>© 2026 Bath County Youth Football</p>
 </footer>
 
-<script>
-    auth.onAuthStateChanged(async user => {
-        if (!user) {
-            window.location.href = "coaches.html";
-            return;
-        }
-
-        const coachEmail = user.email;
-
-        // Load roster based on coach email
-        const snapshot = await db.collection("registrations")
-            .where("coachEmail", "==", coachEmail)
-            .get();
-
-        const rosterDiv = document.getElementById("rosterList");
-        rosterDiv.innerHTML = "";
-
-        snapshot.forEach(doc => {
-            const p = doc.data();
-            const div = document.createElement("div");
-            div.className = "player-card";
-            div.innerHTML = `
-                <h3>${p.playerName}</h3>
-                <p>Grade: ${p.grade}</p>
-                <p>League: ${p.league}</p>
-                <p>School: ${p.school}</p>
-                <p>Shirt Size: ${p.shirtSize}</p>
-            `;
-            rosterDiv.appendChild(div);
-        });
-
-        if (snapshot.empty) {
-            rosterDiv.innerHTML = "<p>No players assigned to you yet.</p>";
-        }
-    });
-</script>
-
-	<!-- ASSIGN PLAYERS MODAL -->
+<!-- ASSIGN PLAYERS MODAL -->
 <div id="assignModal" style="
     display:none; 
     position:fixed; 
@@ -169,5 +166,98 @@
     </div>
 </div>
 
-</body>
-</html>
+<script>
+auth.onAuthStateChanged(async user => {
+    if (!user) {
+        window.location.href = "coaches.html";
+        return;
+    }
+
+    const uid = user.uid;
+
+    // Load coach profile
+    const coachDoc = await db.collection("coaches").doc(uid).get();
+    const coach = coachDoc.data();
+
+    document.getElementById("coachName").innerText = coach.coachName;
+    document.getElementById("coachEmail").innerText = "Email: " + coach.email;
+
+    // Load coach's own kids
+    const kidsSnap = await db.collection("registrations")
+        .where("coachEmail", "==", coach.email)
+        .get();
+
+    const kidsList = document.getElementById("coachKidsList");
+    kidsList.innerHTML = "";
+
+    kidsSnap.forEach(doc => {
+        const p = doc.data();
+        kidsList.innerHTML += `
+            <div class="player-card">
+                <h3>${p.playerName}</h3>
+                <p>Grade: ${p.grade}</p>
+                <p>League: ${p.league}</p>
+            </div>
+        `;
+    });
+
+    if (kidsSnap.empty) {
+        kidsList.innerHTML = "<p>You have no children registered.</p>";
+    }
+
+    // Load team roster
+    const rosterSnap = await db.collection("registrations")
+        .where("coachEmail", "==", coach.email)
+        .get();
+
+    const rosterList = document.getElementById("teamRosterList");
+    rosterList.innerHTML = "";
+
+    rosterSnap.forEach(doc => {
+        const p = doc.data();
+        rosterList.innerHTML += `
+            <div class="player-card">
+                <h3>${p.playerName}</h3>
+                <p>Team: ${p.teamNumber || "Unassigned"}</p>
+                <p>Grade: ${p.grade}</p>
+                <p>League: ${p.league}</p>
+            </div>
+        `;
+    });
+
+    if (rosterSnap.empty) {
+        rosterList.innerHTML = "<p>No players assigned to your team yet.</p>";
+    }
+});
+
+// Logout
+document.getElementById("logoutBtn").onclick = async () => {
+    await auth.signOut();
+    window.location.href = "coaches.html";
+};
+
+// OPEN ASSIGN MODAL
+document.getElementById("openAssignModal").onclick = async () => {
+    document.getElementById("assignModal").style.display = "block";
+
+    // Load coaches
+    const coachSnap = await db.collection("coaches").get();
+    const coachSelect = document.getElementById("coachSelect");
+    coachSelect.innerHTML = "";
+
+    coachSnap.forEach(doc => {
+        const c = doc.data();
+        coachSelect.innerHTML += `<option value="${c.email}">${c.coachName} (${c.email})</option>`;
+    });
+
+    // Load all players
+    const playerSnap = await db.collection("registrations").get();
+    const list = document.getElementById("allPlayersList");
+    list.innerHTML = "";
+
+    playerSnap.forEach(doc => {
+        const p = doc.data();
+        list.innerHTML += `
+            <div style="
+                padding:12px; 
+                border-bottom:1px solid
