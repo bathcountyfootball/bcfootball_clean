@@ -83,6 +83,69 @@ if (!coachUser) {
 
 <header class="hero">
     <h1>Coach Dashboard</h1>
+	<section class="registration-section">
+  <h2>Register a Player</h2>
+  <form id="playerForm">
+    <label>Player Name</label>
+    <input type="text" id="playerName" required>
+
+    <label>Birthdate</label>
+    <input type="date" id="birthdate" required>
+
+    <label>School</label>
+    <input type="text" id="school" required>
+
+    <label>Grade</label>
+    <input type="text" id="grade" required>
+
+    <label>Shirt Size</label>
+    <input type="text" id="shirtSize" required>
+
+    <label>Medical Conditions</label>
+    <input type="text" id="medical" placeholder="None">
+
+    <button type="submit" class="action-btn red">Register Player</button>
+  </form>
+</section>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbxnIbz_eMUCwMyCa52oZbJTbC6PRb77FDKG6g6CMPTHt9sOd53SYd5lceIca0xH96wpBg/exec";
+
+if (!localStorage.getItem("coachUser")) {
+  window.location.href = "coaches.html";
+}
+
+document.getElementById("playerForm").onsubmit = async (e) => {
+  e.preventDefault();
+
+  const coachEmail = localStorage.getItem("coachEmail");
+  const playerData = {
+    action: "registerPlayer",
+    coachEmail,
+    name: document.getElementById("playerName").value.trim(),
+    birthdate: document.getElementById("birthdate").value,
+    school: document.getElementById("school").value.trim(),
+    grade: document.getElementById("grade").value.trim(),
+    shirtSize: document.getElementById("shirtSize").value.trim(),
+    medical: document.getElementById("medical").value.trim()
+  };
+
+  const res = await fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify(playerData)
+  });
+
+  const data = await res.json();
+
+  if (data.success) {
+    alert("Player registered successfully!");
+    document.getElementById("playerForm").reset();
+  } else {
+    alert("Registration failed. Please try again.");
+  }
+};
+</script>
+
     <p>Team Management & Tools</p>
 </header>
 
