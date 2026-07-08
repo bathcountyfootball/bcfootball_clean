@@ -1,124 +1,121 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Player Registration – Bath County Football</title>
-    <link rel="stylesheet" href="css/styles.css">
-    <style>
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .form-section {
-            margin-bottom: 20px;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            background: #fafafa;
-        }
-        .form-section h3 {
-            margin-top: 0;
-        }
-        label {
-            display: block;
-            margin-top: 8px;
-            font-weight: 600;
-        }
-        input, select, textarea {
-            width: 100%;
-            padding: 8px;
-            margin-top: 4px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-            box-sizing: border-box;
-        }
-        .player-card {
-            margin-bottom: 20px;
-            padding: 15px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            background: #fff;
-        }
-        .btn {
-            padding: 10px 14px;
-            background: #c00;
-            color: #fff;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        .submit-btn {
-            padding: 12px 18px;
-            background: #008000;
-            color: #fff;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 18px;
-        }
-        .note {
-            font-size: 0.9em;
-            color: #555;
-        }
-        hr {
-            margin: 12px 0;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Player Registration – Bath County Football</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .form-section {
+      margin-bottom: 20px;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #fafafa;
+    }
+    label {
+      display: block;
+      margin-top: 8px;
+      font-weight: 600;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    .player-card {
+      margin-bottom: 20px;
+      padding: 15px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background: #fff;
+    }
+    .btn {
+      padding: 10px 14px;
+      background: #c00;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .submit-btn {
+      padding: 12px 18px;
+      background: #008000;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 18px;
+    }
+    .note {
+      font-size: 0.9em;
+      color: #555;
+    }
+  </style>
 </head>
 
 <body>
-    <div class="container">
-        <h1>Player Registration</h1>
-        <h2>Bath County Flag & Jr Pro Football</h2>
+  <div class="container">
+    <h1>Player Registration</h1>
+    <h2>Bath County Flag & Jr Pro Football</h2>
 
-        <form id="registrationForm">
+    <form id="registrationForm">
+      <!-- Parent Info -->
+      <section class="form-section">
+        <h3>Parent Information</h3>
+        <label>Parent Name</label>
+        <input type="text" id="parentName" required />
+        <label>Parent Email</label>
+        <input type="email" id="parentEmail" required />
+        <label>Parent Phone</label>
+        <input type="tel" id="parentPhone" required />
+        <label>Parent Address</label>
+        <input type="text" id="parentAddress" required />
+      </section>
 
-            <!-- Parent Information -->
-            <section class="form-section">
-                <h3>Parent Information</h3>
+      <!-- Players -->
+      <section class="form-section">
+        <h3>Player(s)</h3>
+        <div id="playersContainer"></div>
+        <button type="button" class="btn" onclick="addPlayer()">+ Add Player</button>
+        <p class="note">Click “Add Player” to add each child. All fields appear immediately for each player.</p>
+      </section>
 
-                <label>Parent Name</label>
-                <input type="text" id="parentName" required>
+      <!-- Payment Plan -->
+      <section class="form-section">
+        <h3>Payment Plan</h3>
+        <label>Select Payment Option</label>
+        <select id="paymentPlan" required>
+          <option value="">Select</option>
+          <option value="full">Pay in Full</option>
+          <option value="plan">2‑Payment Plan</option>
+        </select>
+        <p class="note">Sibling discount applies only to Pay‑in‑Full.</p>
+      </section>
 
-                <label>Parent Email</label>
-                <input type="email" id="parentEmail" required>
+      <!-- Review -->
+      <section class="form-section">
+        <h3>Review Your Information</h3>
+        <div id="reviewBox"></div>
+        <button type="button" class="btn" onclick="buildReview()">Refresh Review</button>
+      </section>
 
-                <label>Parent Phone</label>
-                <input type="tel" id="parentPhone" required>
+      <!-- Submit -->
+      <section class="form-section">
+        <button type="button" class="submit-btn" onclick="submitRegistration()">Submit & Pay</button>
+      </section>
+    </form>
+  </div>
 
-                <label>Parent Address</label>
-                <input type="text" id="parentAddress" required>
-            </section>
-
-            <!-- Players -->
-            <section class="form-section">
-                <h3>Player(s)</h3>
-
-                <div id="playersContainer"></div>
-
-                <!-- Add Player button appears directly under the last player -->
-                <button type="button" class="btn" onclick="addPlayer()">+ Add Player</button>
-                <p class="note">Click “Add Player” to add each child. All fields appear immediately for each player.</p>
-            </section>
-
-            <!-- Review -->
-            <section class="form-section">
-                <h3>Review Your Information</h3>
-                <div id="reviewBox"></div>
-                <button type="button" class="btn" onclick="buildReview()">Refresh Review</button>
-            </section>
-
-            <!-- Submit -->
-            <section class="form-section">
-                <button type="button" class="submit-btn" onclick="submitRegistration()">Submit & Pay</button>
-            </section>
-
-        </form>
-    </div>
-
-    <script src="scripts/registration.js"></script>
+  <script src="scripts/registration.js"></script>
 </body>
 </html>
