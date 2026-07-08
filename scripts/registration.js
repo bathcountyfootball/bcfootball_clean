@@ -16,7 +16,7 @@ const PAYMENT2_DUE_DISPLAY = "August 7";
 
 // Your actual Apps Script endpoint
 const SHEETS_ENDPOINT =
-    "https://script.google.com/macros/s/AKfycbxnIbz_eMUCwMyCa52oZbJTbC6PRb77FDKG6g6CMPTHt9sOd53SYd5lceIca0xH96wpBg/exec";
+    "https://script.google.com/macros/s/AKfycbzQrgAYG45pcW1jg1HVuN8pwxjQwk3wa3CQPYGN8YwwdHH4T6qZb_CyR3_JDOaGiXG6/exec";
 
 // Store players
 let players = [];
