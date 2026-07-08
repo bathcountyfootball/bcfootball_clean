@@ -1,176 +1,1516 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Parent Dashboard – Bath County Football</title>
-  <link rel="stylesheet" href="home.css">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>
+    Parent Dashboard – Bath County Football
+  </title>
+
 
   <style>
-    body { font-family: Arial, Helvetica, sans-serif; background:#f4f4f4; margin:0; }
-    .hero { background:#b30000; color:white; padding:30px 20px; text-align:center; }
-    .main-links { max-width:900px; margin:25px auto; padding:0 15px; }
+
+    * {
+      box-sizing: border-box;
+    }
+
+
+    body {
+
+      font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+      background:
+        #f4f4f4;
+
+      margin:
+        0;
+    }
+
+
+    .hero {
+
+      background:
+        #b30000;
+
+      color:
+        white;
+
+      padding:
+        30px 20px;
+
+      text-align:
+        center;
+    }
+
+
+    .main-links {
+
+      max-width:
+        900px;
+
+      margin:
+        25px auto;
+
+      padding:
+        0 15px;
+    }
+
+
     .dashboard-card {
-      background:#fff; padding:25px; border-radius:12px;
-      box-shadow:0 4px 12px rgba(0,0,0,0.15); margin-bottom:25px;
+
+      background:
+        white;
+
+      padding:
+        25px;
+
+      border-radius:
+        12px;
+
+      box-shadow:
+        0 4px 12px rgba(0,0,0,.15);
+
+      margin-bottom:
+        25px;
     }
-    .dashboard-card h2 { color:#b30000; margin-top:0; }
+
+
+    .dashboard-card h2 {
+
+      color:
+        #b30000;
+
+      margin-top:
+        0;
+    }
+
+
     .player-card {
-      background:#fafafa; padding:18px; border-radius:10px;
-      margin-bottom:15px; border-left:6px solid #b30000;
+
+      background:
+        #fafafa;
+
+      padding:
+        18px;
+
+      border-radius:
+        10px;
+
+      margin-bottom:
+        15px;
+
+      border-left:
+        6px solid #b30000;
     }
+
+
     .btn {
-      display:inline-block; background:#b30000; color:white; padding:12px 18px;
-      border-radius:8px; text-decoration:none; font-weight:bold; border:none; cursor:pointer;
+
+      display:
+        inline-block;
+
+      background:
+        #b30000;
+
+      color:
+        white;
+
+      padding:
+        12px 18px;
+
+      border-radius:
+        8px;
+
+      text-decoration:
+        none;
+
+      font-weight:
+        bold;
+
+      border:
+        none;
+
+      cursor:
+        pointer;
+
+      margin-top:
+        10px;
     }
-    .btn.dark { background:#444; }
-    .btn.green { background:green; }
-    footer { text-align:center; padding:20px; color:#555; }
+
+
+    .btn:hover {
+
+      background:
+        #900;
+    }
+
+
+    .btn.dark {
+
+      background:
+        #444;
+    }
+
+
+    .btn.green {
+
+      background:
+        green;
+    }
+
+
+    .waiver-text {
+
+      max-height:
+        420px;
+
+      overflow-y:
+        auto;
+
+      border:
+        1px solid #ccc;
+
+      padding:
+        20px;
+
+      background:
+        #fafafa;
+
+      margin-bottom:
+        20px;
+
+      line-height:
+        1.6;
+
+      border-radius:
+        8px;
+    }
+
+
+    .waiver-warning {
+
+      color:
+        #b30000;
+
+      font-weight:
+        bold;
+    }
+
+
+    label {
+
+      display:
+        block;
+
+      font-weight:
+        bold;
+
+      margin-top:
+        15px;
+    }
+
+
+    input[type="text"],
+    input[type="date"] {
+
+      width:
+        100%;
+
+      padding:
+        12px;
+
+      margin-top:
+        6px;
+
+      border:
+        1px solid #ccc;
+
+      border-radius:
+        6px;
+    }
+
+
+    .agreement {
+
+      margin:
+        20px 0;
+
+      line-height:
+        1.5;
+    }
+
+
+    .agreement input {
+
+      width:
+        auto;
+    }
+
+
+    .signed-status {
+
+      font-size:
+        20px;
+
+      color:
+        green;
+
+      font-weight:
+        bold;
+    }
+
+
+    footer {
+
+      text-align:
+        center;
+
+      padding:
+        20px;
+
+      color:
+        #555;
+    }
+
   </style>
+
 </head>
+
 
 <body>
 
+
 <header class="hero">
-  <h1>Parent Dashboard</h1>
-  <p>Manage Your Players</p>
+
+  <h1>
+    Parent Dashboard
+  </h1>
+
+  <p>
+    Bath County Flag & Jr Pro Football
+  </p>
+
 </header>
+
+
 
 <section class="main-links">
 
+
+  <!-- PARENT INFORMATION -->
+
   <div class="dashboard-card">
-    <h2>Your Information</h2>
-    <p id="parentName">Loading...</p>
+
+    <h2>
+      Your Information
+    </h2>
+
+
+    <p id="parentName">
+      Loading...
+    </p>
+
+
     <p id="parentEmail"></p>
+
+
     <p id="parentPhone"></p>
+
+
     <p id="parentAddress"></p>
-    <button id="logoutBtn" class="btn dark">Logout</button>
+
+
+    <button
+      id="logoutBtn"
+      class="btn dark"
+    >
+      Logout
+    </button>
+
   </div>
 
-  <div class="dashboard-card">
-    <h2>Your Players</h2>
-    <div id="playerList">Loading players...</div>
-  </div>
+
+
+  <!-- PLAYERS -->
 
   <div class="dashboard-card">
-    <h2>Payment Summary</h2>
-    <div id="paymentSummary">Loading payment information...</div>
+
+    <h2>
+      Your Players
+    </h2>
+
+
+    <div id="playerList">
+
+      Loading players...
+
+    </div>
+
+
+    <a
+      href="registration.html"
+      class="btn"
+    >
+      Register Another Player
+    </a>
+
   </div>
 
+
+
+  <!-- WAIVER -->
+
   <div class="dashboard-card">
-    <h2>Add Another Player</h2>
-    <a href="registration.html" class="btn">Register Another Player</a>
+
+
+    <h2>
+      Parent / Guardian Waiver
+    </h2>
+
+
+    <div id="waiverLoading">
+
+      Loading waiver status...
+
+    </div>
+
+
+
+    <div
+      id="waiverSignedBox"
+      style="display:none;"
+    >
+
+
+      <p class="signed-status">
+
+        ✓ Waiver Signed
+
+      </p>
+
+
+      <p>
+
+        Signature:
+
+        <strong
+          id="savedWaiverSignature"
+        ></strong>
+
+      </p>
+
+
+      <p>
+
+        Date Signed:
+
+        <strong
+          id="savedWaiverDate"
+        ></strong>
+
+      </p>
+
+
+    </div>
+
+
+
+    <div
+      id="waiverForm"
+      style="display:none;"
+    >
+
+
+      <div class="waiver-text">
+
+
+        <p class="waiver-warning">
+
+          IMPORTANT! PARENT OR GUARDIAN MUST READ BEFORE SIGNING!
+
+        </p>
+
+
+
+        <p>
+
+          I, the parent/guardian of my child(ren)
+          registered with Bath County Flag & Jr Pro
+          Football, give my permission and approval
+          for his/her participation in all activities
+          during the football season.
+
+        </p>
+
+
+
+        <p>
+
+          I do hereby waive, release, absolve and
+          indemnify and agree to hold harmless local
+          football league organizers, sponsors,
+          supervisors, coaches, participants and
+          persons transporting my child to and from
+          games, practices, etc. for any claim arising
+          out of injury to my child whether the result
+          of negligence or any other cause during
+          practices, games or during transportation.
+
+        </p>
+
+
+
+        <p>
+
+          We, the parents/guardians also agree to
+          return the uniform and/or equipment issued
+          in the same condition as received, with the
+          exception of wear experienced through
+          normal use.
+
+        </p>
+
+
+
+        <p>
+
+          If the uniform is not returned, I, by
+          signing this form, understand that I must
+          reimburse the league $250.00 for the cost
+          of the uniform.
+
+        </p>
+
+
+
+        <p>
+
+          The insurance provided through Bath County
+          Jr. Pro is paid for out of the funds raised.
+          Bath County Jr Pro will not pay the
+          deductible.
+
+        </p>
+
+
+
+        <p>
+
+          It is a secondary policy when you have
+          other medical and accidental insurance,
+          but it is the primary coverage if the
+          registered child is not otherwise insured.
+
+        </p>
+
+
+
+        <p>
+
+          You should be aware that in spite of all
+          reasonable precautions, injuries could
+          happen.
+
+        </p>
+
+
+
+        <p>
+
+          Football is a collision sport, and even
+          the best equipment will sometimes not
+          prevent injury.
+
+        </p>
+
+
+      </div>
+
+
+
+      <label for="waiverSignature">
+
+        Type Your Full Legal Name as Your Signature
+
+      </label>
+
+
+      <input
+        type="text"
+        id="waiverSignature"
+        placeholder="Full Legal Name"
+      >
+
+
+
+      <label for="waiverDate">
+
+        Date
+
+      </label>
+
+
+      <input
+        type="date"
+        id="waiverDate"
+      >
+
+
+
+      <div class="agreement">
+
+
+        <label>
+
+
+          <input
+            type="checkbox"
+            id="waiverAgreement"
+          >
+
+
+          I have read and agree to the
+          Parent/Guardian Waiver above and understand
+          that typing my full legal name constitutes
+          my electronic signature.
+
+
+        </label>
+
+
+      </div>
+
+
+
+      <button
+        type="button"
+        id="signWaiverBtn"
+        class="btn"
+      >
+
+        Sign Waiver
+
+      </button>
+
+
+    </div>
+
+
   </div>
+
+
+
+  <!-- PAYMENT SUMMARY -->
+
+  <div class="dashboard-card">
+
+
+    <h2>
+      Payment Summary
+    </h2>
+
+
+    <div id="paymentSummary">
+
+      Loading payment information...
+
+    </div>
+
+
+  </div>
+
 
 </section>
 
+
+
 <footer>
-  <p>© 2026 Bath County Youth Football</p>
+
+  <p>
+
+    © 2026 Bath County Youth Football
+
+  </p>
+
 </footer>
 
+
+
 <script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbwJR0mM--IOixP7NLMKN4owPphBM9FOtzryRJ3KbfkH0Nci8ylR2Gcg_Kg52XrwWWJQ/exec';
-const PAY_LINK = 'https://square.link/u/sS8n48d5?src=sheet';
+
+
+const API_URL =
+'https://script.google.com/macros/s/AKfycbwJR0mM--IOixP7NLMKN4owPphBM9FOtzryRJ3KbfkH0Nci8ylR2Gcg_Kg52XrwWWJQ/exec';
+
+
+const PAY_LINK =
+'https://square.link/u/sS8n48d5?src=sheet';
+
+
 
 function money(amount) {
-  return Number(amount || 0).toFixed(2);
+
+  return Number(
+    amount || 0
+  ).toFixed(2);
 }
+
+
 
 async function api(payload) {
-  const res = await fetch(API_URL, {
-    method: 'POST',
-    body: JSON.stringify(payload)
-  });
-  return await res.json();
+
+  const response =
+    await fetch(
+
+      API_URL,
+
+      {
+
+        method:
+          'POST',
+
+        body:
+          JSON.stringify(payload)
+      }
+    );
+
+
+  return await response.json();
 }
 
-document.addEventListener('DOMContentLoaded', loadDashboard);
+
+
+document.addEventListener(
+
+  'DOMContentLoaded',
+
+  async () => {
+
+    await loadDashboard();
+
+    await loadWaiver();
+  }
+);
+
+
+
+// ============================================================
+// LOAD DASHBOARD
+// ============================================================
+
 
 async function loadDashboard() {
-  const email = (localStorage.getItem('parentEmail') || '').toLowerCase();
+
+
+  const email =
+    (
+      localStorage.getItem(
+        'parentEmail'
+      ) || ''
+    )
+      .trim()
+      .toLowerCase();
+
+
 
   if (!email) {
-    alert('Please log in first.');
-    window.location.href = 'login.html';
+
+    alert(
+      'Please log in first.'
+    );
+
+    window.location.href =
+      'login.html';
+
     return;
   }
 
-  const data = await api({
-    action: 'getParentDashboard',
-    email: email
-  });
 
-  if (!data.success) {
-    document.getElementById('playerList').innerHTML = '<p>Could not load dashboard.</p>';
-    return;
+
+  try {
+
+
+    const data =
+      await api({
+
+        action:
+          'getParentDashboard',
+
+        email:
+          email
+      });
+
+
+
+    if (!data.success) {
+
+      document
+        .getElementById(
+          'playerList'
+        )
+        .innerHTML =
+        '<p>Could not load dashboard.</p>';
+
+      return;
+    }
+
+
+
+    const parent =
+      data.parent || {};
+
+
+    const players =
+      data.players || [];
+
+
+
+    document
+      .getElementById(
+        'parentName'
+      )
+      .textContent =
+      parent.name ||
+      localStorage.getItem(
+        'parentName'
+      ) ||
+      '';
+
+
+
+    document
+      .getElementById(
+        'parentEmail'
+      )
+      .textContent =
+      'Email: ' +
+      email;
+
+
+
+    document
+      .getElementById(
+        'parentPhone'
+      )
+      .textContent =
+      'Phone: ' +
+      (
+        parent.phone ||
+        localStorage.getItem(
+          'parentPhone'
+        ) ||
+        ''
+      );
+
+
+
+    document
+      .getElementById(
+        'parentAddress'
+      )
+      .textContent =
+      'Address: ' +
+      (
+        parent.address ||
+        ''
+      );
+
+
+
+    renderPlayers(
+      players
+    );
+
+
+    renderPaymentSummary(
+      players
+    );
+
+
+  } catch (err) {
+
+
+    document
+      .getElementById(
+        'playerList'
+      )
+      .innerHTML =
+      '<p>Could not load dashboard: ' +
+      err.message +
+      '</p>';
+
   }
 
-  const parent = data.parent || {};
-  const players = data.players || [];
+}
 
-  document.getElementById('parentName').textContent = parent.name || localStorage.getItem('parentName') || '';
-  document.getElementById('parentEmail').textContent = 'Email: ' + email;
-  document.getElementById('parentPhone').textContent = 'Phone: ' + (parent.phone || localStorage.getItem('parentPhone') || '');
-  document.getElementById('parentAddress').textContent = 'Address: ' + (parent.address || '');
 
-  const list = document.getElementById('playerList');
+
+// ============================================================
+// DISPLAY PLAYERS
+// ============================================================
+
+
+function renderPlayers(players) {
+
+
+  const list =
+    document.getElementById(
+      'playerList'
+    );
+
+
   list.innerHTML = '';
 
-  if (!players.length) {
-    list.innerHTML = '<p>You have no players registered yet.</p>';
-  } else {
-    players.forEach(p => {
-      const div = document.createElement('div');
-      div.className = 'player-card';
-      div.innerHTML = `
-        <h3>${p.name || p.playerName || ''}</h3>
-        <p><b>League:</b> ${p.league || ''}</p>
-        <p><b>Grade:</b> ${p.grade || ''}</p>
-        <p><b>School:</b> ${p.school || ''}</p>
-        <p><b>Team:</b> ${p.team || 'Not assigned yet'}</p>
-        <p><b>Player Fee:</b> $${money(p.finalFee)}</p>
-        <p><b>Status:</b> ${p.paymentStatus || 'Pending'}</p>
-      `;
-      list.appendChild(div);
-    });
-  }
 
-  renderPaymentSummary(players);
-}
-
-function renderPaymentSummary(players) {
-  const box = document.getElementById('paymentSummary');
 
   if (!players.length) {
-    box.innerHTML = '<p>No payment information yet.</p>';
+
+
+    list.innerHTML =
+      '<p>You have no players registered yet.</p>';
+
+
     return;
   }
 
-  const latest = players[players.length - 1];
 
-  const familyTotal = Number(latest.familyTotal || 0);
-  const amountDueNow = Number(latest.amountDueNow || familyTotal || 0);
-  const remainingBalance = Number(latest.remainingBalance || 0);
-  const plan = latest.paymentPlan === 'plan' ? 'Two Payment Plan' : 'Pay In Full';
 
-  box.innerHTML = `
-    <p><b>Payment Option:</b> ${plan}</p>
-    <p><b>Family Total:</b> $${money(familyTotal)}</p>
-    <p><b>Amount to Enter in Square:</b> $${money(amountDueNow)}</p>
-    <p><b>Remaining Balance:</b> $${money(remainingBalance)}</p>
-    <p><b>Payment Status:</b> ${latest.paymentStatus || 'Pending'}</p>
-    <p>Please enter the amount shown above when Square opens.</p>
-    <a class="btn green" href="${PAY_LINK}">Pay with Square</a>
-  `;
+  players.forEach(player => {
+
+
+    const div =
+      document.createElement(
+        'div'
+      );
+
+
+    div.className =
+      'player-card';
+
+
+
+    div.innerHTML = `
+
+
+      <h3>
+
+        ${player.name || ''}
+
+      </h3>
+
+
+      <p>
+
+        <b>League:</b>
+
+        ${player.league || ''}
+
+      </p>
+
+
+      <p>
+
+        <b>Grade:</b>
+
+        ${player.grade || ''}
+
+      </p>
+
+
+      <p>
+
+        <b>School:</b>
+
+        ${player.school || ''}
+
+      </p>
+
+
+      <p>
+
+        <b>Team:</b>
+
+        ${player.team || 'Not assigned yet'}
+
+      </p>
+
+
+      <p>
+
+        <b>Player Fee:</b>
+
+        $${money(
+          player.finalFee
+        )}
+
+      </p>
+
+
+      <p>
+
+        <b>Payment Status:</b>
+
+        ${
+          player.paymentStatus ||
+          'Pending'
+        }
+
+      </p>
+
+    `;
+
+
+    list.appendChild(
+      div
+    );
+
+  });
+
 }
 
-document.getElementById('logoutBtn').onclick = () => {
-  localStorage.removeItem('parentEmail');
-  localStorage.removeItem('parentName');
-  localStorage.removeItem('parentPhone');
-  window.location.href = 'login.html';
-};
+
+
+// ============================================================
+// PAYMENT SUMMARY
+// ============================================================
+
+
+function renderPaymentSummary(players) {
+
+
+  const box =
+    document.getElementById(
+      'paymentSummary'
+    );
+
+
+
+  if (!players.length) {
+
+
+    box.innerHTML =
+      '<p>No payment information yet.</p>';
+
+
+    return;
+  }
+
+
+
+  const seasonTotal =
+    players.reduce(
+
+      (sum, player) =>
+
+        sum +
+        Number(
+          player.finalFee || 0
+        ),
+
+      0
+    );
+
+
+
+  const pendingPlayers =
+    players.filter(
+      player =>
+        String(
+          player.paymentStatus || ''
+        ).toLowerCase() !==
+        'paid'
+    );
+
+
+
+  const outstandingBalance =
+    pendingPlayers.reduce(
+
+      (sum, player) =>
+
+        sum +
+        Number(
+          player.finalFee || 0
+        ),
+
+      0
+    );
+
+
+
+  box.innerHTML = `
+
+
+    <p>
+
+      <b>Total Registration Fees:</b>
+
+      $${money(
+        seasonTotal
+      )}
+
+    </p>
+
+
+    <p>
+
+      <b>Current Outstanding Balance:</b>
+
+      $${money(
+        outstandingBalance
+      )}
+
+    </p>
+
+
+    <p>
+
+      <b>Payment Status:</b>
+
+      ${
+        outstandingBalance > 0
+          ? 'Payment Pending'
+          : 'Paid'
+      }
+
+    </p>
+
+
+    ${
+      outstandingBalance > 0
+
+      ?
+
+      `
+
+      <p>
+
+        Enter the amount shown above
+        when Square opens.
+
+      </p>
+
+
+      <a
+
+        class="btn green"
+
+        href="${PAY_LINK}"
+
+      >
+
+        Pay with Square
+
+      </a>
+
+      `
+
+      :
+
+      `
+
+      <p class="signed-status">
+
+        ✓ Registration Balance Paid
+
+      </p>
+
+      `
+    }
+
+  `;
+
+}
+
+
+
+// ============================================================
+// LOAD WAIVER
+// ============================================================
+
+
+async function loadWaiver() {
+
+
+  const email =
+    (
+      localStorage.getItem(
+        'parentEmail'
+      ) || ''
+    )
+      .trim()
+      .toLowerCase();
+
+
+
+  const loading =
+    document.getElementById(
+      'waiverLoading'
+    );
+
+
+  const signedBox =
+    document.getElementById(
+      'waiverSignedBox'
+    );
+
+
+  const form =
+    document.getElementById(
+      'waiverForm'
+    );
+
+
+
+  try {
+
+
+    const data =
+      await api({
+
+        action:
+          'getParentWaiver',
+
+        parentEmail:
+          email
+      });
+
+
+
+    loading.style.display =
+      'none';
+
+
+
+    if (!data.success) {
+
+
+      loading.style.display =
+        'block';
+
+
+      loading.textContent =
+        data.message ||
+        'Could not load waiver.';
+
+
+      return;
+    }
+
+
+
+    if (data.signed) {
+
+
+      signedBox.style.display =
+        'block';
+
+
+      form.style.display =
+        'none';
+
+
+
+      document
+        .getElementById(
+          'savedWaiverSignature'
+        )
+        .textContent =
+        data.waiver.signature ||
+        '';
+
+
+
+      document
+        .getElementById(
+          'savedWaiverDate'
+        )
+        .textContent =
+        data.waiver.signedDate ||
+        '';
+
+
+    } else {
+
+
+      signedBox.style.display =
+        'none';
+
+
+      form.style.display =
+        'block';
+
+
+
+      document
+        .getElementById(
+          'waiverDate'
+        )
+        .value =
+        new Date()
+          .toISOString()
+          .split('T')[0];
+
+    }
+
+
+  } catch (err) {
+
+
+    loading.textContent =
+      'Could not load waiver: ' +
+      err.message;
+
+  }
+
+}
+
+
+
+// ============================================================
+// SIGN WAIVER
+// ============================================================
+
+
+async function signWaiver() {
+
+
+  const email =
+    (
+      localStorage.getItem(
+        'parentEmail'
+      ) || ''
+    )
+      .trim()
+      .toLowerCase();
+
+
+
+  const parentName =
+    document
+      .getElementById(
+        'parentName'
+      )
+      .textContent
+      .trim();
+
+
+
+  const signature =
+    document
+      .getElementById(
+        'waiverSignature'
+      )
+      .value
+      .trim();
+
+
+
+  const signedDate =
+    document
+      .getElementById(
+        'waiverDate'
+      )
+      .value;
+
+
+
+  const agreed =
+    document
+      .getElementById(
+        'waiverAgreement'
+      )
+      .checked;
+
+
+
+  if (!signature) {
+
+
+    alert(
+      'Please type your full legal name.'
+    );
+
+
+    return;
+  }
+
+
+
+  if (!signedDate) {
+
+
+    alert(
+      'Please enter the date.'
+    );
+
+
+    return;
+  }
+
+
+
+  if (!agreed) {
+
+
+    alert(
+      'You must confirm that you have read and agree to the waiver.'
+    );
+
+
+    return;
+  }
+
+
+
+  const button =
+    document.getElementById(
+      'signWaiverBtn'
+    );
+
+
+  button.disabled =
+    true;
+
+
+  button.textContent =
+    'Saving Waiver...';
+
+
+
+  try {
+
+
+    const data =
+      await api({
+
+        action:
+          'signParentWaiver',
+
+        parentEmail:
+          email,
+
+        parentName:
+          parentName,
+
+        signature:
+          signature,
+
+        signedDate:
+          signedDate
+      });
+
+
+
+    if (!data.success) {
+
+
+      alert(
+        data.message ||
+        'Could not save waiver.'
+      );
+
+
+      button.disabled =
+        false;
+
+
+      button.textContent =
+        'Sign Waiver';
+
+
+      return;
+    }
+
+
+
+    alert(
+      'Your waiver has been signed and saved.'
+    );
+
+
+
+    await loadWaiver();
+
+
+  } catch (err) {
+
+
+    alert(
+      'Could not save waiver: ' +
+      err.message
+    );
+
+
+    button.disabled =
+      false;
+
+
+    button.textContent =
+      'Sign Waiver';
+
+  }
+
+}
+
+
+
+document
+  .getElementById(
+    'signWaiverBtn'
+  )
+  .onclick =
+  signWaiver;
+
+
+
+// ============================================================
+// LOGOUT
+// ============================================================
+
+
+document
+  .getElementById(
+    'logoutBtn'
+  )
+  .onclick =
+  () => {
+
+
+    localStorage.removeItem(
+      'parentEmail'
+    );
+
+
+    localStorage.removeItem(
+      'parentName'
+    );
+
+
+    localStorage.removeItem(
+      'parentPhone'
+    );
+
+
+    window.location.href =
+      'login.html';
+
+  };
+
+
 </script>
 
+
 </body>
+
 </html>
