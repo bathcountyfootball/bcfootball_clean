@@ -15,53 +15,53 @@
         <form id="registrationForm">
 
             <!-- STEP 1: Parent Information -->
-            <div class="form-step" id="step-1">
+            <div class="form-step step" id="step-1">
                 <h3>Parent Information</h3>
 
                 <label>Parent Name</label>
-                <input type="text" name="parentName" required>
+                <input type="text" id="parentName" name="parentName" required>
 
                 <label>Parent Email</label>
-                <input type="email" name="parentEmail" required>
+                <input type="email" id="parentEmail" name="parentEmail" required>
 
                 <label>Parent Phone</label>
-                <input type="tel" name="parentPhone" required>
+                <input type="tel" id="parentPhone" name="parentPhone" required>
 
-                <button type="button" class="next-btn" onclick="nextStep(2)">Next</button>
+                <button type="button" id="nextBtn" class="next-btn" onclick="nextStep()">Next</button>
             </div>
 
             <!-- STEP 2: Player Information -->
-            <div class="form-step" id="step-2" style="display:none;">
+            <div class="form-step step" id="step-2" style="display:none;">
                 <h3>Player Information</h3>
 
                 <label>Player Name</label>
-                <input type="text" name="playerName" required>
+                <input type="text" id="playerName" name="playerName" required>
 
                 <label>Birthdate</label>
-                <input type="date" name="birthdate" required>
+                <input type="date" id="birthdate" name="birthdate" required>
 
                 <label>School</label>
-                <input type="text" name="school" required>
+                <input type="text" id="school" name="school" required>
 
                 <label>Grade</label>
-                <input type="number" name="grade" required>
+                <input type="number" id="grade" name="grade" required>
 
                 <label>Gender</label>
-                <select name="gender" required>
+                <select id="gender" name="gender" required>
                     <option value="">Select</option>
                     <option>Male</option>
                     <option>Female</option>
                 </select>
 
                 <label>League</label>
-                <select name="division" required>
+                <select id="league" name="division" required>
                     <option value="">Select</option>
                     <option value="Flag">Flag</option>
                     <option value="Jr Pro">Jr Pro</option>
                 </select>
 
                 <label>Shirt Size</label>
-                <select name="shirtSize" required>
+                <select id="shirtSize" name="shirtSize" required>
                     <option value="">Select</option>
                     <option>YS</option>
                     <option>YM</option>
@@ -69,33 +69,33 @@
                     <option>YXL</option>
                 </select>
 
-                <button type="button" class="back-btn" onclick="nextStep(1)">Back</button>
-                <button type="button" class="next-btn" onclick="nextStep(3)">Next</button>
+                <button type="button" id="backBtn" class="back-btn" onclick="prevStep()">Back</button>
+                <button type="button" id="nextBtn" class="next-btn" onclick="nextStep()">Next</button>
             </div>
 
             <!-- STEP 3: Medical Information -->
-            <div class="form-step" id="step-3" style="display:none;">
+            <div class="form-step step" id="step-3" style="display:none;">
                 <h3>Medical Information</h3>
 
                 <label>Doctor Name</label>
-                <input type="text" name="doctorName" required>
+                <input type="text" id="doctorName" name="doctorName" required>
 
                 <label>Doctor Phone</label>
-                <input type="tel" name="doctorPhone" required>
+                <input type="tel" id="doctorPhone" name="doctorPhone" required>
 
                 <label>Allergies / Medical Notes</label>
-                <textarea name="medicalNotes"></textarea>
+                <textarea id="allergies" name="medicalNotes"></textarea>
 
-                <button type="button" class="back-btn" onclick="nextStep(2)">Back</button>
-                <button type="button" class="next-btn" onclick="nextStep(4)">Next</button>
+                <button type="button" id="backBtn" class="back-btn" onclick="prevStep()">Back</button>
+                <button type="button" id="nextBtn" class="next-btn" onclick="nextStep()">Next</button>
             </div>
 
             <!-- STEP 4: Payment Plan -->
-            <div class="form-step" id="step-4" style="display:none;">
+            <div class="form-step step" id="step-4" style="display:none;">
                 <h3>Payment Plan</h3>
 
                 <label>Select Payment Option</label>
-                <select name="paymentOption" required>
+                <select id="paymentPlan" name="paymentOption" required>
                     <option value="">Select</option>
                     <option value="full">Pay in Full</option>
                     <option value="plan">2‑Payment Plan</option>
@@ -103,20 +103,18 @@
 
                 <p class="note">Sibling discount applies only to Pay‑in‑Full.</p>
 
-                <button type="button" class="back-btn" onclick="nextStep(3)">Back</button>
-                <button type="button" class="next-btn" onclick="nextStep(5)">Next</button>
+                <button type="button" id="backBtn" class="back-btn" onclick="prevStep()">Back</button>
+                <button type="button" id="nextBtn" class="next-btn" onclick="nextStep()">Next</button>
             </div>
 
             <!-- STEP 5: Review & Pay -->
-            <div class="form-step" id="step-5" style="display:none;">
+            <div class="form-step step" id="step-5" style="display:none;">
                 <h3>Review & Pay</h3>
 
-                <p>Please review your information and click Submit & Pay.</p>
-
-                <button type="button" class="back-btn" onclick="nextStep(4)">Back</button>
+                <div id="reviewBox"></div>
 
                 <!-- FINAL BUTTON ONLY -->
-                <button type="button" class="submit-btn" onclick="submitRegistration()">Submit & Pay</button>
+                <button type="button" id="submitBtn" class="submit-btn" onclick="submitRegistration()">Submit & Pay</button>
             </div>
 
         </form>

@@ -30,7 +30,25 @@ function showStep(step) {
     steps.forEach((s, index) => {
         s.classList.toggle("active", index + 1 === step);
     });
+
+    // Button visibility control
+    const backBtn = document.getElementById("backBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const submitBtn = document.getElementById("submitBtn");
+
+    if (step === 5) {
+        // Final step — only show Submit & Pay
+        if (backBtn) backBtn.style.display = "none";
+        if (nextBtn) nextBtn.style.display = "none";
+        if (submitBtn) submitBtn.style.display = "inline-block";
+    } else {
+        // Steps 1–4 — show Back/Next, hide Submit
+        if (backBtn) backBtn.style.display = "inline-block";
+        if (nextBtn) nextBtn.style.display = "inline-block";
+        if (submitBtn) submitBtn.style.display = "none";
+    }
 }
+
 
 function nextStep() {
     if (currentStep < 5) {
