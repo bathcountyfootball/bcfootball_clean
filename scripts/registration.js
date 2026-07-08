@@ -1,204 +1,142 @@
-// ----- FAMILY PAYMENT LINK -----
-const FAMILY_PAYMENT_LINK =
-  "https://checkout.square.site/merchant/MLCQ44R69JXHJ/checkout/347GSTHR43ZFCASNG7BHFWX3?src=sheet";
+// -----------------------------
+// Add Player
+// -----------------------------
+let playerCount = 0;
 
-// ----- YOUR APPS SCRIPT ENDPOINT -----
-const SHEETS_ENDPOINT =
-  "https://script.google.com/macros/s/AKfycbzQrgAYG45pcW1jg1HVuN8pwxjQwk3wa3CQPYGN8YwwdHH4T6qZb_CyR3_JDOaGiXG6/exec";
-
-// ----- PRICING -----
-const PRICES = {
-  Flag: {
-    full: 57.00,
-    p1: 28.50,
-    p2: 28.50,
-    sibling5: 51.00,
-    sibling10: 47.00
-  },
-  JrPro: {
-    full: 77.50,
-    p1: 38.75,
-    p2: 38.75,
-    sibling5: 72.00,
-    sibling10: 67.00
-  }
-};
-
-// Store players
-let players = [];
-
-// ----- ADD PLAYER -----
 function addPlayer() {
-  const index = players.length;
-  players.push({});
+    playerCount++;
 
-  const container = document.getElementById("playersContainer");
+    const container = document.getElementById("playersContainer");
 
-  const block = document.createElement("div");
-  block.innerHTML = `
-    <div class="accordion" onclick="togglePanel(${index})">
-      Player ${index + 1}
-    </div>
+    const div = document.createElement("div");
+    div.className = "player-card";
+    div.id = `player-${playerCount}`;
 
-    <div class="panel" id="panel-${index}">
-      <label>Player Name</label>
-      <input type="text" id="playerName-${index}" required>
+    div.innerHTML = `
+        <h3>Player ${playerCount}</h3>
 
-      <label>Birthdate</label>
-      <input type="date" id="birthdate-${index}" required>
+        <label>Player Name</label>
+        <input type="text" id="playerName-${playerCount}" required>
 
-      <label>School</label>
-      <input type="text" id="school-${index}" required>
+        <label>Player Age</label>
+        <input type="number" id="playerAge-${playerCount}" required>
 
-      <label>Grade</label>
-      <input type="number" id="grade-${index}" required>
+        <label>League</label>
+        <select id="playerLeague-${playerCount}" required>
+            <option value="">Select</option>
+            <option value="Flag">Flag (Ages 5–7)</option>
+            <option value="JrPro">Jr Pro (Ages 8–12)</option>
+        </select>
 
-      <label>Gender</label>
-      <select id="gender-${index}" required>
-        <option value="">Select</option>
-        <option>Male</option>
-        <option>Female</option>
-      </select>
-
-      <label>League</label>
-      <select id="league-${index}" required>
-        <option value="">Select</option>
-        <option value="Flag">Flag</option>
-        <option value="Jr Pro">Jr Pro</option>
-      </select>
-
-      <label>Shirt Size</label>
-      <select id="shirtSize-${index}" required>
-        <option value="">Select</option>
-        <option>YS</option>
-        <option>YM</option>
-        <option>YL</option>
-        <option>YXL</option>
-      </select>
-
-      <h4>Medical Info</h4>
-
-      <label>Doctor Name</label>
-      <input type="text" id="doctorName-${index}" required>
-
-      <label>Doctor Phone</label>
-      <input type="tel" id="doctorPhone-${index}" required>
-
-      <label>Allergies / Notes</label>
-      <textarea id="allergies-${index}"></textarea>
-    </div>
-  `;
-
-  container.appendChild(block);
-}
-
-// ----- TOGGLE ACCORDION -----
-function togglePanel(i) {
-  const panel = document.getElementById(`panel-${i}`);
-  panel.style.display = panel.style.display === "block" ? "none" : "block";
-}
-
-// ----- BUILD REVIEW -----
-function buildReview() {
-  const review = document.getElementById("reviewBox");
-
-  const parentName = document.getElementById("parentName").value;
-  const parentEmail = document.getElementById("parentEmail").value;
-  const parentPhone = document.getElementById("parentPhone").value;
-
-  let html = `
-    <h4>Parent</h4>
-    <p><strong>Name:</strong> ${parentName}</p>
-    <p><strong>Email:</strong> ${parentEmail}</p>
-    <p><strong>Phone:</strong> ${parentPhone}</p>
-    <hr>
-  `;
-
-  players.forEach((_, i) => {
-    html += `
-      <h4>Player ${i + 1}</h4>
-      <p><strong>Name:</strong> ${document.getElementById(`playerName-${i}`).value}</p>
-      <p><strong>Birthdate:</strong> ${document.getElementById(`birthdate-${i}`).value}</p>
-      <p><strong>School:</strong> ${document.getElementById(`school-${i}`).value}</p>
-      <p><strong>Grade:</strong> ${document.getElementById(`grade-${i}`).value}</p>
-      <p><strong>Gender:</strong> ${document.getElementById(`gender-${i}`).value}</p>
-      <p><strong>League:</strong> ${document.getElementById(`league-${i}`).value}</p>
-      <p><strong>Shirt Size:</strong> ${document.getElementById(`shirtSize-${i}`).value}</p>
-
-      <h4>Medical</h4>
-      <p><strong>Doctor:</strong> ${document.getElementById(`doctorName-${i}`).value}</p>
-      <p><strong>Doctor Phone:</strong> ${document.getElementById(`doctorPhone-${i}`).value}</p>
-      <p><strong>Allergies:</strong> ${document.getElementById(`allergies-${i}`).value}</p>
-      <hr>
+        <label>Medical Notes</label>
+        <textarea id="playerMedical-${playerCount}"></textarea>
     `;
-  });
 
-  review.innerHTML = html;
+    container.appendChild(div);
 }
 
-// ----- SUBMIT -----
-function submitRegistration() {
-  const parentName = document.getElementById("parentName").value;
-  const parentEmail = document.getElementById("parentEmail").value;
-  const parentPhone = document.getElementById("parentPhone").value;
+// -----------------------------
+// Build Review Section
+// -----------------------------
+function buildReview() {
+    const review = document.getElementById("reviewBox");
+    review.innerHTML = "";
 
-  const paymentPlan = document.getElementById("paymentPlan").value;
+    const parentName = document.getElementById("parentName").value;
+    const parentEmail = document.getElementById("parentEmail").value;
+    const parentPhone = document.getElementById("parentPhone").value;
 
-  // Build players array
-  const allPlayers = players.map((_, i) => ({
-    playerName: document.getElementById(`playerName-${i}`).value,
-    birthdate: document.getElementById(`birthdate-${i}`).value,
-    school: document.getElementById(`school-${i}`).value,
-    grade: document.getElementById(`grade-${i}`).value,
-    gender: document.getElementById(`gender-${i}`).value,
-    league: document.getElementById(`league-${i}`).value,
-    shirtSize: document.getElementById(`shirtSize-${i}`).value,
-    doctorName: document.getElementById(`doctorName-${i}`).value,
-    doctorPhone: document.getElementById(`doctorPhone-${i}`).value,
-    allergies: document.getElementById(`allergies-${i}`).value
-  }));
+    review.innerHTML += `
+        <h4>Parent</h4>
+        <p><strong>Name:</strong> ${parentName}</p>
+        <p><strong>Email:</strong> ${parentEmail}</p>
+        <p><strong>Phone:</strong> ${parentPhone}</p>
+        <hr>
+    `;
 
-  // ----- CALCULATE TOTAL -----
-  let total = 0;
+    for (let i = 1; i <= playerCount; i++) {
+        const name = document.getElementById(`playerName-${i}`).value;
+        const age = document.getElementById(`playerAge-${i}`).value;
+        const league = document.getElementById(`playerLeague-${i}`).value;
+        const medical = document.getElementById(`playerMedical-${i}`).value;
 
-  allPlayers.forEach((p, i) => {
-    const league = p.league;
-
-    if (paymentPlan === "full") {
-      // Sibling discount applies ONLY to full-pay
-      if (i === 0) {
-        total += PRICES[league].full;
-      } else {
-        // Apply $5 or $10 discount based on your rules
-        // You can adjust this logic if needed
-        total += PRICES[league].sibling10; // using $10 off for additional siblings
-      }
-    } else {
-      // Payment plan
-      total += PRICES[league].p1; // Payment 1 only
+        review.innerHTML += `
+            <h4>Player ${i}</h4>
+            <p><strong>Name:</strong> ${name}</p>
+            <p><strong>Age:</strong> ${age}</p>
+            <p><strong>League:</strong> ${league}</p>
+            <p><strong>Medical Notes:</strong> ${medical}</p>
+            <hr>
+        `;
     }
-  });
 
-  // Save total for Family Payment page
-  localStorage.setItem("familyTotal", total);
+    const plan = document.getElementById("paymentPlan").value;
+    review.innerHTML += `<p><strong>Payment Plan:</strong> ${plan}</p>`;
+}
 
-  // Save registration to Apps Script
-  const payload = {
-    action: "saveMultiRegistration",
-    parentName,
-    parentEmail,
-    parentPhone,
-    paymentPlan,
-    players: allPlayers
-  };
+// -----------------------------
+// Submit & Pay
+// -----------------------------
+function submitRegistration() {
 
-  fetch(SHEETS_ENDPOINT, {
-    method: "POST",
-    mode: "no-cors",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
+    // Validate parent fields
+    if (!document.getElementById("parentName").value ||
+        !document.getElementById("parentEmail").value ||
+        !document.getElementById("parentPhone").value) {
+        alert("Please complete parent information.");
+        return;
+    }
 
-  // ALWAYS redirect to Family Payment link
-  window.location.href = FAMILY_PAYMENT_LINK;
+    // Validate players
+    if (playerCount === 0) {
+        alert("Please add at least one player.");
+        return;
+    }
+
+    for (let i = 1; i <= playerCount; i++) {
+        if (!document.getElementById(`playerName-${i}`).value ||
+            !document.getElementById(`playerAge-${i}`).value ||
+            !document.getElementById(`playerLeague-${i}`).value) {
+            alert(`Please complete all fields for Player ${i}.`);
+            return;
+        }
+    }
+
+    // Validate payment plan
+    const plan = document.getElementById("paymentPlan").value;
+    if (!plan) {
+        alert("Please select a payment plan.");
+        return;
+    }
+
+    // -----------------------------
+    // Pricing Logic
+    // -----------------------------
+    let total = 0;
+
+    for (let i = 1; i <= playerCount; i++) {
+        const league = document.getElementById(`playerLeague-${i}`).value;
+
+        if (league === "Flag") total += 40;
+        if (league === "JrPro") total += 60;
+    }
+
+    // Sibling discount only for Pay in Full
+    if (plan === "full" && playerCount >= 2) {
+        total -= 10; // $10 off total
+    }
+
+    // -----------------------------
+    // Square Payment Redirect
+    // -----------------------------
+    let squareURL = "";
+
+    if (plan === "full") {
+        squareURL = "https://checkout.square.site/pay-in-full-EXAMPLE?amount=" + total;
+    } else {
+        squareURL = "https://checkout.square.site/payment-plan-EXAMPLE?amount=" + total;
+    }
+
+    // Redirect to Square
+    window.location.href = squareURL;
 }
