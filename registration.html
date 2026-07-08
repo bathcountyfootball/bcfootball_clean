@@ -8,122 +8,120 @@
 </head>
 
 <body>
+    <div class="container">
+        <h1>Player Registration</h1>
+        <h2>Bath County Flag & Jr Pro Football</h2>
 
-<div class="container">
-    <h1>Player Registration</h1>
-    <h2>Bath County Flag & Jr Pro Football</h2>
+        <form id="registrationForm">
 
-    <!-- STEP CONTAINER -->
-    <div id="step-container">
+            <!-- STEP 1: Parent Information -->
+            <div class="form-step" id="step-1">
+                <h3>Parent Information</h3>
 
-        <!-- STEP 1: Parent Info -->
-        <div class="step" id="step1">
-            <h3>Parent Information</h3>
+                <label>Parent Name</label>
+                <input type="text" name="parentName" required>
 
-            <label>Parent Name</label>
-            <input type="text" id="parentName">
+                <label>Parent Email</label>
+                <input type="email" name="parentEmail" required>
 
-            <label>Parent Email</label>
-            <input type="email" id="parentEmail">
+                <label>Parent Phone</label>
+                <input type="tel" name="parentPhone" required>
 
-            <label>Parent Phone</label>
-            <input type="text" id="parentPhone">
+                <button type="button" class="next-btn" onclick="nextStep(2)">Next</button>
+            </div>
 
-            <button class="next-btn" onclick="nextStep()">Next</button>
-        </div>
+            <!-- STEP 2: Player Information -->
+            <div class="form-step" id="step-2" style="display:none;">
+                <h3>Player Information</h3>
 
-        <!-- STEP 2: Player Info -->
-        <div class="step" id="step2">
-            <h3>Player Information</h3>
+                <label>Player Name</label>
+                <input type="text" name="playerName" required>
 
-            <label>Player Name</label>
-            <input type="text" id="playerName">
+                <label>Birthdate</label>
+                <input type="date" name="birthdate" required>
 
-            <label>Birthdate</label>
-            <input type="date" id="birthdate">
+                <label>School</label>
+                <input type="text" name="school" required>
 
-            <label>School</label>
-            <input type="text" id="school">
+                <label>Grade</label>
+                <input type="number" name="grade" required>
 
-            <label>Grade</label>
-            <input type="number" id="grade">
+                <label>Gender</label>
+                <select name="gender" required>
+                    <option value="">Select</option>
+                    <option>Male</option>
+                    <option>Female</option>
+                </select>
 
-            <label>Gender</label>
-            <select id="gender">
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-            </select>
+                <label>League</label>
+                <select name="division" required>
+                    <option value="">Select</option>
+                    <option value="Flag">Flag</option>
+                    <option value="Jr Pro">Jr Pro</option>
+                </select>
 
-            <label>League</label>
-            <select id="league">
-                <option value="Flag">Flag</option>
-                <option value="Jr Pro">Jr Pro</option>
-            </select>
+                <label>Shirt Size</label>
+                <select name="shirtSize" required>
+                    <option value="">Select</option>
+                    <option>YS</option>
+                    <option>YM</option>
+                    <option>YL</option>
+                    <option>YXL</option>
+                </select>
 
-            <label>Shirt Size</label>
-            <select id="shirtSize">
-                <option>YS</option>
-                <option>YM</option>
-                <option>YL</option>
-                <option>S</option>
-                <option>M</option>
-                <option>L</option>
-                <option>XL</option>
-            </select>
+                <button type="button" class="back-btn" onclick="nextStep(1)">Back</button>
+                <button type="button" class="next-btn" onclick="nextStep(3)">Next</button>
+            </div>
 
-            <button class="back-btn" onclick="prevStep()">Back</button>
-            <button class="next-btn" onclick="nextStep()">Next</button>
-        </div>
+            <!-- STEP 3: Medical Information -->
+            <div class="form-step" id="step-3" style="display:none;">
+                <h3>Medical Information</h3>
 
-        <!-- STEP 3: Medical Info -->
-        <div class="step" id="step3">
-            <h3>Medical Information</h3>
+                <label>Doctor Name</label>
+                <input type="text" name="doctorName" required>
 
-            <label>Doctor Name</label>
-            <input type="text" id="doctorName">
+                <label>Doctor Phone</label>
+                <input type="tel" name="doctorPhone" required>
 
-            <label>Doctor Phone</label>
-            <input type="text" id="doctorPhone">
+                <label>Allergies / Medical Notes</label>
+                <textarea name="medicalNotes"></textarea>
 
-            <label>Allergies / Medical Notes</label>
-            <textarea id="allergies"></textarea>
+                <button type="button" class="back-btn" onclick="nextStep(2)">Back</button>
+                <button type="button" class="next-btn" onclick="nextStep(4)">Next</button>
+            </div>
 
-            <button class="back-btn" onclick="prevStep()">Back</button>
-            <button class="next-btn" onclick="nextStep()">Next</button>
-        </div>
+            <!-- STEP 4: Payment Plan -->
+            <div class="form-step" id="step-4" style="display:none;">
+                <h3>Payment Plan</h3>
 
-        <!-- STEP 4: Payment Plan -->
-        <div class="step" id="step4">
-            <h3>Payment Plan</h3>
+                <label>Select Payment Option</label>
+                <select name="paymentOption" required>
+                    <option value="">Select</option>
+                    <option value="full">Pay in Full</option>
+                    <option value="plan">2‑Payment Plan</option>
+                </select>
 
-            <label>Select Payment Option</label>
-            <select id="paymentPlan">
-                <option value="full">Pay in Full</option>
-                <option value="split">Pay in 2 Payments</option>
-            </select>
+                <p class="note">Sibling discount applies only to Pay‑in‑Full.</p>
 
-            <p id="siblingNote" class="info-note">
-                Sibling discount applies only to Pay-in-Full.
-            </p>
+                <button type="button" class="back-btn" onclick="nextStep(3)">Back</button>
+                <button type="button" class="next-btn" onclick="nextStep(5)">Next</button>
+            </div>
 
-            <button class="back-btn" onclick="prevStep()">Back</button>
-            <button class="next-btn" onclick="nextStep()">Next</button>
-        </div>
+            <!-- STEP 5: Review & Pay -->
+            <div class="form-step" id="step-5" style="display:none;">
+                <h3>Review & Pay</h3>
 
-        <!-- STEP 5: Review & Pay -->
-        <div class="step" id="step5">
-            <h3>Review & Pay</h3>
+                <p>Please review your information and click Submit & Pay.</p>
 
-            <div id="reviewBox"></div>
+                <button type="button" class="back-btn" onclick="nextStep(4)">Back</button>
 
-            <button class="back-btn" onclick="prevStep()">Back</button>
-            <button class="submit-btn" onclick="submitRegistration()">Submit & Pay</button>
-        </div>
+                <!-- FINAL BUTTON ONLY -->
+                <button type="button" class="submit-btn" onclick="submitRegistration()">Submit & Pay</button>
+            </div>
 
+        </form>
     </div>
-</div>
 
-<script src="registration.js"></script>
-
+    <script src="registration.js"></script>
 </body>
 </html>
