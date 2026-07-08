@@ -1,76 +1,249 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Player Registration – Bath County Football</title>
-  <link rel="stylesheet" href="css/styles.css" />
-  <style>
-    .container { max-width: 900px; margin: 0 auto; padding: 20px; }
-    .form-section { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: #fafafa; }
-    label { display: block; margin-top: 8px; font-weight: 600; }
-    input, select, textarea { width: 100%; padding: 8px; margin-top: 4px; border-radius: 4px; border: 1px solid #ccc; box-sizing: border-box; }
-    .player-card { margin-bottom: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 8px; background: #fff; }
-    .btn { padding: 10px 14px; background: #c00; color: #fff; border: none; border-radius: 6px; cursor: pointer; margin-top: 10px; }
-    .submit-btn { padding: 12px 18px; background: #008000; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 18px; }
-    .note { font-size: 0.9em; color: #555; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bath County Football Registration</title>
+
+    <link rel="stylesheet" href="css/styles.css">
+
+    <style>
+        *{
+            box-sizing:border-box;
+        }
+
+        body{
+            font-family:Arial,Helvetica,sans-serif;
+            background:#f4f4f4;
+            margin:0;
+            padding:20px;
+        }
+
+        .container{
+            max-width:1000px;
+            margin:auto;
+            background:white;
+            padding:25px;
+            border-radius:10px;
+            box-shadow:0 2px 8px rgba(0,0,0,.15);
+        }
+
+        h1,h2,h3{
+            text-align:center;
+        }
+
+        .form-section{
+            border:1px solid #ddd;
+            padding:20px;
+            border-radius:8px;
+            margin-bottom:20px;
+            background:#fafafa;
+        }
+
+        .player-card{
+            border:1px solid #ccc;
+            padding:20px;
+            margin-bottom:20px;
+            border-radius:8px;
+            background:white;
+        }
+
+        label{
+            display:block;
+            margin-top:12px;
+            font-weight:bold;
+        }
+
+        input,
+        select,
+        textarea{
+            width:100%;
+            padding:10px;
+            margin-top:5px;
+            border:1px solid #ccc;
+            border-radius:5px;
+        }
+
+        textarea{
+            resize:vertical;
+        }
+
+        .btn{
+            margin-top:15px;
+            background:#b30000;
+            color:white;
+            border:none;
+            padding:12px 18px;
+            cursor:pointer;
+            border-radius:5px;
+        }
+
+        .btn:hover{
+            background:#900;
+        }
+
+        .removeBtn{
+            background:#666;
+        }
+
+        .removeBtn:hover{
+            background:#444;
+        }
+
+        .submit-btn{
+            background:green;
+            font-size:18px;
+            width:100%;
+            padding:15px;
+        }
+
+        .submit-btn:hover{
+            background:#006600;
+        }
+
+        .note{
+            color:#555;
+            margin-top:10px;
+        }
+
+        #reviewBox{
+            background:white;
+            border:1px solid #ccc;
+            padding:15px;
+            min-height:120px;
+        }
+
+        hr{
+            margin:25px 0;
+        }
+
+    </style>
+
 </head>
 
 <body>
-  <div class="container">
-    <h1>Player Registration</h1>
-    <h2>Bath County Flag & Jr Pro Football</h2>
 
-    <form id="registrationForm">
-      <!-- Parent Info -->
-      <section class="form-section">
-        <h3>Parent Information</h3>
-        <label>Parent Name</label>
-        <input type="text" id="parentName" required />
-        <label>Parent Email</label>
-        <input type="email" id="parentEmail" required />
-        <label>Parent Phone</label>
-        <input type="tel" id="parentPhone" required />
-        <label>Parent Address</label>
-        <input type="text" id="parentAddress" required />
-      </section>
+<div class="container">
 
-      <!-- Players -->
-      <section class="form-section">
-        <h3>Player(s)</h3>
-        <div id="playersContainer"></div>
-        <button type="button" class="btn" onclick="addPlayer()">+ Add Player</button>
-        <p class="note">Click “Add Player” to add each child. All fields appear immediately for each player.</p>
-      </section>
+<h1>Bath County Flag & Jr Pro Football</h1>
+<h2>Player Registration</h2>
 
-      <!-- Payment Plan -->
-      <section class="form-section">
-        <h3>Payment Plan</h3>
-        <label>Select Payment Option</label>
-        <select id="paymentPlan" required>
-          <option value="">Select</option>
-          <option value="full">Pay in Full</option>
-          <option value="plan">2‑Payment Plan</option>
-        </select>
-        <p class="note">Sibling discount applies only to Pay‑in‑Full.</p>
-      </section>
+<form id="registrationForm">
 
-      <!-- Review -->
-      <section class="form-section">
-        <h3>Review Your Information</h3>
-        <div id="reviewBox"></div>
-        <button type="button" class="btn" onclick="buildReview()">Refresh Review</button>
-      </section>
+<div class="form-section">
 
-      <!-- Submit -->
-      <section class="form-section">
-        <button type="button" class="submit-btn" onclick="submitRegistration()">Submit & Pay</button>
-      </section>
-    </form>
-  </div>
+<h3>Parent Information</h3>
 
-  <!-- ✅ Script moved to bottom -->
-  <script src="scripts/registration.js"></script>
+<label>Parent Name</label>
+<input
+type="text"
+id="parentName"
+required>
+
+<label>Email</label>
+<input
+type="email"
+id="parentEmail"
+required>
+
+<label>Phone</label>
+<input
+type="tel"
+id="parentPhone"
+required>
+
+<label>Address</label>
+<input
+type="text"
+id="parentAddress"
+required>
+
+</div>
+
+
+<div class="form-section">
+
+<h3>Players</h3>
+
+<div id="playersContainer"></div>
+
+<button
+type="button"
+id="addPlayerBtn"
+class="btn">
++ Add Player
+</button>
+
+<p class="note">
+Add one player at a time. You may register multiple children on one form.
+</p>
+
+</div>
+
+
+<div class="form-section">
+
+<h3>Payment Plan</h3>
+
+<label>Choose Payment Option</label>
+
+<select id="paymentPlan" required>
+
+<option value="">Select One</option>
+
+<option value="full">
+Pay In Full
+</option>
+
+<option value="plan">
+2 Payment Plan
+</option>
+
+</select>
+
+<p class="note">
+Sibling discounts apply only when paying in full.
+</p>
+
+</div>
+
+
+<div class="form-section">
+
+<h3>Review Registration</h3>
+
+<div id="reviewBox">
+
+Click "Refresh Review" after entering your information.
+
+</div>
+
+<button
+type="button"
+id="reviewBtn"
+class="btn">
+Refresh Review
+</button>
+
+</div>
+
+
+<div class="form-section">
+
+<button
+type="button"
+id="submitBtn"
+class="submit-btn">
+Submit Registration & Pay
+</button>
+
+</div>
+
+</form>
+
+</div>
+
+<script src="scripts/registration.js"></script>
+
 </body>
 </html>
