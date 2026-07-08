@@ -1,11 +1,6 @@
-// -----------------------------
-// Globals
-// -----------------------------
 let playerCount = 0;
 
-// -----------------------------
-// Utility: Calculate age from birthdate
-// -----------------------------
+// Auto-calc age from birthdate
 function calculateAgeFromBirthdate(birthdateStr) {
     if (!birthdateStr) return "";
     const today = new Date();
@@ -20,9 +15,7 @@ function calculateAgeFromBirthdate(birthdateStr) {
     return age;
 }
 
-// -----------------------------
 // Add Player
-// -----------------------------
 function addPlayer() {
     playerCount++;
 
@@ -106,16 +99,15 @@ function addPlayer() {
 
     container.appendChild(div);
 
-    // Auto-calc age when birthdate changes
+    // Auto-calc age
     const birthInput = document.getElementById(`playerBirthdate-${playerCount}`);
     const ageInput = document.getElementById(`playerAge-${playerCount}`);
 
     birthInput.addEventListener("change", () => {
-        const age = calculateAgeFromBirthdate(birthInput.value);
-        ageInput.value = age || "";
+        ageInput.value = calculateAgeFromBirthdate(birthInput.value);
     });
 
-    // Jr Pro physical popup
+    // Physical popup
     const physicalSelect = document.getElementById(`playerPhysical-${playerCount}`);
     physicalSelect.addEventListener("change", () => {
         if (physicalSelect.value === "No") {
@@ -124,17 +116,7 @@ function addPlayer() {
     });
 }
 
-// Attach Add Player button
-document.addEventListener("DOMContentLoaded", () => {
-    const btn = document.getElementById("addPlayerBtn");
-    if (btn) {
-        btn.addEventListener("click", addPlayer);
-    }
-});
-
-// -----------------------------
-// Build Review Section
-// -----------------------------
+// Build Review
 function buildReview() {
     const review = document.getElementById("reviewBox");
     review.innerHTML = "";
@@ -154,46 +136,30 @@ function buildReview() {
     `;
 
     for (let i = 1; i <= playerCount; i++) {
-        const name = document.getElementById(`playerName-${i}`).value;
-        const birthdate = document.getElementById(`playerBirthdate-${i}`).value;
-        const age = document.getElementById(`playerAge-${i}`).value;
-        const school = document.getElementById(`playerSchool-${i}`).value;
-        const grade = document.getElementById(`playerGrade-${i}`).value;
-        const gender = document.getElementById(`playerGender-${i}`).value;
-        const league = document.getElementById(`playerLeague-${i}`).value;
-        const shirt = document.getElementById(`playerShirt-${i}`).value;
-        const doctor = document.getElementById(`playerDoctor-${i}`).value;
-        const doctorPhone = document.getElementById(`playerDoctorPhone-${i}`).value;
-        const medical = document.getElementById(`playerMedical-${i}`).value;
-        const physical = document.getElementById(`playerPhysical-${i}`).value;
-        const paymentType = document.getElementById(`playerPaymentType-${i}`).value;
-
         review.innerHTML += `
             <h4>Player ${i}</h4>
-            <p><strong>Name:</strong> ${name}</p>
-            <p><strong>Birthdate:</strong> ${birthdate}</p>
-            <p><strong>Age:</strong> ${age}</p>
-            <p><strong>School:</strong> ${school}</p>
-            <p><strong>Grade:</strong> ${grade}</p>
-            <p><strong>Gender:</strong> ${gender}</p>
-            <p><strong>League:</strong> ${league}</p>
-            <p><strong>Shirt Size:</strong> ${shirt}</p>
-            <p><strong>Doctor:</strong> ${doctor}</p>
-            <p><strong>Doctor Phone:</strong> ${doctorPhone}</p>
-            <p><strong>Allergies / Medical:</strong> ${medical}</p>
-            <p><strong>Physical On File:</strong> ${physical}</p>
-            <p><strong>Payment Type:</strong> ${paymentType}</p>
+            <p><strong>Name:</strong> ${document.getElementById(`playerName-${i}`).value}</p>
+            <p><strong>Birthdate:</strong> ${document.getElementById(`playerBirthdate-${i}`).value}</p>
+            <p><strong>Age:</strong> ${document.getElementById(`playerAge-${i}`).value}</p>
+            <p><strong>School:</strong> ${document.getElementById(`playerSchool-${i}`).value}</p>
+            <p><strong>Grade:</strong> ${document.getElementById(`playerGrade-${i}`).value}</p>
+            <p><strong>Gender:</strong> ${document.getElementById(`playerGender-${i}`).value}</p>
+            <p><strong>League:</strong> ${document.getElementById(`playerLeague-${i}`).value}</p>
+            <p><strong>Shirt Size:</strong> ${document.getElementById(`playerShirt-${i}`).value}</p>
+            <p><strong>Doctor:</strong> ${document.getElementById(`playerDoctor-${i}`).value}</p>
+            <p><strong>Doctor Phone:</strong> ${document.getElementById(`playerDoctorPhone-${i}`).value}</p>
+            <p><strong>Medical:</strong> ${document.getElementById(`playerMedical-${i}`).value}</p>
+            <p><strong>Physical On File:</strong> ${document.getElementById(`playerPhysical-${i}`).value}</p>
+            <p><strong>Payment Type:</strong> ${document.getElementById(`playerPaymentType-${i}`).value}</p>
             <hr>
         `;
     }
 }
 
-// -----------------------------
 // Submit & Pay
-// -----------------------------
 function submitRegistration() {
 
-    // Validate parent fields
+    // Validate parent
     if (!document.getElementById("parentName").value ||
         !document.getElementById("parentEmail").value ||
         !document.getElementById("parentPhone").value ||
@@ -202,7 +168,6 @@ function submitRegistration() {
         return;
     }
 
-    // Validate players
     if (playerCount === 0) {
         alert("Please add at least one player.");
         return;
@@ -210,25 +175,14 @@ function submitRegistration() {
 
     let flagPlayers = 0;
     let jrPlayers = 0;
-
     let paymentTypeGlobal = null;
 
     for (let i = 1; i <= playerCount; i++) {
-        const name = document.getElementById(`playerName-${i}`).value;
-        const birthdate = document.getElementById(`playerBirthdate-${i}`).value;
-        const age = document.getElementById(`playerAge-${i}`).value;
-        const school = document.getElementById(`playerSchool-${i}`).value;
-        const grade = document.getElementById(`playerGrade-${i}`).value;
-        const gender = document.getElementById(`playerGender-${i}`).value;
+
         const league = document.getElementById(`playerLeague-${i}`).value;
-        const shirt = document.getElementById(`playerShirt-${i}`).value;
-        const doctor = document.getElementById(`playerDoctor-${i}`).value;
-        const doctorPhone = document.getElementById(`playerDoctorPhone-${i}`).value;
-        const physical = document.getElementById(`playerPhysical-${i}`).value;
         const paymentType = document.getElementById(`playerPaymentType-${i}`).value;
 
-        if (!name || !birthdate || !age || !school || !grade || !gender ||
-            !league || !shirt || !doctor || !doctorPhone || !physical || !paymentType) {
+        if (!league || !paymentType) {
             alert(`Please complete all fields for Player ${i}.`);
             return;
         }
@@ -236,75 +190,48 @@ function submitRegistration() {
         if (league === "Flag") flagPlayers++;
         if (league === "JrPro") jrPlayers++;
 
-        // Ensure all players use same payment type
         if (paymentTypeGlobal === null) {
             paymentTypeGlobal = paymentType;
         } else if (paymentTypeGlobal !== paymentType) {
-            alert("All players must use the same payment type (Pay in Full or 2-Payment Plan).");
+            alert("All players must use the same payment type.");
             return;
         }
     }
 
-    if (!paymentTypeGlobal) {
-        alert("Please select payment type for all players.");
-        return;
-    }
-
-    // -----------------------------
-    // Pricing Logic
-    // -----------------------------
     const priceFlag = 40;
     const priceJrPro = 60;
 
     let total = (flagPlayers * priceFlag) + (jrPlayers * priceJrPro);
 
-    // Sibling discount only for Pay in Full
     if (paymentTypeGlobal === "full" && playerCount >= 2) {
         total -= 10;
     }
 
-    // -----------------------------
-    // Square Payment Redirect
-    // -----------------------------
     let squareURL = "";
 
     if (paymentTypeGlobal === "full") {
-
-        // All Flag
         if (jrPlayers === 0) {
-            squareURL = "https://square.link/u/1mXmf0Qd?src=sheet"; // Flag Pay in Full
-        }
-        // All Jr Pro
-        else if (flagPlayers === 0) {
-            squareURL = "https://square.link/u/erwjam6I?src=sheet"; // Jr Pro Pay in Full
-        }
-        // Mixed leagues
-        else {
-            alert("Mixed leagues cannot use Pay in Full. Choose 2-Payment Plan or separate registrations.");
+            squareURL = "https://square.link/u/1mXmf0Qd?src=sheet";
+        } else if (flagPlayers === 0) {
+            squareURL = "https://square.link/u/erwjam6I?src=sheet";
+        } else {
+            alert("Mixed leagues cannot use Pay in Full.");
             return;
         }
-    } else if (paymentTypeGlobal === "plan") {
-
-        // All Flag
-        if (jrPlayers === 0) {
-            alert("You will complete Payment 1 now. Payment 2 link will be provided separately.");
-            squareURL = "https://square.link/u/Dp5uuZbF?src=sheet"; // Flag 2-Payment, Payment 1
-        }
-        // All Jr Pro
-        else if (flagPlayers === 0) {
-            alert("You will complete Payment 1 now. Payment 2 link will be provided separately.");
-            squareURL = "https://square.link/u/Vvt4QEPx?src=sheet"; // Jr Pro 2-Payment, Payment 1
-        }
-        // Mixed leagues
-        else {
-            alert("Mixed leagues cannot use 2-Payment Plan. Use separate registrations.");
-            return;
-        }
-    } else {
-        alert("Unknown payment type.");
-        return;
     }
 
-    // Redirect to Square
+    if (paymentTypeGlobal === "plan") {
+        if (jrPlayers === 0) {
+            alert("You will complete Payment 1 now.");
+            squareURL = "https://square.link/u/Dp5uuZbF?src=sheet";
+        } else if (flagPlayers === 0) {
+            alert("You will complete Payment 1 now.");
+            squareURL = "https://square.link/u/Vvt4QEPx?src=sheet";
+        } else {
+            alert("Mixed leagues cannot use 2-Payment Plan.");
+            return;
+        }
+    }
+
     window.location.href = squareURL;
 }
