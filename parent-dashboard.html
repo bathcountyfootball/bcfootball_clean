@@ -1,163 +1,175 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Parent Dashboard – Bath County Football</title>
-    <link rel="stylesheet" href="home.css">
-	if (!localStorage.getItem("parentEmail")) {
-    window.location.href = "parent-login.html";
-}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Parent Dashboard – Bath County Football</title>
+  <link rel="stylesheet" href="home.css">
 
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
-
-    <script>
-        // TODO: Replace with your Firebase config
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-    </script>
-
-    <style>
-        .dashboard-card {
-            background: #fff;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            margin-bottom: 25px;
-        }
-        .dashboard-card h2 {
-            color: #b30000;
-            margin-top: 0;
-            font-size: 1.4rem;
-            font-weight: 800;
-        }
-        .player-card {
-            background: #fafafa;
-            padding: 18px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            border-left: 6px solid #b30000;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-        }
-        .player-card h3 {
-            margin: 0;
-            font-size: 1.2rem;
-            font-weight: 700;
-        }
-        .logout-btn {
-            background: #444;
-            color: #fff;
-            padding: 12px 18px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: bold;
-            display: inline-block;
-            margin-top: 10px;
-        }
-        .logout-btn:hover {
-            background: #000;
-        }
-    </style>
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; background:#f4f4f4; margin:0; }
+    .hero { background:#b30000; color:white; padding:30px 20px; text-align:center; }
+    .main-links { max-width:900px; margin:25px auto; padding:0 15px; }
+    .dashboard-card {
+      background:#fff; padding:25px; border-radius:12px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.15); margin-bottom:25px;
+    }
+    .dashboard-card h2 { color:#b30000; margin-top:0; }
+    .player-card {
+      background:#fafafa; padding:18px; border-radius:10px;
+      margin-bottom:15px; border-left:6px solid #b30000;
+    }
+    .btn {
+      display:inline-block; background:#b30000; color:white; padding:12px 18px;
+      border-radius:8px; text-decoration:none; font-weight:bold; border:none; cursor:pointer;
+    }
+    .btn.dark { background:#444; }
+    .btn.green { background:green; }
+    footer { text-align:center; padding:20px; color:#555; }
+  </style>
 </head>
 
 <body>
 
 <header class="hero">
-    <h1>Parent Dashboard</h1>
-    <p>Manage Your Players</p>
+  <h1>Parent Dashboard</h1>
+  <p>Manage Your Players</p>
 </header>
 
-<section class="main-links" style="max-width:900px; margin:auto;">
+<section class="main-links">
 
-    <!-- Parent Info -->
-    <div class="dashboard-card">
-        <h2>Your Information</h2>
-        <p id="parentName">Loading...</p>
-        <p id="parentEmail"></p>
-        <p id="parentPhone"></p>
-        <p id="parentAddress"></p>
+  <div class="dashboard-card">
+    <h2>Your Information</h2>
+    <p id="parentName">Loading...</p>
+    <p id="parentEmail"></p>
+    <p id="parentPhone"></p>
+    <p id="parentAddress"></p>
+    <button id="logoutBtn" class="btn dark">Logout</button>
+  </div>
 
-        <a href="#" id="logoutBtn" class="logout-btn">Logout</a>
-    </div>
+  <div class="dashboard-card">
+    <h2>Your Players</h2>
+    <div id="playerList">Loading players...</div>
+  </div>
 
-    <!-- Player List -->
-    <div class="dashboard-card">
-        <h2>Your Players</h2>
-        <div id="playerList">Loading players...</div>
-    </div>
+  <div class="dashboard-card">
+    <h2>Payment Summary</h2>
+    <div id="paymentSummary">Loading payment information...</div>
+  </div>
 
-    <!-- Add Player -->
-    <div class="dashboard-card">
-        <h2>Add a New Player</h2>
-        <a href="registration.html" class="action-btn red">Register Another Player</a>
-    </div>
+  <div class="dashboard-card">
+    <h2>Add Another Player</h2>
+    <a href="registration.html" class="btn">Register Another Player</a>
+  </div>
 
 </section>
 
 <footer>
-    <p>© 2026 Bath County Youth Football</p>
+  <p>© 2026 Bath County Youth Football</p>
 </footer>
 
 <script>
-    auth.onAuthStateChanged(async user => {
-        if (!user) {
-            window.location.href = "login.html";
-            return;
-        }
+const API_URL = 'https://script.google.com/macros/s/AKfycbwJR0mM--IOixP7NLMKN4owPphBM9FOtzryRJ3KbfkH0Nci8ylR2Gcg_Kg52XrwWWJQ/exec';
+const PAY_LINK = 'https://square.link/u/sS8n48d5?src=sheet';
 
-        const uid = user.uid;
+function money(amount) {
+  return Number(amount || 0).toFixed(2);
+}
 
-        // Load parent profile
-        const parentDoc = await db.collection("parents").doc(uid).get();
-        const parent = parentDoc.data();
+async function api(payload) {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+  return await res.json();
+}
 
-        document.getElementById("parentName").innerText = parent.parentName;
-        document.getElementById("parentEmail").innerText = "Email: " + parent.email;
-        document.getElementById("parentPhone").innerText = "Phone: " + parent.phone;
-        document.getElementById("parentAddress").innerText = "Address: " + (parent.address || "Not provided");
+document.addEventListener('DOMContentLoaded', loadDashboard);
 
-        // Load players belonging to this parent
-        const snapshot = await db.collection("registrations")
-            .where("parentEmail", "==", parent.email)
-            .get();
+async function loadDashboard() {
+  const email = (localStorage.getItem('parentEmail') || '').toLowerCase();
 
-        const list = document.getElementById("playerList");
-        list.innerHTML = "";
+  if (!email) {
+    alert('Please log in first.');
+    window.location.href = 'login.html';
+    return;
+  }
 
-        snapshot.forEach(doc => {
-            const p = doc.data();
-            const div = document.createElement("div");
-            div.className = "player-card";
-            div.innerHTML = `
-                <h3>${p.playerName}</h3>
-                <p>Grade: ${p.grade}</p>
-                <p>League: ${p.league}</p>
-                <p>School: ${p.school}</p>
-                <a class="action-btn" href="manage-player.html?id=${doc.id}">Edit Player</a>
-            `;
-            list.appendChild(div);
-        });
+  const data = await api({
+    action: 'getParentDashboard',
+    email: email
+  });
 
-        if (snapshot.empty) {
-            list.innerHTML = "<p>You have no players registered yet.</p>";
-        }
+  if (!data.success) {
+    document.getElementById('playerList').innerHTML = '<p>Could not load dashboard.</p>';
+    return;
+  }
+
+  const parent = data.parent || {};
+  const players = data.players || [];
+
+  document.getElementById('parentName').textContent = parent.name || localStorage.getItem('parentName') || '';
+  document.getElementById('parentEmail').textContent = 'Email: ' + email;
+  document.getElementById('parentPhone').textContent = 'Phone: ' + (parent.phone || localStorage.getItem('parentPhone') || '');
+  document.getElementById('parentAddress').textContent = 'Address: ' + (parent.address || '');
+
+  const list = document.getElementById('playerList');
+  list.innerHTML = '';
+
+  if (!players.length) {
+    list.innerHTML = '<p>You have no players registered yet.</p>';
+  } else {
+    players.forEach(p => {
+      const div = document.createElement('div');
+      div.className = 'player-card';
+      div.innerHTML = `
+        <h3>${p.name || p.playerName || ''}</h3>
+        <p><b>League:</b> ${p.league || ''}</p>
+        <p><b>Grade:</b> ${p.grade || ''}</p>
+        <p><b>School:</b> ${p.school || ''}</p>
+        <p><b>Team:</b> ${p.team || 'Not assigned yet'}</p>
+        <p><b>Player Fee:</b> $${money(p.finalFee)}</p>
+        <p><b>Status:</b> ${p.paymentStatus || 'Pending'}</p>
+      `;
+      list.appendChild(div);
     });
+  }
 
-    // Logout
-    document.getElementById("logoutBtn").onclick = async () => {
-        await auth.signOut();
-        window.location.href = "login.html";
-    };
+  renderPaymentSummary(players);
+}
+
+function renderPaymentSummary(players) {
+  const box = document.getElementById('paymentSummary');
+
+  if (!players.length) {
+    box.innerHTML = '<p>No payment information yet.</p>';
+    return;
+  }
+
+  const latest = players[players.length - 1];
+
+  const familyTotal = Number(latest.familyTotal || 0);
+  const amountDueNow = Number(latest.amountDueNow || familyTotal || 0);
+  const remainingBalance = Number(latest.remainingBalance || 0);
+  const plan = latest.paymentPlan === 'plan' ? 'Two Payment Plan' : 'Pay In Full';
+
+  box.innerHTML = `
+    <p><b>Payment Option:</b> ${plan}</p>
+    <p><b>Family Total:</b> $${money(familyTotal)}</p>
+    <p><b>Amount to Enter in Square:</b> $${money(amountDueNow)}</p>
+    <p><b>Remaining Balance:</b> $${money(remainingBalance)}</p>
+    <p><b>Payment Status:</b> ${latest.paymentStatus || 'Pending'}</p>
+    <p>Please enter the amount shown above when Square opens.</p>
+    <a class="btn green" href="${PAY_LINK}">Pay with Square</a>
+  `;
+}
+
+document.getElementById('logoutBtn').onclick = () => {
+  localStorage.removeItem('parentEmail');
+  localStorage.removeItem('parentName');
+  localStorage.removeItem('parentPhone');
+  window.location.href = 'login.html';
+};
 </script>
 
 </body>
