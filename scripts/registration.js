@@ -1,4 +1,4 @@
-const API_URL = 'https://script.google.com/macros/s/AKfycbzQrgAYG45pcW1jg1HVuN8pwxjQwk3wa3CQPYGN8YwwdHH4T6qZb_CyR3_JDOaGiXG6/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbwJR0mM--IOixP7NLMKN4owPphBM9FOtzryRJ3KbfkH0Nci8ylR2Gcg_Kg52XrwWWJQ/exec';
 const PAY_FULL_LINK = 'https://square.link/u/sS8n48d5?src=sheet';
 const PAY_PLAN_LINK = 'https://square.link/u/sS8n48d5?src=sheet';
 
