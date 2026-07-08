@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Family Payment – Bath County Football</title>
+  <link rel="stylesheet" href="css/styles.css" />
+
+  <style>
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .summary-box {
+      background: #f7f7f7;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border: 1px solid #ddd;
+    }
+    .summary-box h3 {
+      margin-top: 0;
+    }
+    .pay-btn {
+      padding: 14px 20px;
+      background: #008000;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 18px;
+      width: 100%;
+    }
+    .players-list {
+      margin-top: 10px;
+      padding-left: 20px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h2>Family Payment Summary</h2>
+    <p>Please review your total and click the button below to complete payment.</p>
+
+    <div class="summary-box">
+      <h3>Parent Information</h3>
+      <p><strong>Name:</strong> <span id="parentName"></span></p>
+      <p><strong>Email:</strong> <span id="parentEmail"></span></p>
+      <p><strong>Phone:</strong> <span id="parentPhone"></span></p>
+    </div>
+
+    <div class="summary-box">
+      <h3>Players</h3>
+      <ul id="playersList" class="players-list"></ul>
+    </div>
+
+    <div class="summary-box">
+      <h3>Total Amount Due</h3>
+      <p style="font-size: 22px; font-weight: bold;">
+        $<span id="totalAmount"></span>
+      </p>
+      <p>This amount must be entered manually on the Square payment page.</p>
+    </div>
+
+    <button class="pay-btn" onclick="goToPayment()">Click to Pay</button>
+  </div>
+
+  <script>
+    const FAMILY_PAYMENT_LINK =
+      "https://checkout.square.site/merchant/MLCQ44R69JXHJ/checkout/347GSTHR43ZFCASNG7BHFWX3?src=sheet";
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // Load parent info
+      document.getElementById("parentName").textContent =
+        localStorage.getItem("parentName") || "";
+      document.getElementById("parentEmail").textContent =
+        localStorage.getItem("parentEmail") || "";
+      document.getElementById("parentPhone").textContent =
+        localStorage.getItem("parentPhone") || "";
+
+      // Load players
+      let players = [];
+      try {
+        players = JSON.parse(localStorage.getItem("players")) || [];
+      } catch (e) {
+        players = [];
+      }
+
+      const list = document.getElementById("playersList");
+      players.forEach((p, i) => {
+        const li = document.createElement("li");
+        li.textContent = `${p.playerName} — ${p.league}`;
+        list.appendChild(li);
+      });
+
+      // Load total
+      const total = localStorage.getItem("familyTotal") || "0.00";
+      document.getElementById("totalAmount").textContent = Number(total).toFixed(2);
+    });
+
+    function goToPayment() {
+      window.location.href = FAMILY_PAYMENT_LINK;
+    }
+  </script>
+</body>
+</html>
