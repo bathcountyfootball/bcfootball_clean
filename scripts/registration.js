@@ -15,55 +15,10 @@ const SQUARE_LINKS = {
 // Payment 2 due date (display only)
 const PAYMENT2_DUE_DISPLAY = "August 7";
 
-// ----- WIZARD STATE -----
-let currentStep = 1;
-
 // ----- INIT -----
 document.addEventListener("DOMContentLoaded", () => {
-    showStep(currentStep);
     autoFillParentInfo();
 });
-
-// ----- STEP NAVIGATION -----
-function showStep(step) {
-    const steps = document.querySelectorAll(".step");
-    steps.forEach((s, index) => {
-        s.classList.toggle("active", index + 1 === step);
-    });
-
-    // Button visibility control
-    const backBtn = document.getElementById("backBtn");
-    const nextBtn = document.getElementById("nextBtn");
-    const submitBtn = document.getElementById("submitBtn");
-
-    if (step === 5) {
-        // Final step — only show Submit & Pay
-        if (backBtn) backBtn.style.display = "none";
-        if (nextBtn) nextBtn.style.display = "none";
-        if (submitBtn) submitBtn.style.display = "inline-block";
-    } else {
-        // Steps 1–4 — show Back/Next, hide Submit
-        if (backBtn) backBtn.style.display = "inline-block";
-        if (nextBtn) nextBtn.style.display = "inline-block";
-        if (submitBtn) submitBtn.style.display = "none";
-    }
-}
-
-
-function nextStep() {
-    if (currentStep < 5) {
-        currentStep++;
-        if (currentStep === 5) buildReview();
-        showStep(currentStep);
-    }
-}
-
-function prevStep() {
-    if (currentStep > 1) {
-        currentStep--;
-        showStep(currentStep);
-    }
-}
 
 // ----- AUTO-FILL PARENT INFO -----
 function autoFillParentInfo() {
@@ -101,8 +56,10 @@ function buildReview() {
     let paymentText = "";
     if (paymentPlan === "full") {
         paymentText = "Pay in Full (Sibling discount applies if eligible).";
-    } else {
+    } else if (paymentPlan === "plan") {
         paymentText = `Pay in 2 Payments. Payment 1 now, Payment 2 due ${PAYMENT2_DUE_DISPLAY}. No sibling discount on split payments.`;
+    } else {
+        paymentText = "No payment option selected.";
     }
 
     reviewBox.innerHTML = `
@@ -171,7 +128,7 @@ function submitRegistration() {
     };
 
     // TODO: replace with your actual Apps Script endpoint
-    const SHEETS_ENDPOINT = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec";
+    const SHEETS_ENDPOINT = "https://script.google.com/macros/s/AKfycbxnIbz_eMUCwMyCa52oZbJTbC6PRb77FDKG6g6CMPTHt9sOd53SYd5lceIca0xH96wpBg/exec";
 
     fetch(SHEETS_ENDPOINT, {
         method: "POST",
