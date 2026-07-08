@@ -112,6 +112,80 @@ function submitRegistration() {
     // -----------------------------
     // Pricing Logic
     // -----------------------------
+    let totalFlag = 40;
+    let totalJrPro = 60;
+
+    let flagPlayers = 0;
+    let jrPlayers = 0;
+
+    for (let i = 1; i <= playerCount; i++) {
+        const league = document.getElementById(`playerLeague-${i}`).value;
+
+        if (league === "Flag") flagPlayers++;
+        if (league === "JrPro") jrPlayers++;
+    }
+
+    // Calculate total
+    let total = (flagPlayers * totalFlag) + (jrPlayers * totalJrPro);
+
+    // Sibling discount only for Pay in Full
+    if (plan === "full" && playerCount >= 2) {
+        total -= 10;
+    }
+
+    // -----------------------------
+    // Square Payment Redirect
+    // -----------------------------
+    let squareURL = "";
+
+    if (plan === "full") {
+
+        // If ALL players are Flag
+        if (jrPlayers === 0) {
+            squareURL = "https://square.link/u/1mXmf0Qd?src=sheet"; // Flag Pay in Full
+        }
+
+        // If ALL players are Jr Pro
+        else if (flagPlayers === 0) {
+            squareURL = "https://square.link/u/erwjam6I?src=sheet"; // Jr Pro Pay in Full
+        }
+
+        // Mixed leagues (Flag + Jr Pro)
+        else {
+            alert("Mixed leagues cannot use Pay in Full. Choose 2‑Payment Plan.");
+            return;
+        }
+    }
+
+    else if (plan === "plan") {
+
+        // FLAG 2‑PAYMENT
+        if (jrPlayers === 0) {
+            alert("You will complete Payment 1 now. Payment 2 link will be emailed.");
+            squareURL = "https://square.link/u/Dp5uuZbF?src=sheet"; // Flag Payment 1
+        }
+
+        // JR PRO 2‑PAYMENT
+        else if (flagPlayers === 0) {
+            alert("You will complete Payment 1 now. Payment 2 link will be emailed.");
+            squareURL = "https://square.link/u/Vvt4QEPx?src=sheet"; // Jr Pro Payment 1
+        }
+
+        // Mixed leagues
+        else {
+            alert("Mixed leagues cannot use 2‑Payment Plan.");
+            return;
+        }
+    }
+
+    // Redirect to Square
+    window.location.href = squareURL;
+}
+
+
+    // -----------------------------
+    // Pricing Logic
+    // -----------------------------
     let total = 0;
 
     for (let i = 1; i <= playerCount; i++) {
