@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Parent/Guardian Consent – Bath County Football</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    .signature-container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .signature-text h1 {
+      color: #c00;
+    }
+    .signature-text h3 {
+      font-weight: normal;
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+    .signature-form label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    .signature-form input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
+    }
+    .signature-form input[type="checkbox"] {
+      margin-right: 6px;
+    }
+    .submit-btn {
+      margin-top: 16px;
+      padding: 12px 18px;
+      background: #008000;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container signature-container">
+    <h2>Bath County Flag & Jr Pro Football</h2>
+
+    <div class="signature-text">
+      <h1>IMPORTANT! PARENT OR GUARDIAN MUST READ BEFORE SIGNING!</h1>
+
+      <h3>
+        I, the parent/guardian of the above named child, give my permission and
+        approval for his/her participation in all activities during the football
+        season. I do hereby waive, release, absolve and indemnify and agree to
+        hold harmless local football league organizers, sponsors, supervisors,
+        coaches, participants and person transporting my child to and from
+        games, practices, etc. for any claim arising out of injury to my child
+        whether the result of negligence or any other cause during practices,
+        games or during transportation.
+      </h3>
+
+      <h3>
+        We, the parents/guardians also agree to return the uniform and/or
+        equipment issued in the same condition as received, with the exception
+        of wear experienced through normal use. If the uniform is not returned,
+        I, by signing this form, understand that I must reimburse the league
+        $250.00 for the cost of the uniform.
+      </h3>
+
+      <h3>
+        The insurance provided through Bath County Jr. Pro is paid for out of
+        the funds raised. The Bath County Jr Pro will not pay the deductible. It
+        is a secondary policy when you have other medical and accidental
+        insurance, but it is the primary coverage if the above named child is
+        not otherwise insured.
+      </h3>
+
+      <h3>
+        <strong>
+          You should be aware that in spite of all reasonable precautions,
+          injuries could happen. Football is a collision sport, and even the
+          best equipment will sometimes not prevent injury.
+        </strong>
+      </h3>
+    </div>
+
+    <form id="signatureForm" class="signature-form">
+      <label for="parentSignature">Parent/Guardian Full Name (typed signature)</label>
+      <input type="text" id="parentSignature" required />
+
+      <label for="signatureDate">Date</label>
+      <input type="text" id="signatureDate" readonly />
+
+      <label>
+        <input type="checkbox" id="agreeCheckbox" required />
+        I have read and understand the above statements and agree to them.
+      </label>
+
+      <button type="button" class="submit-btn" onclick="submitSignature()">
+        Sign & Continue
+      </button>
+    </form>
+  </div>
+
+  <script src="scripts/signature.js"></script>
+</body>
+</html>

@@ -5,6 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Player Registration – Bath County Football</title>
     <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .accordion {
+            background: #f2f2f2;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .panel {
+            display: none;
+            padding: 10px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+        .btn {
+            padding: 10px 14px;
+            background: #c00;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .submit-btn {
+            padding: 12px 18px;
+            background: #008000;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+    </style>
 </head>
 
 <body>
@@ -18,76 +54,27 @@
             <section class="form-section">
                 <h3>Parent Information</h3>
 
-                <label for="parentName">Parent Name</label>
-                <input type="text" id="parentName" name="parentName" required>
+                <label>Parent Name</label>
+                <input type="text" id="parentName" required>
 
-                <label for="parentEmail">Parent Email</label>
-                <input type="email" id="parentEmail" name="parentEmail" required>
+                <label>Parent Email</label>
+                <input type="email" id="parentEmail" required>
 
-                <label for="parentPhone">Parent Phone</label>
-                <input type="tel" id="parentPhone" name="parentPhone" required>
+                <label>Parent Phone</label>
+                <input type="tel" id="parentPhone" required>
             </section>
 
-            <!-- Player Information -->
-            <section class="form-section">
-                <h3>Player Information</h3>
+            <!-- Add Player -->
+            <button type="button" class="btn" onclick="addPlayer()">+ Add Player</button>
 
-                <label for="playerName">Player Name</label>
-                <input type="text" id="playerName" name="playerName" required>
-
-                <label for="birthdate">Birthdate</label>
-                <input type="date" id="birthdate" name="birthdate" required>
-
-                <label for="school">School</label>
-                <input type="text" id="school" name="school" required>
-
-                <label for="grade">Grade</label>
-                <input type="number" id="grade" name="grade" required>
-
-                <label for="gender">Gender</label>
-                <select id="gender" name="gender" required>
-                    <option value="">Select</option>
-                    <option>Male</option>
-                    <option>Female</option>
-                </select>
-
-                <label for="league">League</label>
-                <select id="league" name="division" required>
-                    <option value="">Select</option>
-                    <option value="Flag">Flag</option>
-                    <option value="Jr Pro">Jr Pro</option>
-                </select>
-
-                <label for="shirtSize">Shirt Size</label>
-                <select id="shirtSize" name="shirtSize" required>
-                    <option value="">Select</option>
-                    <option>YS</option>
-                    <option>YM</option>
-                    <option>YL</option>
-                    <option>YXL</option>
-                </select>
-            </section>
-
-            <!-- Medical Information -->
-            <section class="form-section">
-                <h3>Medical Information</h3>
-
-                <label for="doctorName">Doctor Name</label>
-                <input type="text" id="doctorName" name="doctorName" required>
-
-                <label for="doctorPhone">Doctor Phone</label>
-                <input type="tel" id="doctorPhone" name="doctorPhone" required>
-
-                <label for="allergies">Allergies / Medical Notes</label>
-                <textarea id="allergies" name="medicalNotes"></textarea>
-            </section>
+            <div id="playersContainer"></div>
 
             <!-- Payment Plan -->
             <section class="form-section">
                 <h3>Payment Plan</h3>
 
-                <label for="paymentPlan">Select Payment Option</label>
-                <select id="paymentPlan" name="paymentOption" required>
+                <label>Select Payment Option</label>
+                <select id="paymentPlan" required>
                     <option value="">Select</option>
                     <option value="full">Pay in Full</option>
                     <option value="plan">2‑Payment Plan</option>

@@ -12,146 +12,168 @@ const SQUARE_LINKS = {
     }
 };
 
-// Payment 2 due date (display only)
 const PAYMENT2_DUE_DISPLAY = "August 7";
 
-// ----- INIT -----
-document.addEventListener("DOMContentLoaded", () => {
-    autoFillParentInfo();
-});
+// Your actual Apps Script endpoint
+const SHEETS_ENDPOINT =
+    "https://script.google.com/macros/s/AKfycbxnIbz_eMUCwMyCa52oZbJTbC6PRb77FDKG6g6CMPTHt9sOd53SYd5lceIca0xH96wpBg/exec";
 
-// ----- AUTO-FILL PARENT INFO -----
-function autoFillParentInfo() {
-    const parentName = localStorage.getItem("parentName") || "";
-    const parentEmail = localStorage.getItem("parentEmail") || "";
-    const parentPhone = localStorage.getItem("parentPhone") || "";
+// Store players
+let players = [];
 
-    document.getElementById("parentName").value = parentName;
-    document.getElementById("parentEmail").value = parentEmail;
-    document.getElementById("parentPhone").value = parentPhone;
+// ----- ADD PLAYER -----
+function addPlayer() {
+    const index = players.length;
+    players.push({});
+
+    const container = document.getElementById("playersContainer");
+
+    const block = document.createElement("div");
+    block.innerHTML = `
+        <div class="accordion" onclick="togglePanel(${index})">
+            Player ${index + 1}
+        </div>
+
+        <div class="panel" id="panel-${index}">
+            <label>Player Name</label>
+            <input type="text" id="playerName-${index}" required>
+
+            <label>Birthdate</label>
+            <input type="date" id="birthdate-${index}" required>
+
+            <label>School</label>
+            <input type="text" id="school-${index}" required>
+
+            <label>Grade</label>
+            <input type="number" id="grade-${index}" required>
+
+            <label>Gender</label>
+            <select id="gender-${index}" required>
+                <option value="">Select</option>
+                <option>Male</option>
+                <option>Female</option>
+            </select>
+
+            <label>League</label>
+            <select id="league-${index}" required>
+                <option value="">Select</option>
+                <option value="Flag">Flag</option>
+                <option value="Jr Pro">Jr Pro</option>
+            </select>
+
+            <label>Shirt Size</label>
+            <select id="shirtSize-${index}" required>
+                <option value="">Select</option>
+                <option>YS</option>
+                <option>YM</option>
+                <option>YL</option>
+                <option>YXL</option>
+            </select>
+
+            <h4>Medical Info</h4>
+
+            <label>Doctor Name</label>
+            <input type="text" id="doctorName-${index}" required>
+
+            <label>Doctor Phone</label>
+            <input type="tel" id="doctorPhone-${index}" required>
+
+            <label>Allergies / Notes</label>
+            <textarea id="allergies-${index}"></textarea>
+        </div>
+    `;
+
+    container.appendChild(block);
 }
 
-// ----- BUILD REVIEW STEP -----
+// ----- TOGGLE ACCORDION -----
+function togglePanel(i) {
+    const panel = document.getElementById(`panel-${i}`);
+    panel.style.display = panel.style.display === "block" ? "none" : "block";
+}
+
+// ----- BUILD REVIEW -----
 function buildReview() {
-    const reviewBox = document.getElementById("reviewBox");
+    const review = document.getElementById("reviewBox");
 
     const parentName = document.getElementById("parentName").value;
     const parentEmail = document.getElementById("parentEmail").value;
     const parentPhone = document.getElementById("parentPhone").value;
 
-    const playerName = document.getElementById("playerName").value;
-    const birthdate = document.getElementById("birthdate").value;
-    const school = document.getElementById("school").value;
-    const grade = document.getElementById("grade").value;
-    const gender = document.getElementById("gender").value;
-    const league = document.getElementById("league").value;
-    const shirtSize = document.getElementById("shirtSize").value;
-
-    const doctorName = document.getElementById("doctorName").value;
-    const doctorPhone = document.getElementById("doctorPhone").value;
-    const allergies = document.getElementById("allergies").value;
-
-    const paymentPlan = document.getElementById("paymentPlan").value;
-
-    let paymentText = "";
-    if (paymentPlan === "full") {
-        paymentText = "Pay in Full (Sibling discount applies if eligible).";
-    } else if (paymentPlan === "plan") {
-        paymentText = `Pay in 2 Payments. Payment 1 now, Payment 2 due ${PAYMENT2_DUE_DISPLAY}. No sibling discount on split payments.`;
-    } else {
-        paymentText = "No payment option selected.";
-    }
-
-    reviewBox.innerHTML = `
+    let html = `
         <h4>Parent</h4>
         <p><strong>Name:</strong> ${parentName}</p>
         <p><strong>Email:</strong> ${parentEmail}</p>
         <p><strong>Phone:</strong> ${parentPhone}</p>
-
-        <h4>Player</h4>
-        <p><strong>Name:</strong> ${playerName}</p>
-        <p><strong>Birthdate:</strong> ${birthdate}</p>
-        <p><strong>School:</strong> ${school}</p>
-        <p><strong>Grade:</strong> ${grade}</p>
-        <p><strong>Gender:</strong> ${gender}</p>
-        <p><strong>League:</strong> ${league}</p>
-        <p><strong>Shirt Size:</strong> ${shirtSize}</p>
-
-        <h4>Medical</h4>
-        <p><strong>Doctor:</strong> ${doctorName}</p>
-        <p><strong>Doctor Phone:</strong> ${doctorPhone}</p>
-        <p><strong>Allergies / Notes:</strong> ${allergies}</p>
-
-        <h4>Payment</h4>
-        <p>${paymentText}</p>
+        <hr>
     `;
+
+    players.forEach((_, i) => {
+        html += `
+            <h4>Player ${i + 1}</h4>
+            <p><strong>Name:</strong> ${document.getElementById(`playerName-${i}`).value}</p>
+            <p><strong>Birthdate:</strong> ${document.getElementById(`birthdate-${i}`).value}</p>
+            <p><strong>School:</strong> ${document.getElementById(`school-${i}`).value}</p>
+            <p><strong>Grade:</strong> ${document.getElementById(`grade-${i}`).value}</p>
+            <p><strong>Gender:</strong> ${document.getElementById(`gender-${i}`).value}</p>
+            <p><strong>League:</strong> ${document.getElementById(`league-${i}`).value}</p>
+            <p><strong>Shirt Size:</strong> ${document.getElementById(`shirtSize-${i}`).value}</p>
+
+            <h4>Medical</h4>
+            <p><strong>Doctor:</strong> ${document.getElementById(`doctorName-${i}`).value}</p>
+            <p><strong>Doctor Phone:</strong> ${document.getElementById(`doctorPhone-${i}`).value}</p>
+            <p><strong>Allergies:</strong> ${document.getElementById(`allergies-${i}`).value}</p>
+            <hr>
+        `;
+    });
+
+    review.innerHTML = html;
 }
 
-// ----- SUBMIT & PAY -----
+// ----- SUBMIT -----
 function submitRegistration() {
     const parentName = document.getElementById("parentName").value;
     const parentEmail = document.getElementById("parentEmail").value;
     const parentPhone = document.getElementById("parentPhone").value;
 
-    const playerName = document.getElementById("playerName").value;
-    const birthdate = document.getElementById("birthdate").value;
-    const school = document.getElementById("school").value;
-    const grade = document.getElementById("grade").value;
-    const gender = document.getElementById("gender").value;
-    const league = document.getElementById("league").value;
-    const shirtSize = document.getElementById("shirtSize").value;
-
-    const doctorName = document.getElementById("doctorName").value;
-    const doctorPhone = document.getElementById("doctorPhone").value;
-    const allergies = document.getElementById("allergies").value;
-
     const paymentPlan = document.getElementById("paymentPlan").value;
 
-    // Build payload for Google Sheets
+    const allPlayers = players.map((_, i) => ({
+        playerName: document.getElementById(`playerName-${i}`).value,
+        birthdate: document.getElementById(`birthdate-${i}`).value,
+        school: document.getElementById(`school-${i}`).value,
+        grade: document.getElementById(`grade-${i}`).value,
+        gender: document.getElementById(`gender-${i}`).value,
+        league: document.getElementById(`league-${i}`).value,
+        shirtSize: document.getElementById(`shirtSize-${i}`).value,
+        doctorName: document.getElementById(`doctorName-${i}`).value,
+        doctorPhone: document.getElementById(`doctorPhone-${i}`).value,
+        allergies: document.getElementById(`allergies-${i}`).value
+    }));
+
     const payload = {
-        action: "saveRegistration",
+        action: "saveMultiRegistration",
         parentName,
         parentEmail,
         parentPhone,
-        playerName,
-        birthdate,
-        school,
-        grade,
-        gender,
-        league,
-        shirtSize,
-        doctorName,
-        doctorPhone,
-        allergies,
         paymentPlan,
-        payment2Due: PAYMENT2_DUE_DISPLAY
+        payment2Due: PAYMENT2_DUE_DISPLAY,
+        players: allPlayers
     };
-
-    // TODO: replace with your actual Apps Script endpoint
-    const SHEETS_ENDPOINT = "https://script.google.com/macros/s/AKfycbxnIbz_eMUCwMyCa52oZbJTbC6PRb77FDKG6g6CMPTHt9sOd53SYd5lceIca0xH96wpBg/exec";
 
     fetch(SHEETS_ENDPOINT, {
         method: "POST",
         mode: "no-cors",
-        headers: {
-            "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
-    }).catch(err => {
-        console.error("Error saving registration:", err);
     });
 
-    // Decide Square link
-    const leagueKey = league === "Flag" ? "Flag" : "Jr Pro";
-    let redirectUrl = "";
-
-    if (paymentPlan === "full") {
-        redirectUrl = SQUARE_LINKS[leagueKey].full;
-    } else {
-        redirectUrl = SQUARE_LINKS[leagueKey].split1;
-        // Payment 2 link & due date will be shown in parent dashboard:
-        // "Pay Remaining Balance (Due August 7)" using split2.
-    }
+    // Payment redirect (based on first player's league)
+    const leagueKey = allPlayers[0].league;
+    const redirectUrl =
+        paymentPlan === "full"
+            ? SQUARE_LINKS[leagueKey].full
+            : SQUARE_LINKS[leagueKey].split1;
 
     window.location.href = redirectUrl;
 }
