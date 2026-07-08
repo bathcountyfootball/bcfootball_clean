@@ -100,15 +100,3 @@ function addPlayer() {
     if (physicalSelect.value === "No") {
       alert("Jr Pro players must have a physical on file before participating.");
     }
-  });
-}
-
-// Build Review
-function buildReview() {
-  const review = document.getElementById("reviewBox");
-  review.innerHTML = "";
-
-  const parentName = document.getElementById("parentName").value;
-  const parentEmail = document.getElementById("parentEmail").value;
-  const parentPhone = document.getElementById("parentPhone").value;
-  const parentAddress = document.getElementById("parentAddress").value;
