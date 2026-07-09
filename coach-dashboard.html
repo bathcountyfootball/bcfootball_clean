@@ -2,15 +2,18 @@
 <html>
 <head>
   <title>Coach Dashboard</title>
-  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/theme.css?v=2">
 
   <style>
     .section-container { max-width: 1100px; margin: auto; padding: 20px; }
     table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
     th { background: #b30000; color: white; }
-    input, select { padding: 8px; width: 100%; margin-bottom: 10px; }
+    input, select, textarea { padding: 8px; width: 100%; margin-bottom: 10px; }
+    textarea { min-height: 80px; }
     .small-btn { padding: 7px 10px; cursor: pointer; margin-top: 5px; }
+    .schedule-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    @media(max-width:800px){ .schedule-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 
@@ -35,6 +38,40 @@ if (!localStorage.getItem("coachUser")) {
       <h3>Your Coaching Profile</h3>
       <p id="coachProfile">Loading...</p>
       <button class="action-btn" onclick="logout()">Logout</button>
+    </div>
+
+    <div class="link-card">
+      <h3>Coach Schedule Manager</h3>
+      <p>Create practices or team events that will show on the public schedule page.</p>
+
+      <div class="schedule-grid">
+        <div>
+          <label>Event Title</label>
+          <input type="text" id="scheduleTitle" placeholder="Practice, Team Meeting, Equipment Pickup">
+
+          <label>Date</label>
+          <input type="date" id="scheduleDate">
+
+          <label>Time</label>
+          <input type="time" id="scheduleTime">
+
+          <label>Location</label>
+          <input type="text" id="scheduleLocation" placeholder="Field, gym, etc.">
+        </div>
+
+        <div>
+          <label>Team</label>
+          <select id="scheduleTeam">
+            <option value="All">All</option>
+          </select>
+
+          <label>Notes</label>
+          <textarea id="scheduleNotes" placeholder="Optional details"></textarea>
+        </div>
+      </div>
+
+      <button class="action-btn" onclick="saveCoachScheduleEvent()">Save Schedule Event</button>
+      <a class="action-btn" href="schedule.html">View Schedule</a>
     </div>
 
     <div class="link-card">
@@ -108,6 +145,76 @@ function escapeHtml(value) {
     .replace(/'/g, "&#039;");
 }
 
+/* SCHEDULE */
+
+function loadCoachTeamOptions() {
+  const select = document.getElementById("scheduleTeam");
+
+  const teams = [
+    ...new Set(
+      coachPlayers
+        .map(p => String(p.team || p.league || "").trim())
+        .filter(Boolean)
+    )
+  ];
+
+  let html = `<option value="All">All</option>`;
+
+  teams.forEach(team => {
+    html += `<option value="${escapeHtml(team)}">${escapeHtml(team)}</option>`;
+  });
+
+  select.innerHTML = html;
+}
+
+async function saveCoachScheduleEvent() {
+  const title = scheduleTitle.value.trim();
+  const date = scheduleDate.value;
+
+  if (!title) {
+    alert("Please enter an event title.");
+    return;
+  }
+
+  if (!date) {
+    alert("Please choose a date.");
+    return;
+  }
+
+  const notesWithCoach = scheduleNotes.value.trim()
+    ? scheduleNotes.value.trim() + "\n\nPosted by: " + coachName
+    : "Posted by: " + coachName;
+
+  const payload = {
+    action: "saveScheduleEvent",
+    title,
+    date,
+    time: scheduleTime.value,
+    location: scheduleLocation.value.trim(),
+    team: scheduleTeam.value || "All",
+    audience: "All",
+    notes: notesWithCoach
+  };
+
+  const data = await api(payload);
+
+  if (!data.success) {
+    alert(data.message || "Could not save schedule event.");
+    return;
+  }
+
+  alert("Schedule event saved.");
+
+  scheduleTitle.value = "";
+  scheduleDate.value = "";
+  scheduleTime.value = "";
+  scheduleLocation.value = "";
+  scheduleTeam.value = "All";
+  scheduleNotes.value = "";
+}
+
+/* ROSTER */
+
 async function loadCoachPlayers() {
   rosterResults.innerHTML = "<p>Loading roster...</p>";
 
@@ -122,6 +229,7 @@ async function loadCoachPlayers() {
   }
 
   coachPlayers = data.players || [];
+  loadCoachTeamOptions();
 
   if (!coachPlayers.length) {
     rosterResults.innerHTML = "<p>No players have been assigned to you yet.</p>";
@@ -210,6 +318,8 @@ function exportRosterCSV() {
 
   URL.revokeObjectURL(url);
 }
+
+/* EQUIPMENT */
 
 async function loadEquipmentPlayer() {
   const search = equipSearch.value.trim().toLowerCase();
@@ -355,7 +465,6 @@ async function savePlayerEquipment() {
   alert("Equipment assignment saved.");
 
   await loadInventory();
-
   await loadEquipmentPlayer();
 }
 </script>
