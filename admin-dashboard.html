@@ -7,11 +7,11 @@
   <style>
     .section-container { max-width: 1400px; margin: auto; padding: 20px; }
     .table-wrapper { overflow-x: auto; margin-top: 15px; }
-    table { width: 100%; min-width: 1250px; border-collapse: collapse; font-size: 14px; }
+    table { width: 100%; min-width: 1400px; border-collapse: collapse; font-size: 14px; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: left; vertical-align: top; }
     th { background: #b30000; color: white; }
-    .paid, .signed { color: green; font-weight: bold; }
-    .pending, .not-signed { color: #b30000; font-weight: bold; }
+    .paid, .signed, .active-status { color: green; font-weight: bold; }
+    .pending, .not-signed, .inactive-status { color: #b30000; font-weight: bold; }
     select, input, textarea { padding: 7px; width: 100%; margin-bottom: 8px; }
     textarea { min-height: 80px; }
     .small-btn { padding: 7px 10px; cursor: pointer; margin: 2px; }
@@ -40,7 +40,7 @@ if (!localStorage.getItem("adminUser")) {
   <section class="main-links">
 
     <h2>Admin Dashboard</h2>
-<a class="action-btn" href="reports.html">View Admin Reports</a>
+
     <div class="link-card">
       <h3>Your Admin Profile</h3>
       <p id="adminProfile">Loading...</p>
@@ -102,6 +102,7 @@ if (!localStorage.getItem("adminUser")) {
 
     <div class="link-card">
       <h3>All Registrations</h3>
+      <a class="action-btn" href="reports.html">View Admin Reports</a>
       <button class="action-btn" onclick="loadRegistrations()">Refresh Registrations</button>
       <button class="action-btn" onclick="exportCSV()">Export CSV</button>
       <div id="registrationsTable"></div>
@@ -261,15 +262,10 @@ function normalizeTimeForInput(timeText) {
 
   const text = String(timeText).trim();
 
-  if (/^\d{2}:\d{2}$/.test(text)) {
-    return text;
-  }
+  if (/^\d{2}:\d{2}$/.test(text)) return text;
 
   const match = text.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
-
-  if (!match) {
-    return "";
-  }
+  if (!match) return "";
 
   let hours = Number(match[1]);
   const minutes = match[2];
@@ -285,9 +281,7 @@ async function deleteScheduleEvent(id) {
   const event = currentScheduleEvents.find(item => String(item.id) === String(id));
   const eventTitle = event ? event.title : "this event";
 
-  if (!confirm('Are you sure you want to delete "' + eventTitle + '"?')) {
-    return;
-  }
+  if (!confirm('Are you sure you want to delete "' + eventTitle + '"?')) return;
 
   const data = await api({
     action: "deleteScheduleEvent",
@@ -299,9 +293,7 @@ async function deleteScheduleEvent(id) {
     return;
   }
 
-  if (String(editingScheduleId) === String(id)) {
-    clearScheduleForm();
-  }
+  if (String(editingScheduleId) === String(id)) clearScheduleForm();
 
   alert("Schedule event deleted.");
   loadScheduleEvents();
@@ -437,6 +429,15 @@ function buildTeamOptions(registration) {
   return html;
 }
 
+function buildPlayerStatusOptions(registration) {
+  const current = String(registration.playerStatus || "Active").trim() || "Active";
+
+  return `
+    <option value="Active" ${current === "Active" ? "selected" : ""}>Active</option>
+    <option value="Inactive" ${current === "Inactive" ? "selected" : ""}>Inactive</option>
+  `;
+}
+
 function renderTable() {
   if (!allRows.length) {
     registrationsTable.innerHTML = "<p>No registrations found.</p>";
@@ -449,6 +450,7 @@ function renderTable() {
         <thead>
           <tr>
             <th>Player</th>
+            <th>Status</th>
             <th>Parent</th>
             <th>League</th>
             <th>Grade</th>
@@ -473,39 +475,58 @@ function renderTable() {
       paymentStatus.toLowerCase() === "paid" ||
       paymentStatus.toLowerCase() === "no charge";
 
+    const playerStatus = String(registration.playerStatus || "Active").trim() || "Active";
+    const statusClass = playerStatus === "Inactive" ? "inactive-status" : "active-status";
+
     html += `
       <tr>
         <td><strong>${escapeHtml(registration.name)}</strong></td>
+
+        <td>
+          <select id="playerStatus-${registration.id}" class="${statusClass}">
+            ${buildPlayerStatusOptions(registration)}
+          </select>
+          <button class="small-btn" onclick="savePlayerStatus('${registration.id}')">Save Status</button>
+          <div id="player-status-message-${registration.id}" class="status-message"></div>
+        </td>
+
         <td>
           ${escapeHtml(registration.parentName)}<br>
           <small>${escapeHtml(registration.parentEmail)}</small>
         </td>
+
         <td>${escapeHtml(registration.league)}</td>
         <td>${escapeHtml(registration.grade)}</td>
         <td>$${money(registration.finalFee)}</td>
+
         <td class="${paymentComplete ? "paid" : "pending"}">
           ${escapeHtml(registration.paymentStatus || "Pending")}
         </td>
+
         <td class="${waiverSigned ? "signed" : "not-signed"}">
           ${waiverSigned ? "Signed" : "Not Signed"}
         </td>
+
         <td class="assignment-box">
           <select id="coach-${registration.id}">
             ${buildCoachOptions(registration)}
           </select>
           <div>Current: <strong>${escapeHtml(registration.coachName || "Unassigned")}</strong></div>
         </td>
+
         <td class="assignment-box">
           <select id="team-${registration.id}">
             ${buildTeamOptions(registration)}
           </select>
         </td>
+
         <td>
           <button class="small-btn" onclick="saveAssignment('${registration.id}')">
             Save Assignment
           </button>
           <div id="assignment-status-${registration.id}" class="status-message"></div>
         </td>
+
         <td>
           <button class="small-btn" onclick="markPaid('${registration.id}')">Mark Paid</button>
           <button class="small-btn" onclick="markPartial('${registration.id}')">Partially Paid</button>
@@ -518,6 +539,27 @@ function renderTable() {
 
   html += `</tbody></table></div>`;
   registrationsTable.innerHTML = html;
+}
+
+async function savePlayerStatus(id) {
+  const playerStatus = document.getElementById("playerStatus-" + id).value;
+  const statusBox = document.getElementById("player-status-message-" + id);
+
+  statusBox.textContent = "Saving...";
+
+  const data = await api({
+    action: "updatePlayerStatus",
+    id,
+    playerStatus
+  });
+
+  if (!data.success) {
+    statusBox.textContent = data.message || "Could not save.";
+    return;
+  }
+
+  statusBox.textContent = "Saved!";
+  await loadRegistrations();
 }
 
 async function saveAssignment(id) {
@@ -573,9 +615,7 @@ function markNoCharge(id) {
     "Set " + playerName + "'s registration fee to $0.00 and mark this registration as No Charge?"
   );
 
-  if (!confirmed) {
-    return;
-  }
+  if (!confirmed) return;
 
   setPaymentStatus(id, "No Charge");
 }
@@ -587,7 +627,7 @@ function exportCSV() {
   }
 
   const headers = [
-    "Player", "Parent", "Email", "Phone", "League", "Grade", "School",
+    "Player", "Player Status", "Parent", "Email", "Phone", "League", "Grade", "School",
     "Coach", "Coach Email", "Team", "Fee", "Payment Status",
     "Emergency Contact", "Emergency Phone", "Medical", "Allergies"
   ];
@@ -596,7 +636,7 @@ function exportCSV() {
 
   allRows.forEach(row => {
     const csvRow = [
-      row.name, row.parentName, row.parentEmail, row.parentPhone,
+      row.name, row.playerStatus || "Active", row.parentName, row.parentEmail, row.parentPhone,
       row.league, row.grade, row.school, row.coachName, row.coachEmail,
       row.team, row.finalFee, row.paymentStatus, row.emergencyName,
       row.emergencyPhone, row.medical, row.allergies
@@ -669,10 +709,13 @@ async function loadEquipmentPlayerAdmin() {
 
 function itemLabel(item) {
   if (!item) return "";
+
   let label = item.type || "";
+
   if (item.size) label += " - " + item.size;
   if (item.number) label += " #" + item.number;
   if (item.condition) label += " (" + item.condition + ")";
+
   return label;
 }
 
