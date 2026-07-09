@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Reports</title>
+  <link rel="stylesheet" href="theme.css">
+
+  <style>
+    .section-container { max-width: 1200px; margin: auto; padding: 20px; }
+    .report-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .report-card { background: white; padding: 15px; border-radius: 8px; border-left: 5px solid #b30000; }
+    .report-card h3 { margin: 0; color: #b30000; }
+    .big-number { font-size: 28px; font-weight: bold; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #b30000; color: white; }
+    @media(max-width:900px){ .report-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media(max-width:600px){ .report-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+
+<body>
+
+<script>
+if (!localStorage.getItem("adminUser")) {
+  window.location.href = "admin.html";
+}
+</script>
+
+<header class="hero">
+  <h1>BATH COUNTY YOUTH FOOTBALL</h1>
+  <p>Admin Reports</p>
+</header>
+
+<div class="section-container">
+  <section class="main-links">
+
+    <div class="link-card">
+      <h2>Reports Dashboard</h2>
+      <button class="action-btn" onclick="loadReports()">Refresh Reports</button>
+      <button class="action-btn" onclick="exportRegistrationReport()">Export Registration Report</button>
+      <button class="action-btn" onclick="exportInventoryReport()">Export Inventory Report</button>
+      <a class="action-btn" href="admin-dashboard.html">Back to Admin Dashboard</a>
+
+      <div id="summaryCards" class="report-grid" style="margin-top:20px;"></div>
+    </div>
+
+    <div class="link-card">
+      <h3>League Counts</h3>
+      <div id="leagueReport"></div>
+    </div>
+
+    <div class="link-card">
+      <h3>Payment Report</h3>
+      <div id="paymentReport"></div>
+    </div>
+
+    <div class="link-card">
+      <h3>Waiver Report</h3>
+      <div id="waiverReport"></div>
+    </div>
+
+    <div class="link-card">
+      <h3>Equipment Inventory Report</h3>
+      <div id="inventoryReport"></div>
+    </div>
+
+  </section>
+</div>
+
+<footer>
+  <p>© 2026 Bath County Youth Football</p>
+</footer>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbwJR0mM--IOixP7NLMKN4owPphBM9FOtzryRJ3KbfkH0Nci8ylR2Gcg_Kg52XrwWWJQ/exec";
+
+let registrations = [];
+let coaches = [];
+let inventory = [];
+let waiverStatusByEmail = {};
+
+function money(value) {
+  return Number(value || 0).toFixed(2);
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+async function api(payload) {
+  const res = await fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+  return await res.json();
+}
+
+async function loadReports() {
+  summaryCards.innerHTML = "<p>Loading reports...</p>";
+
+  const regData = await api({
+    action: "searchAllPlayers",
+    search: ""
+  });
+
+  const invData = await api({
+    action: "getInventory"
+  });
+
+  if (!regData.success) {
+    summaryCards.innerHTML = "<p>Could not load registrations.</p>";
+    return;
+  }
+
+  registrations = regData.players || [];
+  coaches = regData.coaches || [];
+  inventory = invData.success ? invData.inventory || [] : [];
+
+  await loadWaiverStatuses();
+
+  renderSummaryCards();
+  renderLeagueReport();
+  renderPaymentReport();
+  renderWaiverReport();
+  renderInventoryReport();
+}
+
+async function loadWaiverStatuses() {
+  waiverStatusByEmail = {};
+
+  const emails = [
+    ...new Set(
+      registrations
+        .map(row => String(row.parentEmail || "").trim().toLowerCase())
+        .filter(Boolean)
+    )
+  ];
+
+  await Promise.all(
+    emails.map(async email => {
+      try {
+        const data = await api({
+          action: "getParentWaiver",
+          parentEmail: email
+        });
+
+        waiverStatusByEmail[email] = data.success && data.signed;
+      } catch (err) {
+        waiverStatusByEmail[email] = false;
+      }
+    })
+  );
+}
+
+function renderSummaryCards() {
+  const totalPlayers = registrations.length;
+  const flagCount = registrations.filter(r => String(r.league || "").toLowerCase() === "flag").length;
+  const jrProCount = registrations.filter(r => String(r.league || "").toLowerCase().includes("jr")).length;
+
+  const totalFees = registrations.reduce((sum, r) => sum + Number(r.finalFee || 0), 0);
+
+  const paidAmount = registrations
+    .filter(r =>
+      String(r.paymentStatus || "").toLowerCase() === "paid" ||
+      String(r.paymentStatus || "").toLowerCase() === "no charge"
+    )
+    .reduce((sum, r) => sum + Number(r.finalFee || 0), 0);
+
+  const outstandingAmount = registrations
+    .filter(r =>
+      String(r.paymentStatus || "").toLowerCase() !== "paid" &&
+      String(r.paymentStatus || "").toLowerCase() !== "no charge"
+    )
+    .reduce((sum, r) => sum + Number(r.finalFee || 0), 0);
+
+  const signedEmails = Object.values(waiverStatusByEmail).filter(Boolean).length;
+  const totalFamilies = Object.keys(waiverStatusByEmail).length;
+
+  summaryCards.innerHTML = `
+    <div class="report-card">
+      <h3>Total Players</h3>
+      <div class="big-number">${totalPlayers}</div>
+    </div>
+
+    <div class="report-card">
+      <h3>Flag</h3>
+      <div class="big-number">${flagCount}</div>
+    </div>
+
+    <div class="report-card">
+      <h3>Jr Pro</h3>
+      <div class="big-number">${jrProCount}</div>
+    </div>
+
+    <div class="report-card">
+      <h3>Total Fees</h3>
+      <div class="big-number">$${money(totalFees)}</div>
+    </div>
+
+    <div class="report-card">
+      <h3>Marked Paid</h3>
+      <div class="big-number">$${money(paidAmount)}</div>
+    </div>
+
+    <div class="report-card">
+      <h3>Outstanding</h3>
+      <div class="big-number">$${money(outstandingAmount)}</div>
+    </div>
+
+    <div class="report-card">
+      <h3>Waivers Signed</h3>
+      <div class="big-number">${signedEmails}/${totalFamilies}</div>
+    </div>
+
+    <div class="report-card">
+      <h3>Inventory Items</h3>
+      <div class="big-number">${inventory.length}</div>
+    </div>
+  `;
+}
+
+function renderLeagueReport() {
+  const groups = {};
+
+  registrations.forEach(r => {
+    const league = r.league || "Unknown";
+    groups[league] = (groups[league] || 0) + 1;
+  });
+
+  leagueReport.innerHTML = makeSimpleTable(["League", "Players"], Object.entries(groups));
+}
+
+function renderPaymentReport() {
+  const groups = {
+    "Pending": 0,
+    "Partially Paid": 0,
+    "Paid": 0,
+    "No Charge": 0,
+    "Other": 0
+  };
+
+  registrations.forEach(r => {
+    const status = r.paymentStatus || "Pending";
+
+    if (groups[status] !== undefined) {
+      groups[status]++;
+    } else {
+      groups.Other++;
+    }
+  });
+
+  paymentReport.innerHTML = makeSimpleTable(["Payment Status", "Players"], Object.entries(groups));
+}
+
+function renderWaiverReport() {
+  const signed = [];
+  const notSigned = [];
+
+  const families = {};
+
+  registrations.forEach(r => {
+    const email = String(r.parentEmail || "").trim().toLowerCase();
+    if (!email) return;
+
+    if (!families[email]) {
+      families[email] = {
+        parentName: r.parentName || "",
+        parentEmail: r.parentEmail || "",
+        signed: waiverStatusByEmail[email]
+      };
+    }
+  });
+
+  Object.values(families).forEach(f => {
+    if (f.signed) signed.push(f);
+    else notSigned.push(f);
+  });
+
+  let html = `
+    <p><b>Signed:</b> ${signed.length} | <b>Not Signed:</b> ${notSigned.length}</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Parent</th>
+          <th>Email</th>
+          <th>Waiver</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  Object.values(families).forEach(f => {
+    html += `
+      <tr>
+        <td>${escapeHtml(f.parentName)}</td>
+        <td>${escapeHtml(f.parentEmail)}</td>
+        <td>${f.signed ? "Signed" : "Not Signed"}</td>
+      </tr>
+    `;
+  });
+
+  html += "</tbody></table>";
+
+  waiverReport.innerHTML = html;
+}
+
+function renderInventoryReport() {
+  const groups = {};
+
+  inventory.forEach(item => {
+    const key = (item.type || "Unknown") + " - " + (item.status || "Unknown");
+    groups[key] = (groups[key] || 0) + 1;
+  });
+
+  inventoryReport.innerHTML = makeSimpleTable(["Equipment / Status", "Count"], Object.entries(groups));
+}
+
+function makeSimpleTable(headers, rows) {
+  let html = `
+    <table>
+      <thead>
+        <tr>
+          ${headers.map(h => `<th>${escapeHtml(h)}</th>`).join("")}
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  rows.forEach(row => {
+    html += `
+      <tr>
+        ${row.map(cell => `<td>${escapeHtml(cell)}</td>`).join("")}
+      </tr>
+    `;
+  });
+
+  html += "</tbody></table>";
+  return html;
+}
+
+function exportRegistrationReport() {
+  if (!registrations.length) {
+    alert("Load reports first.");
+    return;
+  }
+
+  const headers = [
+    "Player",
+    "Parent",
+    "Email",
+    "Phone",
+    "League",
+    "Grade",
+    "School",
+    "Team",
+    "Coach",
+    "Fee",
+    "Payment Status",
+    "Waiver Signed"
+  ];
+
+  const csvRows = [headers.join(",")];
+
+  registrations.forEach(r => {
+    const email = String(r.parentEmail || "").trim().toLowerCase();
+
+    const row = [
+      r.name,
+      r.parentName,
+      r.parentEmail,
+      r.parentPhone,
+      r.league,
+      r.grade,
+      r.school,
+      r.team,
+      r.coachName,
+      r.finalFee,
+      r.paymentStatus,
+      waiverStatusByEmail[email] ? "Signed" : "Not Signed"
+    ].map(v => `"${String(v || "").replace(/"/g, '""')}"`);
+
+    csvRows.push(row.join(","));
+  });
+
+  downloadCSV(csvRows, "registration-report.csv");
+}
+
+function exportInventoryReport() {
+  if (!inventory.length) {
+    alert("Load reports first.");
+    return;
+  }
+
+  const headers = [
+    "Type",
+    "Size",
+    "Number",
+    "Condition",
+    "Status",
+    "Assigned To",
+    "Notes"
+  ];
+
+  const csvRows = [headers.join(",")];
+
+  inventory.forEach(item => {
+    const row = [
+      item.type,
+      item.size,
+      item.number,
+      item.condition,
+      item.status,
+      item.assignedTo,
+      item.notes
+    ].map(v => `"${String(v || "").replace(/"/g, '""')}"`);
+
+    csvRows.push(row.join(","));
+  });
+
+  downloadCSV(csvRows, "inventory-report.csv");
+}
+
+function downloadCSV(csvRows, filename) {
+  const blob = new Blob([csvRows.join("\n")], {
+    type: "text/csv"
+  });
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+
+  a.href = url;
+  a.download = filename;
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
+
+document.addEventListener("DOMContentLoaded", loadReports);
+</script>
+
+</body>
+</html>
