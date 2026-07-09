@@ -5,41 +5,12 @@
   <link rel="stylesheet" href="theme.css">
 
   <style>
-    .section-container {
-      max-width: 1100px;
-      margin: auto;
-      padding: 20px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-      font-size: 14px;
-    }
-
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: left;
-    }
-
-    th {
-      background: #b30000;
-      color: white;
-    }
-
-    input {
-      padding: 8px;
-      width: 100%;
-      margin-bottom: 10px;
-    }
-
-    .small-btn {
-      padding: 7px 10px;
-      cursor: pointer;
-      margin-top: 5px;
-    }
+    .section-container { max-width: 1100px; margin: auto; padding: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #b30000; color: white; }
+    input, select { padding: 8px; width: 100%; margin-bottom: 10px; }
+    .small-btn { padding: 7px 10px; cursor: pointer; margin-top: 5px; }
   </style>
 </head>
 
@@ -56,8 +27,8 @@ if (!localStorage.getItem("coachUser")) {
 </header>
 
 <div class="section-container">
-
   <section class="main-links">
+
     <h2>Coach Dashboard</h2>
 
     <div class="link-card">
@@ -65,37 +36,29 @@ if (!localStorage.getItem("coachUser")) {
       <p id="coachProfile">Loading...</p>
       <button class="action-btn" onclick="logout()">Logout</button>
     </div>
-<a class="btn" href="schedule.html">View Schedule</a>
-<a class="action-btn" href="inventory.html">Manage Equipment Inventory</a>
+
     <div class="link-card">
       <h3>Your Assigned Players</h3>
       <button class="action-btn" onclick="loadCoachPlayers()">Refresh Roster</button>
       <button class="action-btn" onclick="exportRosterCSV()">Export Roster CSV</button>
+      <a class="action-btn" href="schedule.html">View Schedule</a>
+      <a class="action-btn" href="inventory.html">View Equipment Inventory</a>
       <div id="rosterResults">Loading roster...</div>
     </div>
 
     <div class="link-card">
-      <h3>Equipment & Jersey Tracking</h3>
-      <p>Only Jr Pro players assigned to you will appear here.</p>
-      <button class="action-btn" onclick="openEquipment()">Manage Equipment</button>
+      <h3>Assign Player Equipment</h3>
+      <p>Search one of your assigned Jr Pro players, then select available inventory items.</p>
+
+      <label>Search Player</label>
+      <input type="text" id="equipSearch" placeholder="Type player name">
+
+      <button class="action-btn" onclick="loadEquipmentPlayer()">Search</button>
+
+      <div id="equipmentForm" style="margin-top:20px;"></div>
     </div>
+
   </section>
-
-</div>
-
-<div id="equipmentModal" class="modal">
-  <div class="modal-content">
-    <h2>Equipment & Jersey Tracking</h2>
-
-    <label>Search Your Jr Pro Player</label>
-    <input type="text" id="equipSearch" placeholder="Type player name">
-
-    <button class="action-btn" onclick="loadEquipmentPlayer()">Search</button>
-
-    <div id="equipmentForm" style="margin-top:20px;"></div>
-
-    <button class="action-btn" onclick="closeEquipment()">Close</button>
-  </div>
 </div>
 
 <footer>
@@ -106,6 +69,9 @@ if (!localStorage.getItem("coachUser")) {
 const API_URL = "https://script.google.com/macros/s/AKfycbwJR0mM--IOixP7NLMKN4owPphBM9FOtzryRJ3KbfkH0Nci8ylR2Gcg_Kg52XrwWWJQ/exec";
 
 let coachPlayers = [];
+let inventory = [];
+let selectedPlayer = null;
+let existingEquipment = null;
 
 const coachName = localStorage.getItem("coachName") || "Coach";
 const coachEmail = localStorage.getItem("coachEmail") || "";
@@ -113,14 +79,16 @@ const coachEmail = localStorage.getItem("coachEmail") || "";
 document.getElementById("coachProfile").innerText =
   coachName + " (" + coachEmail + ")";
 
-document.addEventListener("DOMContentLoaded", loadCoachPlayers);
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadCoachPlayers();
+  await loadInventory();
+});
 
 async function api(payload) {
   const res = await fetch(API_URL, {
     method: "POST",
     body: JSON.stringify(payload)
   });
-
   return await res.json();
 }
 
@@ -129,6 +97,15 @@ function logout() {
   localStorage.removeItem("coachName");
   localStorage.removeItem("coachEmail");
   window.location.href = "coaches.html";
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 async function loadCoachPlayers() {
@@ -171,27 +148,34 @@ async function loadCoachPlayers() {
   coachPlayers.forEach(p => {
     html += `
       <tr>
-        <td>${p.name || ""}</td>
-        <td>${p.league || ""}</td>
-        <td>${p.team || ""}</td>
-        <td>${p.grade || ""}</td>
-        <td>${p.school || ""}</td>
-        <td>${p.shirtSize || ""}</td>
+        <td>${escapeHtml(p.name)}</td>
+        <td>${escapeHtml(p.league)}</td>
+        <td>${escapeHtml(p.team)}</td>
+        <td>${escapeHtml(p.grade)}</td>
+        <td>${escapeHtml(p.school)}</td>
+        <td>${escapeHtml(p.shirtSize)}</td>
         <td>
-          ${p.emergencyName || ""}<br>
-          <small>${p.emergencyPhone || ""}</small>
+          ${escapeHtml(p.emergencyName)}<br>
+          <small>${escapeHtml(p.emergencyPhone)}</small>
         </td>
         <td>
-          <b>Medical:</b> ${p.medical || "None"}<br>
-          <b>Allergies:</b> ${p.allergies || "None"}
+          <b>Medical:</b> ${escapeHtml(p.medical || "None")}<br>
+          <b>Allergies:</b> ${escapeHtml(p.allergies || "None")}
         </td>
       </tr>
     `;
   });
 
   html += "</tbody></table>";
-
   rosterResults.innerHTML = html;
+}
+
+async function loadInventory() {
+  const data = await api({ action: "getInventory" });
+
+  if (data.success) {
+    inventory = data.inventory || [];
+  }
 }
 
 function exportRosterCSV() {
@@ -201,32 +185,16 @@ function exportRosterCSV() {
   }
 
   const headers = [
-    "Player",
-    "League",
-    "Team",
-    "Grade",
-    "School",
-    "Shirt Size",
-    "Emergency Contact",
-    "Emergency Phone",
-    "Medical",
-    "Allergies"
+    "Player", "League", "Team", "Grade", "School", "Shirt Size",
+    "Emergency Contact", "Emergency Phone", "Medical", "Allergies"
   ];
 
   const csvRows = [headers.join(",")];
 
   coachPlayers.forEach(p => {
     const row = [
-      p.name,
-      p.league,
-      p.team,
-      p.grade,
-      p.school,
-      p.shirtSize,
-      p.emergencyName,
-      p.emergencyPhone,
-      p.medical,
-      p.allergies
+      p.name, p.league, p.team, p.grade, p.school, p.shirtSize,
+      p.emergencyName, p.emergencyPhone, p.medical, p.allergies
     ].map(v => `"${String(v || "").replace(/"/g, '""')}"`);
 
     csvRows.push(row.join(","));
@@ -243,14 +211,6 @@ function exportRosterCSV() {
   URL.revokeObjectURL(url);
 }
 
-function openEquipment() {
-  equipmentModal.style.display = "flex";
-}
-
-function closeEquipment() {
-  equipmentModal.style.display = "none";
-}
-
 async function loadEquipmentPlayer() {
   const search = equipSearch.value.trim().toLowerCase();
 
@@ -264,81 +224,139 @@ async function loadEquipmentPlayer() {
     return;
   }
 
-  const player = matches[0];
+  selectedPlayer = matches[0];
 
   const equipData = await api({
     action: "getEquipment",
-    name: player.name
+    playerId: selectedPlayer.id,
+    name: selectedPlayer.name
   });
 
-  const eq = equipData.success ? equipData.equipment : {
-    helmetIssued: "",
-    helmetReturn: "",
-    padsIssued: "",
-    padsReturn: "",
-    pantsIssued: "",
-    pantsReturn: "",
-    jerseyNumber: "",
-    jerseyReturn: ""
-  };
+  existingEquipment = equipData.success ? equipData.equipment : null;
+
+  await loadInventory();
+
+  renderEquipmentForm();
+}
+
+function itemLabel(item) {
+  if (!item) return "";
+  let label = item.type || "";
+  if (item.size) label += " - " + item.size;
+  if (item.number) label += " #" + item.number;
+  if (item.condition) label += " (" + item.condition + ")";
+  return label;
+}
+
+function buildInventoryOptions(type, currentId) {
+  let html = `<option value="">None Selected</option>`;
+
+  inventory
+    .filter(item =>
+      String(item.type || "") === type &&
+      (
+        String(item.status || "") === "Available" ||
+        String(item.id || "") === String(currentId || "")
+      )
+    )
+    .forEach(item => {
+      const selected =
+        String(item.id || "") === String(currentId || "") ? "selected" : "";
+
+      html += `
+        <option value="${escapeHtml(item.id)}" ${selected}>
+          ${escapeHtml(itemLabel(item))}
+        </option>
+      `;
+    });
+
+  return html;
+}
+
+function renderEquipmentForm() {
+  if (!selectedPlayer) return;
+
+  const eq = existingEquipment || {};
 
   equipmentForm.innerHTML = `
-    <h3>${player.name}</h3>
-    Grade: ${player.grade}<br>
-    School: ${player.school}<br>
-    Team: ${player.team || "Unassigned"}<br><br>
+    <h3>${escapeHtml(selectedPlayer.name)}</h3>
+    <p>
+      <b>Grade:</b> ${escapeHtml(selectedPlayer.grade)}<br>
+      <b>School:</b> ${escapeHtml(selectedPlayer.school)}<br>
+      <b>Team:</b> ${escapeHtml(selectedPlayer.team || "Unassigned")}
+    </p>
 
-    <label>Helmet Issued</label>
-    <input type="text" id="helmetIssued" value="${eq.helmetIssued || ""}">
+    <label>Helmet</label>
+    <select id="helmetInventoryId">
+      ${buildInventoryOptions("Helmet", eq.helmetInventoryId)}
+    </select>
 
-    <label>Helmet Returned</label>
-    <input type="text" id="helmetReturn" value="${eq.helmetReturn || ""}">
+    <label>Pads</label>
+    <select id="padsInventoryId">
+      ${buildInventoryOptions("Pads", eq.padsInventoryId)}
+    </select>
 
-    <label>Pads Issued</label>
-    <input type="text" id="padsIssued" value="${eq.padsIssued || ""}">
+    <label>Pants</label>
+    <select id="pantsInventoryId">
+      ${buildInventoryOptions("Pants", eq.pantsInventoryId)}
+    </select>
 
-    <label>Pads Returned</label>
-    <input type="text" id="padsReturn" value="${eq.padsReturn || ""}">
+    <label>Jersey</label>
+    <select id="jerseyInventoryId">
+      ${buildInventoryOptions("Jersey", eq.jerseyInventoryId)}
+    </select>
 
-    <label>Pants Issued</label>
-    <input type="text" id="pantsIssued" value="${eq.pantsIssued || ""}">
+    <label>Helmet Return Status / Notes</label>
+    <input type="text" id="helmetReturn" value="${escapeHtml(eq.helmetReturn || "")}" placeholder="Returned, Missing, Damaged, etc.">
 
-    <label>Pants Returned</label>
-    <input type="text" id="pantsReturn" value="${eq.pantsReturn || ""}">
+    <label>Pads Return Status / Notes</label>
+    <input type="text" id="padsReturn" value="${escapeHtml(eq.padsReturn || "")}" placeholder="Returned, Missing, Damaged, etc.">
 
-    <label>Jersey Number</label>
-    <input type="text" id="jerseyNumber" value="${eq.jerseyNumber || ""}">
+    <label>Pants Return Status / Notes</label>
+    <input type="text" id="pantsReturn" value="${escapeHtml(eq.pantsReturn || "")}" placeholder="Returned, Missing, Damaged, etc.">
 
-    <label>Jersey Returned</label>
-    <input type="text" id="jerseyReturn" value="${eq.jerseyReturn || ""}">
+    <label>Jersey Return Status / Notes</label>
+    <input type="text" id="jerseyReturn" value="${escapeHtml(eq.jerseyReturn || "")}" placeholder="Returned, Missing, Damaged, etc.">
 
-    <button class="action-btn"
-      onclick="saveEquipment('${player.name}', '${player.grade}', '${player.team || ""}')">
-      Save Equipment
-    </button>
+    <button class="action-btn" onclick="savePlayerEquipment()">Save Equipment Assignment</button>
   `;
 }
 
-async function saveEquipment(name, grade, team) {
+async function savePlayerEquipment() {
+  if (!selectedPlayer) {
+    alert("No player selected.");
+    return;
+  }
+
   const payload = {
-    action: "saveEquipment",
-    name,
-    grade,
-    team,
-    helmetIssued: helmetIssued.value,
+    action: "savePlayerEquipment",
+    playerId: selectedPlayer.id,
+    name: selectedPlayer.name,
+    grade: selectedPlayer.grade,
+    team: selectedPlayer.team,
+    helmetInventoryId: helmetInventoryId.value,
+    padsInventoryId: padsInventoryId.value,
+    pantsInventoryId: pantsInventoryId.value,
+    jerseyInventoryId: jerseyInventoryId.value,
     helmetReturn: helmetReturn.value,
-    padsIssued: padsIssued.value,
     padsReturn: padsReturn.value,
-    pantsIssued: pantsIssued.value,
     pantsReturn: pantsReturn.value,
-    jerseyNumber: jerseyNumber.value,
     jerseyReturn: jerseyReturn.value,
     updatedBy: coachEmail
   };
 
   const data = await api(payload);
 
-  alert(data.success ? "Equipment saved!" : "Failed to save.");
+  if (!data.success) {
+    alert(data.message || "Could not save equipment.");
+    return;
+  }
+
+  alert("Equipment assignment saved.");
+
+  await loadInventory();
+
+  await loadEquipmentPlayer();
 }
 </script>
 
