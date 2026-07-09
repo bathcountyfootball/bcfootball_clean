@@ -20,7 +20,7 @@
 
 <script>
 if (!localStorage.getItem("adminUser")) {
-  window.location.href = "admin-login.html";
+  window.location.href = "admin.html";
 }
 </script>
 
@@ -98,7 +98,7 @@ function logout() {
   localStorage.removeItem("adminUser");
   localStorage.removeItem("adminName");
   localStorage.removeItem("adminEmail");
-  window.location.href = "admin-login.html";
+  window.location.href = "admin.html";
 }
 
 async function loadRegistrations() {
