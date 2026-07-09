@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Equipment Inventory</title>
+  <link rel="stylesheet" href="theme.css">
+
+  <style>
+    .section-container { max-width: 1200px; margin: auto; padding: 20px; }
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #b30000; color: white; }
+    input, select, textarea { width: 100%; padding: 8px; margin-bottom: 8px; }
+    textarea { min-height: 70px; }
+    .small-btn { padding: 6px 10px; cursor: pointer; }
+    .available { color: green; font-weight: bold; }
+    .assigned, .missing, .damaged { color: #b30000; font-weight: bold; }
+    @media(max-width:800px){ .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+
+<body>
+
+<header class="hero">
+  <h1>BATH COUNTY YOUTH FOOTBALL</h1>
+  <p>Equipment Inventory</p>
+</header>
+
+<div class="section-container">
+
+  <section class="main-links">
+
+    <div class="link-card">
+      <h3>Add Inventory Item</h3>
+
+      <div class="grid">
+        <div>
+          <label>Equipment Type</label>
+          <select id="type">
+            <option value="Jersey">Jersey</option>
+            <option value="Pants">Pants</option>
+            <option value="Helmet">Helmet</option>
+            <option value="Pads">Pads</option>
+          </select>
+
+          <label>Size</label>
+          <input type="text" id="size" placeholder="Youth Large, Adult Medium, etc.">
+
+          <label>Number</label>
+          <input type="text" id="number" placeholder="Jersey number only">
+        </div>
+
+        <div>
+          <label>Condition</label>
+          <select id="condition">
+            <option value="Good">Good</option>
+            <option value="Fair">Fair</option>
+            <option value="Poor">Poor</option>
+            <option value="Damaged">Damaged</option>
+          </select>
+
+          <label>Status</label>
+          <select id="status">
+            <option value="Available">Available</option>
+            <option value="Assigned">Assigned</option>
+            <option value="Returned">Returned</option>
+            <option value="Damaged">Damaged</option>
+            <option value="Missing">Missing</option>
+          </select>
+
+          <label>Assigned To</label>
+          <input type="text" id="assignedTo" placeholder="Leave blank if available">
+        </div>
+      </div>
+
+      <label>Notes</label>
+      <textarea id="notes" placeholder="Optional notes"></textarea>
+
+      <button class="action-btn" onclick="saveNewItem()">Add Item</button>
+      <a class="action-btn" href="admin-dashboard.html">Back to Admin Dashboard</a>
+    </div>
+
+    <div class="link-card">
+      <h3>Inventory List</h3>
+
+      <div class="grid">
+        <div>
+          <label>Filter Type</label>
+          <select id="filterType" onchange="renderInventory()">
+            <option value="">All</option>
+            <option value="Jersey">Jersey</option>
+            <option value="Pants">Pants</option>
+            <option value="Helmet">Helmet</option>
+            <option value="Pads">Pads</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Filter Status</label>
+          <select id="filterStatus" onchange="renderInventory()">
+            <option value="">All</option>
+            <option value="Available">Available</option>
+            <option value="Assigned">Assigned</option>
+            <option value="Returned">Returned</option>
+            <option value="Damaged">Damaged</option>
+            <option value="Missing">Missing</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="action-btn" onclick="loadInventory()">Refresh Inventory</button>
+      <button class="action-btn" onclick="exportInventoryCSV()">Export CSV</button>
+
+      <div id="summaryBox"></div>
+      <div id="inventoryTable">Loading inventory...</div>
+    </div>
+
+  </section>
+
+</div>
+
+<footer>
+  <p>© 2026 Bath County Youth Football</p>
+</footer>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbwJR0mM--IOixP7NLMKN4owPphBM9FOtzryRJ3KbfkH0Nci8ylR2Gcg_Kg52XrwWWJQ/exec";
+
+let inventory = [];
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+async function api(payload) {
+  const res = await fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+  return await res.json();
+}
+
+async function saveNewItem() {
+  const payload = {
+    action: "saveInventoryItem",
+    type: type.value,
+    size: size.value.trim(),
+    number: number.value.trim(),
+    condition: condition.value,
+    status: status.value,
+    assignedTo: assignedTo.value.trim(),
+    notes: notes.value.trim()
+  };
+
+  const data = await api(payload);
+
+  if (!data.success) {
+    alert(data.message || "Could not save item.");
+    return;
+  }
+
+  alert("Inventory item added.");
+
+  size.value = "";
+  number.value = "";
+  condition.value = "Good";
+  status.value = "Available";
+  assignedTo.value = "";
+  notes.value = "";
+
+  loadInventory();
+}
+
+async function loadInventory() {
+  inventoryTable.innerHTML = "<p>Loading inventory...</p>";
+
+  const data = await api({ action: "getInventory" });
+
+  if (!data.success) {
+    inventoryTable.innerHTML = "<p>Could not load inventory.</p>";
+    return;
+  }
+
+  inventory = data.inventory || [];
+  renderInventory();
+}
+
+function getFilteredInventory() {
+  return inventory.filter(item => {
+    const typeMatch = !filterType.value || item.type === filterType.value;
+    const statusMatch = !filterStatus.value || item.status === filterStatus.value;
+    return typeMatch && statusMatch;
+  });
+}
+
+function renderSummary(items) {
+  const total = items.length;
+  const available = items.filter(i => i.status === "Available").length;
+  const assigned = items.filter(i => i.status === "Assigned").length;
+  const damaged = items.filter(i => i.status === "Damaged").length;
+  const missing = items.filter(i => i.status === "Missing").length;
+
+  summaryBox.innerHTML = `
+    <p>
+      <b>Total:</b> ${total} |
+      <b>Available:</b> ${available} |
+      <b>Assigned:</b> ${assigned} |
+      <b>Damaged:</b> ${damaged} |
+      <b>Missing:</b> ${missing}
+    </p>
+  `;
+}
+
+function renderInventory() {
+  const items = getFilteredInventory();
+
+  renderSummary(items);
+
+  if (!items.length) {
+    inventoryTable.innerHTML = "<p>No inventory items found.</p>";
+    return;
+  }
+
+  let html = `
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Size</th>
+          <th>Number</th>
+          <th>Condition</th>
+          <th>Status</th>
+          <th>Assigned To</th>
+          <th>Notes</th>
+          <th>Save</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  items.forEach(item => {
+    html += `
+      <tr>
+        <td>
+          <select id="type-${item.id}">
+            <option value="Jersey" ${item.type === "Jersey" ? "selected" : ""}>Jersey</option>
+            <option value="Pants" ${item.type === "Pants" ? "selected" : ""}>Pants</option>
+            <option value="Helmet" ${item.type === "Helmet" ? "selected" : ""}>Helmet</option>
+            <option value="Pads" ${item.type === "Pads" ? "selected" : ""}>Pads</option>
+          </select>
+        </td>
+
+        <td><input id="size-${item.id}" value="${escapeHtml(item.size)}"></td>
+
+        <td><input id="number-${item.id}" value="${escapeHtml(item.number)}"></td>
+
+        <td>
+          <select id="condition-${item.id}">
+            <option value="Good" ${item.condition === "Good" ? "selected" : ""}>Good</option>
+            <option value="Fair" ${item.condition === "Fair" ? "selected" : ""}>Fair</option>
+            <option value="Poor" ${item.condition === "Poor" ? "selected" : ""}>Poor</option>
+            <option value="Damaged" ${item.condition === "Damaged" ? "selected" : ""}>Damaged</option>
+          </select>
+        </td>
+
+        <td>
+          <select id="status-${item.id}" class="${String(item.status || "").toLowerCase()}">
+            <option value="Available" ${item.status === "Available" ? "selected" : ""}>Available</option>
+            <option value="Assigned" ${item.status === "Assigned" ? "selected" : ""}>Assigned</option>
+            <option value="Returned" ${item.status === "Returned" ? "selected" : ""}>Returned</option>
+            <option value="Damaged" ${item.status === "Damaged" ? "selected" : ""}>Damaged</option>
+            <option value="Missing" ${item.status === "Missing" ? "selected" : ""}>Missing</option>
+          </select>
+        </td>
+
+        <td><input id="assignedTo-${item.id}" value="${escapeHtml(item.assignedTo)}"></td>
+
+        <td><input id="notes-${item.id}" value="${escapeHtml(item.notes)}"></td>
+
+        <td>
+          <button class="small-btn" onclick="updateItem('${item.id}')">Save</button>
+        </td>
+      </tr>
+    `;
+  });
+
+  html += "</tbody></table>";
+  inventoryTable.innerHTML = html;
+}
+
+async function updateItem(id) {
+  const payload = {
+    action: "updateInventoryItem",
+    id,
+    type: document.getElementById("type-" + id).value,
+    size: document.getElementById("size-" + id).value.trim(),
+    number: document.getElementById("number-" + id).value.trim(),
+    condition: document.getElementById("condition-" + id).value,
+    status: document.getElementById("status-" + id).value,
+    assignedTo: document.getElementById("assignedTo-" + id).value.trim(),
+    notes: document.getElementById("notes-" + id).value.trim()
+  };
+
+  const data = await api(payload);
+
+  alert(data.success ? "Item updated." : data.message || "Could not update item.");
+
+  loadInventory();
+}
+
+function exportInventoryCSV() {
+  const items = getFilteredInventory();
+
+  if (!items.length) {
+    alert("No inventory to export.");
+    return;
+  }
+
+  const headers = [
+    "Type",
+    "Size",
+    "Number",
+    "Condition",
+    "Status",
+    "Assigned To",
+    "Notes"
+  ];
+
+  const csvRows = [headers.join(",")];
+
+  items.forEach(item => {
+    const row = [
+      item.type,
+      item.size,
+      item.number,
+      item.condition,
+      item.status,
+      item.assignedTo,
+      item.notes
+    ].map(v => `"${String(v || "").replace(/"/g, '""')}"`);
+
+    csvRows.push(row.join(","));
+  });
+
+  const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "equipment-inventory.csv";
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
+
+document.addEventListener("DOMContentLoaded", loadInventory);
+</script>
+
+</body>
+</html>
