@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Schedule - Bath County Youth Football</title>
+  <link rel="stylesheet" href="theme.css">
+
+  <style>
+    .section-container {
+      max-width: 900px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .schedule-card {
+      background: white;
+      border-left: 6px solid #b30000;
+      padding: 18px;
+      margin-bottom: 15px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.12);
+    }
+
+    .schedule-card h3 {
+      margin-top: 0;
+      color: #b30000;
+    }
+
+    .meta {
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+<header class="hero">
+  <h1>BATH COUNTY YOUTH FOOTBALL</h1>
+  <p>Schedule</p>
+</header>
+
+<div class="section-container">
+  <section class="main-links">
+    <h2>Upcoming Events</h2>
+    <div id="scheduleList">Loading schedule...</div>
+  </section>
+</div>
+
+<footer>
+  <p>© 2026 Bath County Youth Football</p>
+</footer>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbwJR0mM--IOixP7NLMKN4owPphBM9FOtzryRJ3KbfkH0Nci8ylR2Gcg_Kg52XrwWWJQ/exec";
+
+async function api(payload) {
+  const res = await fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+
+  return await res.json();
+}
+
+function formatDate(dateText) {
+  if (!dateText) return "";
+  const d = new Date(dateText + "T00:00:00");
+  return d.toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric"
+  });
+}
+
+async function loadSchedule() {
+  const box = document.getElementById("scheduleList");
+
+  const data = await api({
+    action: "getScheduleEvents"
+  });
+
+  if (!data.success || !data.events || !data.events.length) {
+    box.innerHTML = "<p>No schedule events have been posted yet.</p>";
+    return;
+  }
+
+  box.innerHTML = data.events.map(e => `
+    <div class="schedule-card">
+      <h3>${e.title || ""}</h3>
+      <p><span class="meta">Date:</span> ${formatDate(e.date)}</p>
+      <p><span class="meta">Time:</span> ${e.time || "TBA"}</p>
+      <p><span class="meta">Location:</span> ${e.location || "TBA"}</p>
+      <p><span class="meta">Team:</span> ${e.team || "All"}</p>
+      <p><span class="meta">Audience:</span> ${e.audience || "All"}</p>
+      <p>${e.notes || ""}</p>
+    </div>
+  `).join("");
+}
+
+document.addEventListener("DOMContentLoaded", loadSchedule);
+</script>
+
+</body>
+</html>
