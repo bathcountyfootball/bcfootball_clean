@@ -5,79 +5,21 @@
   <link rel="stylesheet" href="theme.css">
 
   <style>
-    .section-container {
-      max-width: 1400px;
-      margin: auto;
-      padding: 20px;
-    }
-
-    .table-wrapper {
-      overflow-x: auto;
-      margin-top: 15px;
-    }
-
-    table {
-      width: 100%;
-      min-width: 1250px;
-      border-collapse: collapse;
-      font-size: 14px;
-    }
-
-    th,
-    td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: left;
-      vertical-align: top;
-    }
-
-    th {
-      background: #b30000;
-      color: white;
-    }
-
-    .paid {
-      color: green;
-      font-weight: bold;
-    }
-
-    .pending {
-      color: #b30000;
-      font-weight: bold;
-    }
-
-    .signed {
-      color: green;
-      font-weight: bold;
-    }
-
-    .not-signed {
-      color: #b30000;
-      font-weight: bold;
-    }
-
-    select,
-    input {
-      padding: 7px;
-      width: 100%;
-      margin-bottom: 5px;
-    }
-
-    .small-btn {
-      padding: 7px 10px;
-      cursor: pointer;
-      margin: 2px;
-    }
-
-    .assignment-box {
-      min-width: 180px;
-    }
-
-    .status-message {
-      margin-top: 5px;
-      font-size: 12px;
-      font-weight: bold;
-    }
+    .section-container { max-width: 1400px; margin: auto; padding: 20px; }
+    .table-wrapper { overflow-x: auto; margin-top: 15px; }
+    table { width: 100%; min-width: 1250px; border-collapse: collapse; font-size: 14px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; vertical-align: top; }
+    th { background: #b30000; color: white; }
+    .paid, .signed { color: green; font-weight: bold; }
+    .pending, .not-signed { color: #b30000; font-weight: bold; }
+    select, input, textarea { padding: 7px; width: 100%; margin-bottom: 8px; }
+    textarea { min-height: 80px; }
+    .small-btn { padding: 7px 10px; cursor: pointer; margin: 2px; }
+    .assignment-box { min-width: 180px; }
+    .status-message { margin-top: 5px; font-size: 12px; font-weight: bold; }
+    .schedule-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .schedule-card { border-left: 5px solid #b30000; background:#fff; padding:12px; margin:10px 0; border-radius:8px; }
+    @media(max-width: 800px) { .schedule-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 
@@ -89,1527 +31,574 @@ if (!localStorage.getItem("adminUser")) {
 }
 </script>
 
-
 <header class="hero">
   <h1>BATH COUNTY YOUTH FOOTBALL</h1>
 </header>
 
-
 <div class="section-container">
-
   <section class="main-links">
 
     <h2>Admin Dashboard</h2>
 
-
     <div class="link-card">
-
       <h3>Your Admin Profile</h3>
-
       <p id="adminProfile">Loading...</p>
-
-      <button
-        class="action-btn"
-        onclick="logout()"
-      >
-        Logout
-      </button>
-
+      <button class="action-btn" onclick="logout()">Logout</button>
     </div>
 
+    <div class="link-card">
+      <h3>Schedule Manager</h3>
+
+      <div class="schedule-grid">
+        <div>
+          <label>Event Title</label>
+          <input type="text" id="scheduleTitle" placeholder="Practice, Game, Equipment Pickup">
+
+          <label>Date</label>
+          <input type="date" id="scheduleDate">
+
+          <label>Time</label>
+          <input type="time" id="scheduleTime">
+
+          <label>Location</label>
+          <input type="text" id="scheduleLocation" placeholder="Bath County Field">
+        </div>
+
+        <div>
+          <label>Team</label>
+          <select id="scheduleTeam">
+            <option value="All">All</option>
+            <option value="Flag">Flag</option>
+            <option value="Jr Pro">Jr Pro</option>
+            <option value="3rd/4th Grade">3rd/4th Grade</option>
+            <option value="5th/6th Grade">5th/6th Grade</option>
+          </select>
+
+          <label>Audience</label>
+          <select id="scheduleAudience">
+            <option value="All">All</option>
+            <option value="Parents">Parents</option>
+            <option value="Coaches">Coaches</option>
+          </select>
+
+          <label>Notes</label>
+          <textarea id="scheduleNotes" placeholder="Optional details"></textarea>
+        </div>
+      </div>
+
+      <button class="action-btn" onclick="saveScheduleEvent()">Save Schedule Event</button>
+      <a class="action-btn" href="schedule.html" target="_blank">View Public Schedule</a>
+
+      <h4>Current Schedule</h4>
+      <button class="action-btn" onclick="loadScheduleEvents()">Refresh Schedule</button>
+      <div id="scheduleList">Loading schedule...</div>
+    </div>
 
     <div class="link-card">
-
       <h3>All Registrations</h3>
-
-      <button
-        class="action-btn"
-        onclick="loadRegistrations()"
-      >
-        Refresh Registrations
-      </button>
-
-      <button
-        class="action-btn"
-        onclick="exportCSV()"
-      >
-        Export CSV
-      </button>
-
+      <button class="action-btn" onclick="loadRegistrations()">Refresh Registrations</button>
+      <button class="action-btn" onclick="exportCSV()">Export CSV</button>
       <div id="registrationsTable"></div>
-
     </div>
 
-
     <div class="link-card">
-
       <h3>Jr Pro Equipment & Jerseys</h3>
-
-      <button
-        class="action-btn"
-        onclick="openEquipment()"
-      >
-        Manage Jr Pro Equipment
-      </button>
-
+      <button class="action-btn" onclick="openEquipment()">Manage Jr Pro Equipment</button>
     </div>
 
   </section>
-
 </div>
 
-
 <div id="equipmentModal" class="modal">
-
   <div class="modal-content">
-
     <h2>Jr Pro Equipment & Jersey Manager</h2>
 
     <label>Search Jr Pro Player</label>
+    <input type="text" id="equipSearchAdmin" placeholder="Type name">
 
-    <input
-      type="text"
-      id="equipSearchAdmin"
-      placeholder="Type name"
-    >
+    <button class="action-btn" onclick="loadEquipmentPlayerAdmin()">Search</button>
 
-    <button
-      class="action-btn"
-      onclick="loadEquipmentPlayerAdmin()"
-    >
-      Search
-    </button>
+    <div id="equipmentFormAdmin" style="margin-top:20px;"></div>
 
-    <div
-      id="equipmentFormAdmin"
-      style="margin-top:20px;"
-    ></div>
-
-    <button
-      class="action-btn"
-      onclick="closeEquipment()"
-    >
-      Close
-    </button>
-
+    <button class="action-btn" onclick="closeEquipment()">Close</button>
   </div>
-
 </div>
-
 
 <footer>
   <p>© 2026 Bath County Youth Football</p>
 </footer>
 
-
 <script>
-
 const API_URL =
   "https://script.google.com/macros/s/AKfycbwJR0mM--IOixP7NLMKN4owPphBM9FOtzryRJ3KbfkH0Nci8ylR2Gcg_Kg52XrwWWJQ/exec";
 
-
 let allRows = [];
-
 let allCoaches = [];
-
 let waiverStatusByEmail = {};
 
-
-
 document.getElementById("adminProfile").innerText =
-
-  (localStorage.getItem("adminName") || "Admin")
-
-  +
-
-  " (" +
-
-  (localStorage.getItem("adminEmail") || "")
-
-  +
-
-  ")";
-
-
+  (localStorage.getItem("adminName") || "Admin") +
+  " (" + (localStorage.getItem("adminEmail") || "") + ")";
 
 function money(amount) {
-
   return Number(amount || 0).toFixed(2);
-
 }
-
-
 
 function escapeHtml(value) {
-
   return String(value || "")
-
     .replace(/&/g, "&amp;")
-
     .replace(/</g, "&lt;")
-
     .replace(/>/g, "&gt;")
-
     .replace(/"/g, "&quot;")
-
     .replace(/'/g, "&#039;");
-
 }
-
-
 
 async function api(payload) {
-
-  const res = await fetch(
-
-    API_URL,
-
-    {
-
-      method: "POST",
-
-      body: JSON.stringify(payload)
-
-    }
-
-  );
-
-
+  const res = await fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
   return await res.json();
-
 }
-
-
 
 function logout() {
-
   localStorage.removeItem("adminUser");
-
   localStorage.removeItem("adminName");
-
   localStorage.removeItem("adminEmail");
-
   window.location.href = "admin.html";
-
 }
 
+/* SCHEDULE */
 
-
-// ============================================================
-// LOAD REGISTRATIONS AND COACHES
-// ============================================================
-
-async function loadRegistrations() {
-
-  registrationsTable.innerHTML =
-
-    "<p>Loading registrations, coaches, and waivers...</p>";
-
-
-  try {
-
-    const data = await api({
-
-      action: "searchAllPlayers",
-
-      search: ""
-
-    });
-
-
-    if (!data.success) {
-
-      registrationsTable.innerHTML =
-
-        "<p>Could not load registrations.</p>";
-
-      return;
-
-    }
-
-
-    allRows = data.players || [];
-
-    allCoaches = data.coaches || [];
-
-
-    await loadWaiverStatuses();
-
-
-    renderTable();
-
-
-  } catch (err) {
-
-    registrationsTable.innerHTML =
-
-      "<p>Error loading registrations: "
-
-      +
-
-      escapeHtml(err.message)
-
-      +
-
-      "</p>";
-
-  }
-
-}
-
-
-
-// ============================================================
-// LOAD WAIVER STATUSES
-// ============================================================
-
-async function loadWaiverStatuses() {
-
-  waiverStatusByEmail = {};
-
-
-  const emails = [
-
-    ...new Set(
-
-      allRows
-
-        .map(row =>
-
-          String(row.parentEmail || "")
-
-            .trim()
-
-            .toLowerCase()
-
-        )
-
-        .filter(Boolean)
-
-    )
-
-  ];
-
-
-  await Promise.all(
-
-    emails.map(async email => {
-
-      try {
-
-        const data = await api({
-
-          action: "getParentWaiver",
-
-          parentEmail: email
-
-        });
-
-
-        waiverStatusByEmail[email] =
-
-          data.success && data.signed;
-
-
-      } catch (err) {
-
-        waiverStatusByEmail[email] = false;
-
-      }
-
-    })
-
-  );
-
-}
-
-
-
-// ============================================================
-// COACH OPTIONS
-// ============================================================
-
-function buildCoachOptions(registration) {
-
-  let html =
-
-    `<option value="">Unassigned</option>`;
-
-
-  allCoaches.forEach(coach => {
-
-    const email =
-
-      String(coach.email || "")
-
-        .trim()
-
-        .toLowerCase();
-
-
-    const selected =
-
-      email ===
-
-      String(registration.coachEmail || "")
-
-        .trim()
-
-        .toLowerCase()
-
-      ?
-
-      "selected"
-
-      :
-
-      "";
-
-
-    html += `
-
-      <option
-
-        value="${escapeHtml(coach.email)}"
-
-        ${selected}
-
-      >
-
-        ${escapeHtml(coach.name || coach.username || coach.email)}
-
-      </option>
-
-    `;
-
-  });
-
-
-  return html;
-
-}
-
-
-
-// ============================================================
-// TEAM OPTIONS
-// ============================================================
-
-function buildTeamOptions(registration) {
-
-  const teams = [
-
-    "",
-
-    "Flag",
-
-    "Jr Pro",
-
-    "3rd/4th Grade",
-
-    "5th/6th Grade"
-
-  ];
-
-
-  let html = "";
-
-
-  teams.forEach(team => {
-
-    const selected =
-
-      String(registration.team || "") === team
-
-      ?
-
-      "selected"
-
-      :
-
-      "";
-
-
-    const label =
-
-      team || "Unassigned";
-
-
-    html += `
-
-      <option
-
-        value="${escapeHtml(team)}"
-
-        ${selected}
-
-      >
-
-        ${escapeHtml(label)}
-
-      </option>
-
-    `;
-
-  });
-
-
-  return html;
-
-}
-
-
-
-// ============================================================
-// RENDER TABLE
-// ============================================================
-
-function renderTable() {
-
-  if (!allRows.length) {
-
-    registrationsTable.innerHTML =
-
-      "<p>No registrations found.</p>";
-
-    return;
-
-  }
-
-
-  let html = `
-
-    <div class="table-wrapper">
-
-      <table>
-
-        <thead>
-
-          <tr>
-
-            <th>Player</th>
-
-            <th>Parent</th>
-
-            <th>League</th>
-
-            <th>Grade</th>
-
-            <th>Fee</th>
-
-            <th>Payment</th>
-
-            <th>Waiver</th>
-
-            <th>Coach Assignment</th>
-
-            <th>Team</th>
-
-            <th>Assignment Action</th>
-
-            <th>Payment Actions</th>
-
-          </tr>
-
-        </thead>
-
-        <tbody>
-
-  `;
-
-
-  allRows.forEach(registration => {
-
-    const email =
-
-      String(registration.parentEmail || "")
-
-        .trim()
-
-        .toLowerCase();
-
-
-    const waiverSigned =
-
-      email
-
-      &&
-
-      waiverStatusByEmail[email];
-
-
-    const paymentPaid =
-
-      String(registration.paymentStatus || "")
-
-        .trim()
-
-        .toLowerCase() === "paid";
-
-
-    html += `
-
-      <tr>
-
-
-        <td>
-
-          <strong>
-
-            ${escapeHtml(registration.name)}
-
-          </strong>
-
-        </td>
-
-
-        <td>
-
-          ${escapeHtml(registration.parentName)}
-
-          <br>
-
-          <small>
-
-            ${escapeHtml(registration.parentEmail)}
-
-          </small>
-
-        </td>
-
-
-        <td>
-
-          ${escapeHtml(registration.league)}
-
-        </td>
-
-
-        <td>
-
-          ${escapeHtml(registration.grade)}
-
-        </td>
-
-
-        <td>
-
-          $${money(registration.finalFee)}
-
-        </td>
-
-
-        <td
-
-          class="${paymentPaid ? "paid" : "pending"}"
-
-        >
-
-          ${escapeHtml(registration.paymentStatus || "Pending")}
-
-        </td>
-
-
-        <td
-
-          class="${waiverSigned ? "signed" : "not-signed"}"
-
-        >
-
-          ${waiverSigned ? "Signed" : "Not Signed"}
-
-        </td>
-
-
-        <td class="assignment-box">
-
-          <select
-
-            id="coach-${registration.id}"
-
-          >
-
-            ${buildCoachOptions(registration)}
-
-          </select>
-
-
-          <div>
-
-            Current:
-
-            <strong>
-
-              ${escapeHtml(registration.coachName || "Unassigned")}
-
-            </strong>
-
-          </div>
-
-        </td>
-
-
-        <td class="assignment-box">
-
-          <select
-
-            id="team-${registration.id}"
-
-          >
-
-            ${buildTeamOptions(registration)}
-
-          </select>
-
-        </td>
-
-
-        <td>
-
-          <button
-
-            class="small-btn"
-
-            onclick="saveAssignment('${registration.id}')"
-
-          >
-
-            Save Assignment
-
-          </button>
-
-
-          <div
-
-            id="assignment-status-${registration.id}"
-
-            class="status-message"
-
-          ></div>
-
-        </td>
-
-
-        <td>
-
-          <button
-
-            class="small-btn"
-
-            onclick="markPaid('${registration.id}')"
-
-          >
-
-            Mark Paid
-
-          </button>
-
-
-          <button
-
-            class="small-btn"
-
-            onclick="markPartial('${registration.id}')"
-
-          >
-
-            Partially Paid
-
-          </button>
-
-
-          <button
-
-            class="small-btn"
-
-            onclick="markPending('${registration.id}')"
-
-          >
-
-            Mark Pending
-
-          </button>
-
-        </td>
-
-
-      </tr>
-
-    `;
-
-  });
-
-
-  html += `
-
-        </tbody>
-
-      </table>
-
-    </div>
-
-  `;
-
-
-  registrationsTable.innerHTML = html;
-
-}
-
-
-
-// ============================================================
-// SAVE COACH + TEAM ASSIGNMENT
-// ============================================================
-
-async function saveAssignment(id) {
-
-  const coachSelect =
-
-    document.getElementById(
-
-      "coach-" + id
-
-    );
-
-
-  const teamSelect =
-
-    document.getElementById(
-
-      "team-" + id
-
-    );
-
-
-  const statusBox =
-
-    document.getElementById(
-
-      "assignment-status-" + id
-
-    );
-
-
-  const coachEmail =
-
-    coachSelect.value;
-
-
-  const team =
-
-    teamSelect.value;
-
-
-  statusBox.textContent =
-
-    "Saving...";
-
-
-  try {
-
-    const data = await api({
-
-      action: "assignPlayer",
-
-      id: id,
-
-      coachEmail: coachEmail,
-
-      team: team
-
-    });
-
-
-    if (!data.success) {
-
-      statusBox.textContent =
-
-        data.message ||
-
-        "Could not save assignment.";
-
-      return;
-
-    }
-
-
-    statusBox.textContent =
-
-      "Saved!";
-
-
-    await loadRegistrations();
-
-
-  } catch (err) {
-
-    statusBox.textContent =
-
-      "Error saving assignment.";
-
-  }
-
-}
-
-
-
-// ============================================================
-// PAYMENT STATUS
-// ============================================================
-
-async function setPaymentStatus(id, paymentStatus) {
-
-  try {
-
-    const data = await api({
-
-      action: "markPaymentStatus",
-
-      id: id,
-
-      paymentStatus: paymentStatus
-
-    });
-
-
-    if (!data.success) {
-
-      alert(
-
-        data.message ||
-
-        "Failed to update payment status."
-
-      );
-
-      return;
-
-    }
-
-
-    await loadRegistrations();
-
-
-  } catch (err) {
-
-    alert(
-
-      "Could not update payment status."
-
-    );
-
-  }
-
-}
-
-
-
-function markPaid(id) {
-
-  setPaymentStatus(
-
-    id,
-
-    "Paid"
-
-  );
-
-}
-
-
-
-function markPartial(id) {
-
-  setPaymentStatus(
-
-    id,
-
-    "Partially Paid"
-
-  );
-
-}
-
-
-
-function markPending(id) {
-
-  setPaymentStatus(
-
-    id,
-
-    "Pending"
-
-  );
-
-}
-
-
-
-// ============================================================
-// EXPORT CSV
-// ============================================================
-
-function exportCSV() {
-
-  if (!allRows.length) {
-
-    alert(
-
-      "Load registrations first."
-
-    );
-
-    return;
-
-  }
-
-
-  const headers = [
-
-    "Player",
-
-    "Parent",
-
-    "Email",
-
-    "Phone",
-
-    "League",
-
-    "Grade",
-
-    "School",
-
-    "Coach",
-
-    "Coach Email",
-
-    "Team",
-
-    "Fee",
-
-    "Payment Status",
-
-    "Emergency Contact",
-
-    "Emergency Phone",
-
-    "Medical",
-
-    "Allergies"
-
-  ];
-
-
-  const csvRows = [
-
-    headers.join(",")
-
-  ];
-
-
-  allRows.forEach(row => {
-
-    const csvRow = [
-
-      row.name,
-
-      row.parentName,
-
-      row.parentEmail,
-
-      row.parentPhone,
-
-      row.league,
-
-      row.grade,
-
-      row.school,
-
-      row.coachName,
-
-      row.coachEmail,
-
-      row.team,
-
-      row.finalFee,
-
-      row.paymentStatus,
-
-      row.emergencyName,
-
-      row.emergencyPhone,
-
-      row.medical,
-
-      row.allergies
-
-    ].map(value =>
-
-      `"${String(value || "").replace(/"/g, '""')}"`
-
-    );
-
-
-    csvRows.push(
-
-      csvRow.join(",")
-
-    );
-
-  });
-
-
-  const blob = new Blob(
-
-    [csvRows.join("\n")],
-
-    {
-
-      type: "text/csv"
-
-    }
-
-  );
-
-
-  const url =
-
-    URL.createObjectURL(blob);
-
-
-  const anchor =
-
-    document.createElement("a");
-
-
-  anchor.href = url;
-
-
-  anchor.download =
-
-    "registrations.csv";
-
-
-  anchor.click();
-
-
-  URL.revokeObjectURL(url);
-
-}
-
-
-
-// ============================================================
-// EQUIPMENT MODAL
-// ============================================================
-
-function openEquipment() {
-
-  equipmentModal.style.display =
-
-    "flex";
-
-}
-
-
-
-function closeEquipment() {
-
-  equipmentModal.style.display =
-
-    "none";
-
-}
-
-
-
-// ============================================================
-// LOAD EQUIPMENT PLAYER
-// ============================================================
-
-async function loadEquipmentPlayerAdmin() {
-
-  const search =
-
-    equipSearchAdmin.value
-
-      .trim()
-
-      .toLowerCase();
-
-
-  if (!search) {
-
-    equipmentFormAdmin.innerHTML =
-
-      "<p>Please enter a player name.</p>";
-
-    return;
-
-  }
-
-
-  const jrProPlayers =
-
-    allRows.filter(player =>
-
-      String(player.league || "")
-
-        .toLowerCase()
-
-        .includes("jr")
-
-      &&
-
-      String(player.name || "")
-
-        .toLowerCase()
-
-        .includes(search)
-
-    );
-
-
-  if (!jrProPlayers.length) {
-
-    equipmentFormAdmin.innerHTML =
-
-      "<p>No Jr Pro players found.</p>";
-
-    return;
-
-  }
-
-
-  const player =
-
-    jrProPlayers[0];
-
-
-  const equipData =
-
-    await api({
-
-      action: "getEquipment",
-
-      name: player.name
-
-    });
-
-
-  const eq =
-
-    equipData.success
-
-    ?
-
-    equipData.equipment
-
-    :
-
-    {
-
-      helmetIssued: "",
-
-      helmetReturn: "",
-
-      padsIssued: "",
-
-      padsReturn: "",
-
-      pantsIssued: "",
-
-      pantsReturn: "",
-
-      jerseyNumber: "",
-
-      jerseyReturn: ""
-
-    };
-
-
-  equipmentFormAdmin.innerHTML = `
-
-    <h3>
-
-      ${escapeHtml(player.name)}
-
-    </h3>
-
-
-    Grade:
-
-    ${escapeHtml(player.grade)}
-
-    <br>
-
-
-    School:
-
-    ${escapeHtml(player.school)}
-
-    <br>
-
-
-    Team:
-
-    ${escapeHtml(player.team || "Unassigned")}
-
-    <br><br>
-
-
-    <label>Helmet Issued</label>
-
-    <input
-
-      type="text"
-
-      id="helmetIssuedAdmin"
-
-      value="${escapeHtml(eq.helmetIssued)}"
-
-    >
-
-
-    <label>Helmet Returned</label>
-
-    <input
-
-      type="text"
-
-      id="helmetReturnAdmin"
-
-      value="${escapeHtml(eq.helmetReturn)}"
-
-    >
-
-
-    <label>Pads Issued</label>
-
-    <input
-
-      type="text"
-
-      id="padsIssuedAdmin"
-
-      value="${escapeHtml(eq.padsIssued)}"
-
-    >
-
-
-    <label>Pads Returned</label>
-
-    <input
-
-      type="text"
-
-      id="padsReturnAdmin"
-
-      value="${escapeHtml(eq.padsReturn)}"
-
-    >
-
-
-    <label>Pants Issued</label>
-
-    <input
-
-      type="text"
-
-      id="pantsIssuedAdmin"
-
-      value="${escapeHtml(eq.pantsIssued)}"
-
-    >
-
-
-    <label>Pants Returned</label>
-
-    <input
-
-      type="text"
-
-      id="pantsReturnAdmin"
-
-      value="${escapeHtml(eq.pantsReturn)}"
-
-    >
-
-
-    <label>Jersey Number</label>
-
-    <input
-
-      type="text"
-
-      id="jerseyNumberAdmin"
-
-      value="${escapeHtml(eq.jerseyNumber)}"
-
-    >
-
-
-    <label>Jersey Returned</label>
-
-    <input
-
-      type="text"
-
-      id="jerseyReturnAdmin"
-
-      value="${escapeHtml(eq.jerseyReturn)}"
-
-    >
-
-
-    <button
-
-      class="action-btn"
-
-      onclick="saveEquipmentAdmin('${player.id}')"
-
-    >
-
-      Save Equipment
-
-    </button>
-
-  `;
-
-}
-
-
-
-// ============================================================
-// SAVE EQUIPMENT
-// ============================================================
-
-async function saveEquipmentAdmin(playerId) {
-
-  const player =
-
-    allRows.find(row =>
-
-      String(row.id) ===
-
-      String(playerId)
-
-    );
-
-
-  if (!player) {
-
-    alert(
-
-      "Player record could not be found."
-
-    );
-
-    return;
-
-  }
-
-
+async function saveScheduleEvent() {
   const payload = {
-
-    action:
-
-      "saveEquipment",
-
-    name:
-
-      player.name,
-
-    grade:
-
-      player.grade,
-
-    team:
-
-      player.team,
-
-    helmetIssued:
-
-      helmetIssuedAdmin.value,
-
-    helmetReturn:
-
-      helmetReturnAdmin.value,
-
-    padsIssued:
-
-      padsIssuedAdmin.value,
-
-    padsReturn:
-
-      padsReturnAdmin.value,
-
-    pantsIssued:
-
-      pantsIssuedAdmin.value,
-
-    pantsReturn:
-
-      pantsReturnAdmin.value,
-
-    jerseyNumber:
-
-      jerseyNumberAdmin.value,
-
-    jerseyReturn:
-
-      jerseyReturnAdmin.value,
-
-    updatedBy:
-
-      localStorage.getItem(
-
-        "adminEmail"
-
-      )
-
+    action: "saveScheduleEvent",
+    title: scheduleTitle.value.trim(),
+    date: scheduleDate.value,
+    time: scheduleTime.value,
+    location: scheduleLocation.value.trim(),
+    team: scheduleTeam.value,
+    audience: scheduleAudience.value,
+    notes: scheduleNotes.value.trim()
   };
 
+  const data = await api(payload);
 
-  const data =
+  if (!data.success) {
+    alert(data.message || "Could not save event.");
+    return;
+  }
 
-    await api(payload);
+  alert("Schedule event saved.");
 
+  scheduleTitle.value = "";
+  scheduleDate.value = "";
+  scheduleTime.value = "";
+  scheduleLocation.value = "";
+  scheduleTeam.value = "All";
+  scheduleAudience.value = "All";
+  scheduleNotes.value = "";
 
-  alert(
-
-    data.success
-
-    ?
-
-    "Equipment saved!"
-
-    :
-
-    data.message ||
-
-    "Failed to save equipment."
-
-  );
-
+  loadScheduleEvents();
 }
 
+function formatScheduleDate(dateText) {
+  if (!dateText) return "";
+  const d = new Date(dateText + "T00:00:00");
+  return d.toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric"
+  });
+}
 
+async function loadScheduleEvents() {
+  const box = document.getElementById("scheduleList");
+  box.innerHTML = "<p>Loading schedule...</p>";
 
-// ============================================================
-// INITIAL LOAD
-// ============================================================
+  const data = await api({ action: "getScheduleEvents" });
 
-document.addEventListener(
+  if (!data.success || !data.events || !data.events.length) {
+    box.innerHTML = "<p>No schedule events saved yet.</p>";
+    return;
+  }
 
-  "DOMContentLoaded",
+  box.innerHTML = data.events.map(e => `
+    <div class="schedule-card">
+      <strong>${escapeHtml(e.title)}</strong><br>
+      ${formatScheduleDate(e.date)} ${escapeHtml(e.time || "")}<br>
+      <b>Location:</b> ${escapeHtml(e.location || "TBA")}<br>
+      <b>Team:</b> ${escapeHtml(e.team || "All")} |
+      <b>Audience:</b> ${escapeHtml(e.audience || "All")}<br>
+      ${escapeHtml(e.notes || "")}
+    </div>
+  `).join("");
+}
 
-  loadRegistrations
+/* REGISTRATIONS */
 
-);
+async function loadRegistrations() {
+  registrationsTable.innerHTML = "<p>Loading registrations, coaches, and waivers...</p>";
 
+  try {
+    const data = await api({
+      action: "searchAllPlayers",
+      search: ""
+    });
+
+    if (!data.success) {
+      registrationsTable.innerHTML = "<p>Could not load registrations.</p>";
+      return;
+    }
+
+    allRows = data.players || [];
+    allCoaches = data.coaches || [];
+
+    await loadWaiverStatuses();
+    renderTable();
+
+  } catch (err) {
+    registrationsTable.innerHTML =
+      "<p>Error loading registrations: " + escapeHtml(err.message) + "</p>";
+  }
+}
+
+async function loadWaiverStatuses() {
+  waiverStatusByEmail = {};
+
+  const emails = [
+    ...new Set(
+      allRows
+        .map(row => String(row.parentEmail || "").trim().toLowerCase())
+        .filter(Boolean)
+    )
+  ];
+
+  await Promise.all(
+    emails.map(async email => {
+      try {
+        const data = await api({
+          action: "getParentWaiver",
+          parentEmail: email
+        });
+        waiverStatusByEmail[email] = data.success && data.signed;
+      } catch (err) {
+        waiverStatusByEmail[email] = false;
+      }
+    })
+  );
+}
+
+function buildCoachOptions(registration) {
+  let html = `<option value="">Unassigned</option>`;
+
+  allCoaches.forEach(coach => {
+    const email = String(coach.email || "").trim().toLowerCase();
+    const selected =
+      email === String(registration.coachEmail || "").trim().toLowerCase()
+        ? "selected"
+        : "";
+
+    html += `
+      <option value="${escapeHtml(coach.email)}" ${selected}>
+        ${escapeHtml(coach.name || coach.username || coach.email)}
+      </option>
+    `;
+  });
+
+  return html;
+}
+
+function buildTeamOptions(registration) {
+  const teams = ["", "Flag", "Jr Pro", "3rd/4th Grade", "5th/6th Grade"];
+  let html = "";
+
+  teams.forEach(team => {
+    const selected = String(registration.team || "") === team ? "selected" : "";
+    const label = team || "Unassigned";
+
+    html += `<option value="${escapeHtml(team)}" ${selected}>${escapeHtml(label)}</option>`;
+  });
+
+  return html;
+}
+
+function renderTable() {
+  if (!allRows.length) {
+    registrationsTable.innerHTML = "<p>No registrations found.</p>";
+    return;
+  }
+
+  let html = `
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Player</th>
+            <th>Parent</th>
+            <th>League</th>
+            <th>Grade</th>
+            <th>Fee</th>
+            <th>Payment</th>
+            <th>Waiver</th>
+            <th>Coach Assignment</th>
+            <th>Team</th>
+            <th>Assignment Action</th>
+            <th>Payment Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  allRows.forEach(registration => {
+    const email = String(registration.parentEmail || "").trim().toLowerCase();
+    const waiverSigned = email && waiverStatusByEmail[email];
+    const paymentPaid =
+      String(registration.paymentStatus || "").trim().toLowerCase() === "paid";
+
+    html += `
+      <tr>
+        <td><strong>${escapeHtml(registration.name)}</strong></td>
+        <td>
+          ${escapeHtml(registration.parentName)}<br>
+          <small>${escapeHtml(registration.parentEmail)}</small>
+        </td>
+        <td>${escapeHtml(registration.league)}</td>
+        <td>${escapeHtml(registration.grade)}</td>
+        <td>$${money(registration.finalFee)}</td>
+        <td class="${paymentPaid ? "paid" : "pending"}">
+          ${escapeHtml(registration.paymentStatus || "Pending")}
+        </td>
+        <td class="${waiverSigned ? "signed" : "not-signed"}">
+          ${waiverSigned ? "Signed" : "Not Signed"}
+        </td>
+        <td class="assignment-box">
+          <select id="coach-${registration.id}">
+            ${buildCoachOptions(registration)}
+          </select>
+          <div>Current: <strong>${escapeHtml(registration.coachName || "Unassigned")}</strong></div>
+        </td>
+        <td class="assignment-box">
+          <select id="team-${registration.id}">
+            ${buildTeamOptions(registration)}
+          </select>
+        </td>
+        <td>
+          <button class="small-btn" onclick="saveAssignment('${registration.id}')">
+            Save Assignment
+          </button>
+          <div id="assignment-status-${registration.id}" class="status-message"></div>
+        </td>
+        <td>
+          <button class="small-btn" onclick="markPaid('${registration.id}')">Mark Paid</button>
+          <button class="small-btn" onclick="markPartial('${registration.id}')">Partially Paid</button>
+          <button class="small-btn" onclick="markPending('${registration.id}')">Mark Pending</button>
+        </td>
+      </tr>
+    `;
+  });
+
+  html += `</tbody></table></div>`;
+  registrationsTable.innerHTML = html;
+}
+
+async function saveAssignment(id) {
+  const coachEmail = document.getElementById("coach-" + id).value;
+  const team = document.getElementById("team-" + id).value;
+  const statusBox = document.getElementById("assignment-status-" + id);
+
+  statusBox.textContent = "Saving...";
+
+  const data = await api({
+    action: "assignPlayer",
+    id,
+    coachEmail,
+    team
+  });
+
+  statusBox.textContent = data.success ? "Saved!" : (data.message || "Could not save.");
+  await loadRegistrations();
+}
+
+async function setPaymentStatus(id, paymentStatus) {
+  const data = await api({
+    action: "markPaymentStatus",
+    id,
+    paymentStatus
+  });
+
+  if (!data.success) {
+    alert(data.message || "Failed to update payment status.");
+    return;
+  }
+
+  await loadRegistrations();
+}
+
+function markPaid(id) {
+  setPaymentStatus(id, "Paid");
+}
+
+function markPartial(id) {
+  setPaymentStatus(id, "Partially Paid");
+}
+
+function markPending(id) {
+  setPaymentStatus(id, "Pending");
+}
+
+function exportCSV() {
+  if (!allRows.length) {
+    alert("Load registrations first.");
+    return;
+  }
+
+  const headers = [
+    "Player", "Parent", "Email", "Phone", "League", "Grade", "School",
+    "Coach", "Coach Email", "Team", "Fee", "Payment Status",
+    "Emergency Contact", "Emergency Phone", "Medical", "Allergies"
+  ];
+
+  const csvRows = [headers.join(",")];
+
+  allRows.forEach(row => {
+    const csvRow = [
+      row.name, row.parentName, row.parentEmail, row.parentPhone,
+      row.league, row.grade, row.school, row.coachName, row.coachEmail,
+      row.team, row.finalFee, row.paymentStatus, row.emergencyName,
+      row.emergencyPhone, row.medical, row.allergies
+    ].map(value => `"${String(value || "").replace(/"/g, '""')}"`);
+
+    csvRows.push(csvRow.join(","));
+  });
+
+  const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+
+  anchor.href = url;
+  anchor.download = "registrations.csv";
+  anchor.click();
+
+  URL.revokeObjectURL(url);
+}
+
+/* EQUIPMENT */
+
+function openEquipment() {
+  equipmentModal.style.display = "flex";
+}
+
+function closeEquipment() {
+  equipmentModal.style.display = "none";
+}
+
+async function loadEquipmentPlayerAdmin() {
+  const search = equipSearchAdmin.value.trim().toLowerCase();
+
+  if (!search) {
+    equipmentFormAdmin.innerHTML = "<p>Please enter a player name.</p>";
+    return;
+  }
+
+  const jrProPlayers = allRows.filter(player =>
+    String(player.league || "").toLowerCase().includes("jr") &&
+    String(player.name || "").toLowerCase().includes(search)
+  );
+
+  if (!jrProPlayers.length) {
+    equipmentFormAdmin.innerHTML = "<p>No Jr Pro players found.</p>";
+    return;
+  }
+
+  const player = jrProPlayers[0];
+
+  const equipData = await api({
+    action: "getEquipment",
+    name: player.name
+  });
+
+  const eq = equipData.success ? equipData.equipment : {
+    helmetIssued: "",
+    helmetReturn: "",
+    padsIssued: "",
+    padsReturn: "",
+    pantsIssued: "",
+    pantsReturn: "",
+    jerseyNumber: "",
+    jerseyReturn: ""
+  };
+
+  equipmentFormAdmin.innerHTML = `
+    <h3>${escapeHtml(player.name)}</h3>
+    Grade: ${escapeHtml(player.grade)}<br>
+    School: ${escapeHtml(player.school)}<br>
+    Team: ${escapeHtml(player.team || "Unassigned")}<br><br>
+
+    <label>Helmet Issued</label>
+    <input type="text" id="helmetIssuedAdmin" value="${escapeHtml(eq.helmetIssued)}">
+
+    <label>Helmet Returned</label>
+    <input type="text" id="helmetReturnAdmin" value="${escapeHtml(eq.helmetReturn)}">
+
+    <label>Pads Issued</label>
+    <input type="text" id="padsIssuedAdmin" value="${escapeHtml(eq.padsIssued)}">
+
+    <label>Pads Returned</label>
+    <input type="text" id="padsReturnAdmin" value="${escapeHtml(eq.padsReturn)}">
+
+    <label>Pants Issued</label>
+    <input type="text" id="pantsIssuedAdmin" value="${escapeHtml(eq.pantsIssued)}">
+
+    <label>Pants Returned</label>
+    <input type="text" id="pantsReturnAdmin" value="${escapeHtml(eq.pantsReturn)}">
+
+    <label>Jersey Number</label>
+    <input type="text" id="jerseyNumberAdmin" value="${escapeHtml(eq.jerseyNumber)}">
+
+    <label>Jersey Returned</label>
+    <input type="text" id="jerseyReturnAdmin" value="${escapeHtml(eq.jerseyReturn)}">
+
+    <button class="action-btn" onclick="saveEquipmentAdmin('${player.id}')">
+      Save Equipment
+    </button>
+  `;
+}
+
+async function saveEquipmentAdmin(playerId) {
+  const player = allRows.find(row => String(row.id) === String(playerId));
+
+  if (!player) {
+    alert("Player record could not be found.");
+    return;
+  }
+
+  const payload = {
+    action: "saveEquipment",
+    name: player.name,
+    grade: player.grade,
+    team: player.team,
+    helmetIssued: helmetIssuedAdmin.value,
+    helmetReturn: helmetReturnAdmin.value,
+    padsIssued: padsIssuedAdmin.value,
+    padsReturn: padsReturnAdmin.value,
+    pantsIssued: pantsIssuedAdmin.value,
+    pantsReturn: pantsReturnAdmin.value,
+    jerseyNumber: jerseyNumberAdmin.value,
+    jerseyReturn: jerseyReturnAdmin.value,
+    updatedBy: localStorage.getItem("adminEmail")
+  };
+
+  const data = await api(payload);
+
+  alert(data.success ? "Equipment saved!" : data.message || "Failed to save equipment.");
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadRegistrations();
+  loadScheduleEvents();
+});
 </script>
 
 </body>
