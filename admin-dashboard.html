@@ -22,7 +22,8 @@
     .schedule-card { border-left:5px solid #b30000; background:#fff; padding:12px; margin:10px 0; border-radius:8px; }
     .editing-message { display:none; margin-bottom:12px; padding:10px; background:#fff3cd; border:1px solid #ffe69c; border-radius:5px; font-weight:bold; }
     .result-row { border:1px solid #ddd; border-radius:8px; padding:10px; margin:8px 0; background:#fff; }
-    @media(max-width:800px){ .two-column,.three-column { grid-template-columns:1fr; } }
+    .edit-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
+    @media(max-width:800px){ .two-column,.three-column,.edit-grid { grid-template-columns:1fr; } }
   </style>
 </head>
 
@@ -249,6 +250,76 @@ if (!localStorage.getItem("adminUser")) {
   </div>
 </div>
 
+<div id="editPlayerModal" class="modal">
+  <div class="modal-content">
+    <h2>Edit Player Registration</h2>
+
+    <div class="edit-grid">
+      <div>
+        <label>Parent / Guardian Name</label>
+        <input id="editParentName">
+
+        <label>Parent Phone</label>
+        <input id="editParentPhone">
+
+        <label>Parent Address</label>
+        <input id="editParentAddress">
+
+        <label>Player First Name</label>
+        <input id="editFirstName">
+
+        <label>Player Last Name</label>
+        <input id="editLastName">
+
+        <label>Birthdate</label>
+        <input type="date" id="editBirthdate">
+
+        <label>Grade</label>
+        <select id="editGrade">
+          <option value="">Select Grade</option>
+          <option>Kindergarten</option>
+          <option>1st</option>
+          <option>2nd</option>
+          <option>3rd</option>
+          <option>4th</option>
+          <option>5th</option>
+          <option>6th</option>
+        </select>
+      </div>
+
+      <div>
+        <label>School</label>
+        <input id="editSchool">
+
+        <label>League</label>
+        <select id="editLeague">
+          <option value="">Select League</option>
+          <option value="Flag">Flag</option>
+          <option value="Jr Pro">Jr Pro</option>
+        </select>
+
+        <label>Shirt Size</label>
+        <input id="editShirtSize">
+
+        <label>Medical Conditions</label>
+        <textarea id="editMedical"></textarea>
+
+        <label>Allergies</label>
+        <textarea id="editAllergies"></textarea>
+
+        <label>Emergency Contact Name</label>
+        <input id="editEmergencyName">
+
+        <label>Emergency Contact Phone</label>
+        <input id="editEmergencyPhone">
+      </div>
+    </div>
+
+    <button class="action-btn" onclick="saveEditedPlayer()">Save Player Changes</button>
+    <button class="action-btn" onclick="closeEditPlayer()">Cancel</button>
+  </div>
+</div>
+
 <footer><p>© 2026 Bath County Youth Football</p></footer>
 
 <script>
@@ -263,6 +334,7 @@ let existingEquipment = null;
 let currentScheduleEvents = [];
 let editingScheduleId = null;
 let selectedParentEmail = "";
+let selectedEditPlayer = null;
 
 document.getElementById("adminProfile").innerText =
   (localStorage.getItem("adminName") || "Admin") +
@@ -545,6 +617,113 @@ async function loadScheduleEvents() {
   `).join("");
 }
 
+/* EDIT PLAYER */
+
+function openEditPlayer(id) {
+  const player = allRows.find(r => String(r.id) === String(id));
+
+  if (!player) {
+    alert("Player registration not found.");
+    return;
+  }
+
+  selectedEditPlayer = player;
+
+  editParentName.value = player.parentName || "";
+  editParentPhone.value = player.parentPhone || "";
+  editParentAddress.value = player.parentAddress || "";
+  editFirstName.value = player.firstName || "";
+  editLastName.value = player.lastName || "";
+  editBirthdate.value = normalizeDateForInput(player.birthdate);
+  setSelectValue(editGrade, player.grade || "");
+  editSchool.value = player.school || "";
+  setSelectValue(editLeague, player.league || "");
+  editShirtSize.value = player.shirtSize || "";
+  editMedical.value = player.medical || "";
+  editAllergies.value = player.allergies || "";
+  editEmergencyName.value = player.emergencyName || "";
+  editEmergencyPhone.value = player.emergencyPhone || "";
+
+  editPlayerModal.style.display = "flex";
+}
+
+function closeEditPlayer() {
+  editPlayerModal.style.display = "none";
+  selectedEditPlayer = null;
+}
+
+function setSelectValue(selectElement, value) {
+  const text = String(value || "").trim();
+
+  if (![...selectElement.options].some(option => option.value === text)) {
+    const option = document.createElement("option");
+    option.value = text;
+    option.textContent = text;
+    selectElement.appendChild(option);
+  }
+
+  selectElement.value = text;
+}
+
+function normalizeDateForInput(value) {
+  if (!value) return "";
+
+  const text = String(value).trim();
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(text)) {
+    return text;
+  }
+
+  const date = new Date(value);
+
+  if (isNaN(date.getTime())) {
+    return "";
+  }
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+async function saveEditedPlayer() {
+  if (!selectedEditPlayer) {
+    alert("No player selected.");
+    return;
+  }
+
+  const payload = {
+    action: "updateRegistrationDetails",
+    id: selectedEditPlayer.id,
+    parentName: editParentName.value.trim(),
+    parentPhone: editParentPhone.value.trim(),
+    parentAddress: editParentAddress.value.trim(),
+    firstName: editFirstName.value.trim(),
+    lastName: editLastName.value.trim(),
+    birthdate: editBirthdate.value,
+    grade: editGrade.value,
+    school: editSchool.value.trim(),
+    league: editLeague.value,
+    shirtSize: editShirtSize.value.trim(),
+    medical: editMedical.value.trim(),
+    allergies: editAllergies.value.trim(),
+    emergencyName: editEmergencyName.value.trim(),
+    emergencyPhone: editEmergencyPhone.value.trim()
+  };
+
+  const data = await api(payload);
+
+  if (!data.success) {
+    alert(data.message || "Could not update player.");
+    return;
+  }
+
+  alert("Player registration updated.");
+  closeEditPlayer();
+  await loadRegistrations();
+}
+
 /* REGISTRATIONS */
 
 async function loadRegistrations() {
@@ -635,7 +814,10 @@ function renderTable() {
 
     html += `
       <tr>
-        <td><strong>${escapeHtml(r.name)}</strong></td>
+        <td>
+          <strong>${escapeHtml(r.name)}</strong><br>
+          <button class="small-btn" onclick="openEditPlayer('${r.id}')">Edit Player</button>
+        </td>
         <td>
           <select id="playerStatus-${r.id}">${buildPlayerStatusOptions(r)}</select>
           <button class="small-btn" onclick="savePlayerStatus('${r.id}')">Save</button>
