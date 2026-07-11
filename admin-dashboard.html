@@ -22,6 +22,70 @@
     .schedule-card { border-left:5px solid #b30000; background:#fff; padding:12px; margin:10px 0; border-radius:8px; }
     .editing-message { display:none; margin-bottom:12px; padding:10px; background:#fff3cd; border:1px solid #ffe69c; border-radius:5px; font-weight:bold; }
     .result-row { border:1px solid #ddd; border-radius:8px; padding:10px; margin:8px 0; background:#fff; }
+
+    .collapsible-header {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:15px;
+      margin:-24px -24px 0;
+      padding:20px 24px;
+      cursor:pointer;
+      user-select:none;
+      border-radius:12px 12px 0 0;
+      transition:background .2s ease, color .2s ease;
+    }
+
+    .collapsible-header:hover {
+      background:rgba(179,0,0,.07);
+    }
+
+    .collapsible-header:focus {
+      outline:3px solid rgba(179,0,0,.22);
+      outline-offset:-3px;
+    }
+
+    .collapsible-title {
+      margin:0 !important;
+    }
+
+    .collapse-icon {
+      flex:0 0 auto;
+      width:34px;
+      height:34px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:50%;
+      background:#b30000;
+      color:white;
+      font-size:24px;
+      font-weight:700;
+      line-height:1;
+      transition:transform .25s ease, background .2s ease;
+    }
+
+    .collapsible-content {
+      display:none;
+      padding-top:20px;
+    }
+
+    .link-card.is-open .collapsible-content {
+      display:block;
+    }
+
+    .link-card.is-open .collapse-icon {
+      transform:rotate(45deg);
+      background:#7d0000;
+    }
+
+    .link-card:not(.is-open) {
+      padding-bottom:0;
+    }
+
+    .link-card:not(.is-open) .collapsible-header {
+      border-radius:12px;
+    }
     .edit-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
     @media(max-width:800px){ .two-column,.three-column,.edit-grid { grid-template-columns:1fr; } }
   </style>
@@ -366,6 +430,71 @@ function logout() {
   localStorage.removeItem("adminName");
   localStorage.removeItem("adminEmail");
   window.location.href = "admin.html";
+}
+
+/* COLLAPSIBLE DASHBOARD SECTIONS */
+
+function initializeCollapsibleSections() {
+  const cards = document.querySelectorAll(".main-links > .link-card");
+
+  cards.forEach((card, index) => {
+    const heading = card.querySelector(":scope > h3");
+
+    if (!heading || card.dataset.collapsibleReady === "true") {
+      return;
+    }
+
+    card.dataset.collapsibleReady = "true";
+
+    const content = document.createElement("div");
+    content.className = "collapsible-content";
+
+    let node = heading.nextSibling;
+
+    while (node) {
+      const nextNode = node.nextSibling;
+      content.appendChild(node);
+      node = nextNode;
+    }
+
+    heading.classList.add("collapsible-title");
+
+    const header = document.createElement("div");
+    header.className = "collapsible-header";
+    header.setAttribute("role", "button");
+    header.setAttribute("tabindex", "0");
+    header.setAttribute("aria-expanded", "false");
+
+    const icon = document.createElement("span");
+    icon.className = "collapse-icon";
+    icon.setAttribute("aria-hidden", "true");
+    icon.textContent = "+";
+
+    card.insertBefore(header, heading);
+    header.appendChild(heading);
+    header.appendChild(icon);
+    card.appendChild(content);
+
+    // Keep the admin profile open when the page first loads.
+    if (index === 0) {
+      card.classList.add("is-open");
+      header.setAttribute("aria-expanded", "true");
+    }
+
+    const toggleSection = () => {
+      const isOpen = card.classList.toggle("is-open");
+      header.setAttribute("aria-expanded", String(isOpen));
+    };
+
+    header.addEventListener("click", toggleSection);
+
+    header.addEventListener("keydown", event => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        toggleSection();
+      }
+    });
+  });
 }
 
 /* IN-PERSON REGISTRATION */
@@ -1058,6 +1187,7 @@ async function savePlayerEquipmentAdmin() {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
+  initializeCollapsibleSections();
   await loadRegistrations();
   await loadScheduleEvents();
   await loadInventory();
