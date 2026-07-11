@@ -215,25 +215,6 @@
       background:
         green;
     }
-
-
-    .btn.remove {
-
-      background:
-        #8b0000;
-
-      margin-left:
-        8px;
-    }
-
-
-    .btn.remove:hover {
-
-      background:
-        #650000;
-    }
-
-
     .waiver-text {
 
       max-height:
@@ -399,6 +380,83 @@
       border-radius:12px;
     }
 
+
+    .conversation-list-item {
+      border: 1px solid #ddd;
+      border-left: 6px solid #b30000;
+      border-radius: 10px;
+      margin: 12px 0;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .conversation-list-item.resolved {
+      border-left-color: green;
+      opacity: .92;
+    }
+
+    .conversation-summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 14px 16px;
+      cursor: pointer;
+      user-select: none;
+      background: #fafafa;
+    }
+
+    .conversation-summary:hover {
+      background: #f2f2f2;
+    }
+
+    .conversation-summary-text {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .conversation-subject {
+      font-weight: bold;
+      color: #b30000;
+      margin-bottom: 4px;
+    }
+
+    .conversation-preview {
+      color: #555;
+      font-size: 13px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .conversation-expand-icon {
+      flex: 0 0 auto;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: #b30000;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      transition: transform .2s ease;
+    }
+
+    .conversation-list-item.open .conversation-expand-icon {
+      transform: rotate(45deg);
+    }
+
+    .conversation-details {
+      display: none;
+      padding: 14px 16px 16px;
+      border-top: 1px solid #ddd;
+    }
+
+    .conversation-list-item.open .conversation-details {
+      display: block;
+    }
 
     .conversation-thread {
       border: 1px solid #ddd;
@@ -1296,76 +1354,6 @@ function renderPlayers(players) {
 
 
 // ============================================================
-// REMOVE ACCIDENTAL REGISTRATION
-// ============================================================
-
-async function removeRegistration(registrationId, playerName) {
-
-  const confirmed =
-    confirm(
-      'Remove ' +
-      playerName +
-      ' from your account?\n\n' +
-      'This will remove the player and registration fee from your dashboard. ' +
-      'If this is not an accidental duplicate, contact Bath County Youth Football before removing it.'
-    );
-
-  if (!confirmed) {
-    return;
-  }
-
-  const parentEmail =
-    (
-      localStorage.getItem(
-        'parentEmail'
-      ) || ''
-    )
-      .trim()
-      .toLowerCase();
-
-  try {
-
-    const data =
-      await api({
-
-        action:
-          'parentRemoveRegistration',
-
-        id:
-          registrationId,
-
-        parentEmail:
-          parentEmail
-      });
-
-    if (!data.success) {
-
-      alert(
-        data.message ||
-        'Could not remove the registration.'
-      );
-
-      return;
-    }
-
-    alert(
-      playerName +
-      ' has been removed from your account.'
-    );
-
-    await loadDashboard();
-
-  } catch (err) {
-
-    alert(
-      'Could not remove the registration: ' +
-      err.message
-    );
-  }
-}
-
-
-// ============================================================
 // PAYMENT SUMMARY
 // ============================================================
 
@@ -1969,6 +1957,24 @@ function updateParentCollapsedMessageIndicator(unreadCount) {
 }
 
 
+function toggleParentConversation(threadId) {
+
+  const item =
+    document.getElementById(
+      'conversation-' +
+      threadId
+    );
+
+  if (!item) {
+    return;
+  }
+
+  item.classList.toggle(
+    'open'
+  );
+}
+
+
 async function loadParentMessageThreads() {
 
   const email =
@@ -2109,58 +2115,99 @@ async function loadParentMessageThreads() {
           ).toLowerCase() ===
           'resolved';
 
+        const latestMessage =
+          messages.length
+            ? messages[messages.length - 1]
+            : {};
+
+        const preview =
+          String(latestMessage.message || '')
+            .replace(/\s+/g, ' ')
+            .trim();
+
         return `
 
-          <div class="conversation-thread ${resolved ? 'resolved' : ''}">
+          <div
+            id="conversation-${thread.threadId}"
+            class="conversation-list-item ${resolved ? 'resolved' : ''}"
+          >
 
-            <h4>
+            <div
+              class="conversation-summary"
+              onclick="toggleParentConversation('${thread.threadId}')"
+            >
 
-              ${escapeMessageHtml(
-                thread.subject ||
-                'General Question'
-              )}
+              <div class="conversation-summary-text">
 
-            </h4>
+                <div class="conversation-subject">
 
-            <p>
+                  ${escapeMessageHtml(
+                    thread.subject ||
+                    'General Question'
+                  )}
 
-              <b>Status:</b>
+                  ${thread.unreadForParent
+                    ? `<span class="unread-badge">${thread.unreadForParent} New</span>`
+                    : ''}
 
-              ${escapeMessageHtml(
-                thread.status ||
-                'New'
-              )}
+                </div>
 
-              ${thread.unreadForParent
-                ? `<span class="unread-badge">${thread.unreadForParent} New</span>`
-                : ''}
+                <div class="conversation-preview">
 
-            </p>
+                  ${escapeMessageHtml(
+                    preview ||
+                    'Click to view this conversation.'
+                  )}
 
-            ${messagesHtml}
+                </div>
 
-            ${resolved
+              </div>
 
-              ? '<p><b>This conversation has been resolved.</b></p>'
+              <span class="conversation-expand-icon">
+                +
+              </span>
 
-              : `
+            </div>
 
-                <textarea
-                  id="threadReply-${thread.threadId}"
-                  class="thread-reply-box"
-                  placeholder="Type your reply..."
-                ></textarea>
+            <div class="conversation-details">
 
-                <button
-                  type="button"
-                  class="btn"
-                  onclick="sendParentMessage('${thread.threadId}')"
-                >
-                  Send Reply
-                </button>
+              <p>
 
-              `
-            }
+                <b>Status:</b>
+
+                ${escapeMessageHtml(
+                  thread.status ||
+                  'New'
+                )}
+
+              </p>
+
+              ${messagesHtml}
+
+              ${resolved
+
+                ? '<p><b>This conversation has been resolved.</b></p>'
+
+                : `
+
+                  <textarea
+                    id="threadReply-${thread.threadId}"
+                    class="thread-reply-box"
+                    placeholder="Type your reply..."
+                  ></textarea>
+
+                  <button
+                    type="button"
+                    class="btn"
+                    onclick="sendParentMessage('${thread.threadId}')"
+                  >
+                    Send Reply
+                  </button>
+
+                `
+              }
+
+            </div>
 
           </div>
 
