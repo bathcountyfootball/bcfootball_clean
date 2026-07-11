@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Coach Dashboard</title>
-  <link rel="stylesheet" href="css/theme.css?v=2">
+  <link rel="stylesheet" href="css/theme.css?v=3">
 
   <style>
     .section-container { max-width: 1100px; margin: auto; padding: 20px; }
@@ -13,7 +13,74 @@
     textarea { min-height: 80px; }
     .small-btn { padding: 7px 10px; cursor: pointer; margin-top: 5px; }
     .schedule-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-    @media(max-width:800px){ .schedule-grid { grid-template-columns: 1fr; } }
+
+    .collapsible-header {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:15px;
+      margin:-24px -24px 0;
+      padding:20px 24px;
+      cursor:pointer;
+      user-select:none;
+      border-radius:12px 12px 0 0;
+      transition:background .2s ease, color .2s ease;
+    }
+
+    .collapsible-header:hover {
+      background:rgba(179,0,0,.07);
+    }
+
+    .collapsible-header:focus {
+      outline:3px solid rgba(179,0,0,.22);
+      outline-offset:-3px;
+    }
+
+    .collapsible-title {
+      margin:0 !important;
+    }
+
+    .collapse-icon {
+      flex:0 0 auto;
+      width:34px;
+      height:34px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:50%;
+      background:#b30000;
+      color:white;
+      font-size:24px;
+      font-weight:700;
+      line-height:1;
+      transition:transform .25s ease, background .2s ease;
+    }
+
+    .collapsible-content {
+      display:none;
+      padding-top:20px;
+    }
+
+    .link-card.is-open .collapsible-content {
+      display:block;
+    }
+
+    .link-card.is-open .collapse-icon {
+      transform:rotate(45deg);
+      background:#7d0000;
+    }
+
+    .link-card:not(.is-open) {
+      padding-bottom:0;
+    }
+
+    .link-card:not(.is-open) .collapsible-header {
+      border-radius:12px;
+    }
+
+    @media(max-width:800px){
+      .schedule-grid { grid-template-columns:1fr; }
+    }
   </style>
 </head>
 
@@ -116,16 +183,12 @@ const coachEmail = localStorage.getItem("coachEmail") || "";
 document.getElementById("coachProfile").innerText =
   coachName + " (" + coachEmail + ")";
 
-document.addEventListener("DOMContentLoaded", async () => {
-  await loadCoachPlayers();
-  await loadInventory();
-});
-
 async function api(payload) {
   const res = await fetch(API_URL, {
     method: "POST",
     body: JSON.stringify(payload)
   });
+
   return await res.json();
 }
 
@@ -145,6 +208,70 @@ function escapeHtml(value) {
     .replace(/'/g, "&#039;");
 }
 
+/* COLLAPSIBLE DASHBOARD SECTIONS */
+
+function initializeCollapsibleSections() {
+  const cards = document.querySelectorAll(".main-links > .link-card");
+
+  cards.forEach((card, index) => {
+    const heading = card.querySelector(":scope > h3");
+
+    if (!heading || card.dataset.collapsibleReady === "true") {
+      return;
+    }
+
+    card.dataset.collapsibleReady = "true";
+
+    const content = document.createElement("div");
+    content.className = "collapsible-content";
+
+    let node = heading.nextSibling;
+
+    while (node) {
+      const nextNode = node.nextSibling;
+      content.appendChild(node);
+      node = nextNode;
+    }
+
+    heading.classList.add("collapsible-title");
+
+    const header = document.createElement("div");
+    header.className = "collapsible-header";
+    header.setAttribute("role", "button");
+    header.setAttribute("tabindex", "0");
+    header.setAttribute("aria-expanded", "false");
+
+    const icon = document.createElement("span");
+    icon.className = "collapse-icon";
+    icon.setAttribute("aria-hidden", "true");
+    icon.textContent = "+";
+
+    card.insertBefore(header, heading);
+    header.appendChild(heading);
+    header.appendChild(icon);
+    card.appendChild(content);
+
+    if (index === 0) {
+      card.classList.add("is-open");
+      header.setAttribute("aria-expanded", "true");
+    }
+
+    const toggleSection = () => {
+      const isOpen = card.classList.toggle("is-open");
+      header.setAttribute("aria-expanded", String(isOpen));
+    };
+
+    header.addEventListener("click", toggleSection);
+
+    header.addEventListener("keydown", event => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        toggleSection();
+      }
+    });
+  });
+}
+
 /* SCHEDULE */
 
 function loadCoachTeamOptions() {
@@ -153,7 +280,7 @@ function loadCoachTeamOptions() {
   const teams = [
     ...new Set(
       coachPlayers
-        .map(p => String(p.team || p.league || "").trim())
+        .map(player => String(player.team || player.league || "").trim())
         .filter(Boolean)
     )
   ];
@@ -185,7 +312,7 @@ async function saveCoachScheduleEvent() {
     ? scheduleNotes.value.trim() + "\n\nPosted by: " + coachName
     : "Posted by: " + coachName;
 
-  const payload = {
+  const data = await api({
     action: "saveScheduleEvent",
     title,
     date,
@@ -194,9 +321,7 @@ async function saveCoachScheduleEvent() {
     team: scheduleTeam.value || "All",
     audience: "All",
     notes: notesWithCoach
-  };
-
-  const data = await api(payload);
+  });
 
   if (!data.success) {
     alert(data.message || "Could not save schedule event.");
@@ -220,7 +345,7 @@ async function loadCoachPlayers() {
 
   const data = await api({
     action: "getCoachPlayers",
-    coachEmail: coachEmail
+    coachEmail
   });
 
   if (!data.success) {
@@ -253,22 +378,22 @@ async function loadCoachPlayers() {
       <tbody>
   `;
 
-  coachPlayers.forEach(p => {
+  coachPlayers.forEach(player => {
     html += `
       <tr>
-        <td>${escapeHtml(p.name)}</td>
-        <td>${escapeHtml(p.league)}</td>
-        <td>${escapeHtml(p.team)}</td>
-        <td>${escapeHtml(p.grade)}</td>
-        <td>${escapeHtml(p.school)}</td>
-        <td>${escapeHtml(p.shirtSize)}</td>
+        <td>${escapeHtml(player.name)}</td>
+        <td>${escapeHtml(player.league)}</td>
+        <td>${escapeHtml(player.team)}</td>
+        <td>${escapeHtml(player.grade)}</td>
+        <td>${escapeHtml(player.school)}</td>
+        <td>${escapeHtml(player.shirtSize)}</td>
         <td>
-          ${escapeHtml(p.emergencyName)}<br>
-          <small>${escapeHtml(p.emergencyPhone)}</small>
+          ${escapeHtml(player.emergencyName)}<br>
+          <small>${escapeHtml(player.emergencyPhone)}</small>
         </td>
         <td>
-          <b>Medical:</b> ${escapeHtml(p.medical || "None")}<br>
-          <b>Allergies:</b> ${escapeHtml(p.allergies || "None")}
+          <b>Medical:</b> ${escapeHtml(player.medical || "None")}<br>
+          <b>Allergies:</b> ${escapeHtml(player.allergies || "None")}
         </td>
       </tr>
     `;
@@ -276,14 +401,6 @@ async function loadCoachPlayers() {
 
   html += "</tbody></table>";
   rosterResults.innerHTML = html;
-}
-
-async function loadInventory() {
-  const data = await api({ action: "getInventory" });
-
-  if (data.success) {
-    inventory = data.inventory || [];
-  }
 }
 
 function exportRosterCSV() {
@@ -299,11 +416,19 @@ function exportRosterCSV() {
 
   const csvRows = [headers.join(",")];
 
-  coachPlayers.forEach(p => {
+  coachPlayers.forEach(player => {
     const row = [
-      p.name, p.league, p.team, p.grade, p.school, p.shirtSize,
-      p.emergencyName, p.emergencyPhone, p.medical, p.allergies
-    ].map(v => `"${String(v || "").replace(/"/g, '""')}"`);
+      player.name,
+      player.league,
+      player.team,
+      player.grade,
+      player.school,
+      player.shirtSize,
+      player.emergencyName,
+      player.emergencyPhone,
+      player.medical,
+      player.allergies
+    ].map(value => `"${String(value || "").replace(/"/g, '""')}"`);
 
     csvRows.push(row.join(","));
   });
@@ -311,22 +436,30 @@ function exportRosterCSV() {
   const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
   const url = URL.createObjectURL(blob);
 
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "coach-roster.csv";
-  a.click();
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = "coach-roster.csv";
+  anchor.click();
 
   URL.revokeObjectURL(url);
 }
 
 /* EQUIPMENT */
 
+async function loadInventory() {
+  const data = await api({ action: "getInventory" });
+
+  if (data.success) {
+    inventory = data.inventory || [];
+  }
+}
+
 async function loadEquipmentPlayer() {
   const search = equipSearch.value.trim().toLowerCase();
 
-  const matches = coachPlayers.filter(p =>
-    String(p.league || "").toLowerCase().includes("jr") &&
-    String(p.name || "").toLowerCase().includes(search)
+  const matches = coachPlayers.filter(player =>
+    String(player.league || "").toLowerCase().includes("jr") &&
+    String(player.name || "").toLowerCase().includes(search)
   );
 
   if (!matches.length) {
@@ -345,16 +478,18 @@ async function loadEquipmentPlayer() {
   existingEquipment = equipData.success ? equipData.equipment : null;
 
   await loadInventory();
-
   renderEquipmentForm();
 }
 
 function itemLabel(item) {
   if (!item) return "";
+
   let label = item.type || "";
+
   if (item.size) label += " - " + item.size;
   if (item.number) label += " #" + item.number;
   if (item.condition) label += " (" + item.condition + ")";
+
   return label;
 }
 
@@ -386,7 +521,7 @@ function buildInventoryOptions(type, currentId) {
 function renderEquipmentForm() {
   if (!selectedPlayer) return;
 
-  const eq = existingEquipment || {};
+  const equipment = existingEquipment || {};
 
   equipmentForm.innerHTML = `
     <h3>${escapeHtml(selectedPlayer.name)}</h3>
@@ -398,35 +533,35 @@ function renderEquipmentForm() {
 
     <label>Helmet</label>
     <select id="helmetInventoryId">
-      ${buildInventoryOptions("Helmet", eq.helmetInventoryId)}
+      ${buildInventoryOptions("Helmet", equipment.helmetInventoryId)}
     </select>
 
     <label>Pads</label>
     <select id="padsInventoryId">
-      ${buildInventoryOptions("Pads", eq.padsInventoryId)}
+      ${buildInventoryOptions("Pads", equipment.padsInventoryId)}
     </select>
 
     <label>Pants</label>
     <select id="pantsInventoryId">
-      ${buildInventoryOptions("Pants", eq.pantsInventoryId)}
+      ${buildInventoryOptions("Pants", equipment.pantsInventoryId)}
     </select>
 
     <label>Jersey</label>
     <select id="jerseyInventoryId">
-      ${buildInventoryOptions("Jersey", eq.jerseyInventoryId)}
+      ${buildInventoryOptions("Jersey", equipment.jerseyInventoryId)}
     </select>
 
     <label>Helmet Return Status / Notes</label>
-    <input type="text" id="helmetReturn" value="${escapeHtml(eq.helmetReturn || "")}" placeholder="Returned, Missing, Damaged, etc.">
+    <input type="text" id="helmetReturn" value="${escapeHtml(equipment.helmetReturn || "")}">
 
     <label>Pads Return Status / Notes</label>
-    <input type="text" id="padsReturn" value="${escapeHtml(eq.padsReturn || "")}" placeholder="Returned, Missing, Damaged, etc.">
+    <input type="text" id="padsReturn" value="${escapeHtml(equipment.padsReturn || "")}">
 
     <label>Pants Return Status / Notes</label>
-    <input type="text" id="pantsReturn" value="${escapeHtml(eq.pantsReturn || "")}" placeholder="Returned, Missing, Damaged, etc.">
+    <input type="text" id="pantsReturn" value="${escapeHtml(equipment.pantsReturn || "")}">
 
     <label>Jersey Return Status / Notes</label>
-    <input type="text" id="jerseyReturn" value="${escapeHtml(eq.jerseyReturn || "")}" placeholder="Returned, Missing, Damaged, etc.">
+    <input type="text" id="jerseyReturn" value="${escapeHtml(equipment.jerseyReturn || "")}">
 
     <button class="action-btn" onclick="savePlayerEquipment()">Save Equipment Assignment</button>
   `;
@@ -438,7 +573,7 @@ async function savePlayerEquipment() {
     return;
   }
 
-  const payload = {
+  const data = await api({
     action: "savePlayerEquipment",
     playerId: selectedPlayer.id,
     name: selectedPlayer.name,
@@ -453,9 +588,7 @@ async function savePlayerEquipment() {
     pantsReturn: pantsReturn.value,
     jerseyReturn: jerseyReturn.value,
     updatedBy: coachEmail
-  };
-
-  const data = await api(payload);
+  });
 
   if (!data.success) {
     alert(data.message || "Could not save equipment.");
@@ -467,6 +600,12 @@ async function savePlayerEquipment() {
   await loadInventory();
   await loadEquipmentPlayer();
 }
+
+document.addEventListener("DOMContentLoaded", async () => {
+  initializeCollapsibleSections();
+  await loadCoachPlayers();
+  await loadInventory();
+});
 </script>
 
 </body>
