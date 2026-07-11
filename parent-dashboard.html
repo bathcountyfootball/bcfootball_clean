@@ -217,6 +217,23 @@
     }
 
 
+    .btn.remove {
+
+      background:
+        #8b0000;
+
+      margin-left:
+        8px;
+    }
+
+
+    .btn.remove:hover {
+
+      background:
+        #650000;
+    }
+
+
     .waiver-text {
 
       max-height:
@@ -1032,6 +1049,15 @@ function renderPlayers(players) {
 
       </p>
 
+
+      <button
+        type="button"
+        class="btn remove"
+        onclick="removeRegistration('${player.id}', '${String(player.name || '').replace(/'/g, "\'")}')"
+      >
+        Remove Registration
+      </button>
+
     `;
 
 
@@ -1043,6 +1069,76 @@ function renderPlayers(players) {
 
 }
 
+
+
+// ============================================================
+// REMOVE ACCIDENTAL REGISTRATION
+// ============================================================
+
+async function removeRegistration(registrationId, playerName) {
+
+  const confirmed =
+    confirm(
+      'Remove ' +
+      playerName +
+      ' from your account?\n\n' +
+      'This will remove the player and registration fee from your dashboard. ' +
+      'If this is not an accidental duplicate, contact Bath County Youth Football before removing it.'
+    );
+
+  if (!confirmed) {
+    return;
+  }
+
+  const parentEmail =
+    (
+      localStorage.getItem(
+        'parentEmail'
+      ) || ''
+    )
+      .trim()
+      .toLowerCase();
+
+  try {
+
+    const data =
+      await api({
+
+        action:
+          'parentRemoveRegistration',
+
+        id:
+          registrationId,
+
+        parentEmail:
+          parentEmail
+      });
+
+    if (!data.success) {
+
+      alert(
+        data.message ||
+        'Could not remove the registration.'
+      );
+
+      return;
+    }
+
+    alert(
+      playerName +
+      ' has been removed from your account.'
+    );
+
+    await loadDashboard();
+
+  } catch (err) {
+
+    alert(
+      'Could not remove the registration: ' +
+      err.message
+    );
+  }
+}
 
 
 // ============================================================
