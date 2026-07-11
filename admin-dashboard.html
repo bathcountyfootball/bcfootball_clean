@@ -27,6 +27,83 @@
     .message-card.status-resolved { border-left-color:green; opacity:.88; }
     .message-meta { color:#666; font-size:13px; margin-bottom:10px; }
     .message-body { white-space:pre-wrap; line-height:1.5; background:#f7f7f7; border-radius:8px; padding:12px; margin:10px 0; }
+    .admin-conversation-list-item {
+      border:1px solid #ddd;
+      border-left:6px solid #b30000;
+      border-radius:10px;
+      margin:12px 0;
+      background:#fff;
+      overflow:hidden;
+    }
+
+    .admin-conversation-list-item.resolved {
+      border-left-color:green;
+      opacity:.92;
+    }
+
+    .admin-conversation-summary {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      padding:14px 16px;
+      cursor:pointer;
+      user-select:none;
+      background:#fafafa;
+    }
+
+    .admin-conversation-summary:hover {
+      background:#f2f2f2;
+    }
+
+    .admin-conversation-summary-text {
+      min-width:0;
+      flex:1;
+    }
+
+    .admin-conversation-subject {
+      font-weight:bold;
+      color:#b30000;
+      margin-bottom:4px;
+    }
+
+    .admin-conversation-preview {
+      color:#555;
+      font-size:13px;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
+    .admin-conversation-expand-icon {
+      flex:0 0 auto;
+      width:28px;
+      height:28px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:50%;
+      background:#b30000;
+      color:#fff;
+      font-size:18px;
+      font-weight:bold;
+      transition:transform .2s ease;
+    }
+
+    .admin-conversation-list-item.open .admin-conversation-expand-icon {
+      transform:rotate(45deg);
+    }
+
+    .admin-conversation-details {
+      display:none;
+      padding:14px 16px 16px;
+      border-top:1px solid #ddd;
+    }
+
+    .admin-conversation-list-item.open .admin-conversation-details {
+      display:block;
+    }
+
     .conversation-message { padding:12px; border-radius:8px; margin:9px 0; white-space:pre-wrap; line-height:1.5; }
     .conversation-message.parent { background:#f1f1f1; margin-right:35px; }
     .conversation-message.admin { background:#ffeaea; border-left:4px solid #b30000; margin-left:35px; }
@@ -996,6 +1073,14 @@ function updateAdminCollapsedMessageIndicator(unreadCount) {
   }
 }
 
+function toggleAdminConversation(threadId) {
+  const item = document.getElementById("admin-conversation-" + threadId);
+
+  if (!item) return;
+
+  item.classList.toggle("open");
+}
+
 async function loadAdminMessages() {
   const list = document.getElementById("adminMessagesList");
   const filter = document.getElementById("messageStatusFilter");
@@ -1037,9 +1122,10 @@ async function loadAdminMessages() {
 
   list.innerHTML = threads.map(thread => {
     const status = String(thread.status || "New");
-    const statusClass = status.toLowerCase().replace(/\s+/g, "-");
+    const resolved = status.toLowerCase() === "resolved";
+    const messages = thread.messages || [];
 
-    const conversationHtml = (thread.messages || []).map(message => {
+    const conversationHtml = messages.map(message => {
       const senderRole = String(message.senderRole || "Parent").toLowerCase();
       const senderClass = senderRole === "admin" ? "admin" : "parent";
       const senderLabel = senderRole === "admin"
@@ -1059,56 +1145,84 @@ async function loadAdminMessages() {
       `;
     }).join("");
 
-    return `
-      <div class="message-card status-${statusClass}">
-        <h4>
-          ${escapeHtml(thread.subject || "General Question")}
-          ${thread.unreadForAdmin
-            ? `<span class="message-unread">${thread.unreadForAdmin} New</span>`
-            : ""}
-        </h4>
+    const latestMessage = messages.length
+      ? messages[messages.length - 1]
+      : {};
 
-        <div class="message-meta">
-          <b>Parent:</b> ${escapeHtml(thread.parentName || "Parent")}
-          &nbsp; | &nbsp;
-          <b>Email:</b> ${escapeHtml(thread.parentEmail || "")}
-          &nbsp; | &nbsp;
-          <b>Updated:</b> ${escapeHtml(formatMessageDate(thread.latestAt))}
-          &nbsp; | &nbsp;
-          <b>Status:</b> ${escapeHtml(status)}
+    const preview = String(latestMessage.message || "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    return `
+      <div
+        id="admin-conversation-${thread.threadId}"
+        class="admin-conversation-list-item ${resolved ? "resolved" : ""}"
+      >
+        <div
+          class="admin-conversation-summary"
+          onclick="toggleAdminConversation('${thread.threadId}')"
+        >
+          <div class="admin-conversation-summary-text">
+            <div class="admin-conversation-subject">
+              ${escapeHtml(thread.subject || "General Question")}
+              ${thread.unreadForAdmin
+                ? `<span class="message-unread">${thread.unreadForAdmin} New</span>`
+                : ""}
+            </div>
+
+            <div class="admin-conversation-preview">
+              ${escapeHtml(thread.parentName || "Parent")}
+              &nbsp; • &nbsp;
+              ${escapeHtml(preview || "Click to view this conversation.")}
+            </div>
+          </div>
+
+          <span class="admin-conversation-expand-icon">+</span>
         </div>
 
-        ${conversationHtml}
+        <div class="admin-conversation-details">
+          <div class="message-meta">
+            <b>Parent:</b> ${escapeHtml(thread.parentName || "Parent")}
+            &nbsp; | &nbsp;
+            <b>Email:</b> ${escapeHtml(thread.parentEmail || "")}
+            &nbsp; | &nbsp;
+            <b>Updated:</b> ${escapeHtml(formatMessageDate(thread.latestAt))}
+            &nbsp; | &nbsp;
+            <b>Status:</b> ${escapeHtml(status)}
+          </div>
 
-        ${status === "Resolved"
-          ? "<p><b>This conversation is resolved.</b></p>"
-          : `
-            <textarea
-              id="adminReply-${thread.threadId}"
-              class="admin-reply-box"
-              placeholder="Type a reply to the parent..."
-            ></textarea>
+          ${conversationHtml}
 
-            <button
-              class="small-btn"
-              onclick="sendAdminReply('${thread.threadId}')"
-            >
-              Send Reply
-            </button>
-          `
-        }
+          ${resolved
+            ? "<p><b>This conversation is resolved.</b></p>"
+            : `
+              <textarea
+                id="adminReply-${thread.threadId}"
+                class="admin-reply-box"
+                placeholder="Type a reply to the parent..."
+              ></textarea>
 
-        <button class="small-btn" onclick="setMessageStatus('${thread.threadId}', 'New')">
-          Mark New
-        </button>
+              <button
+                class="small-btn"
+                onclick="sendAdminReply('${thread.threadId}')"
+              >
+                Send Reply
+              </button>
+            `
+          }
 
-        <button class="small-btn" onclick="setMessageStatus('${thread.threadId}', 'Read')">
-          Mark Read
-        </button>
+          <button class="small-btn" onclick="setMessageStatus('${thread.threadId}', 'New')">
+            Mark New
+          </button>
 
-        <button class="small-btn" onclick="setMessageStatus('${thread.threadId}', 'Resolved')">
-          Resolve
-        </button>
+          <button class="small-btn" onclick="setMessageStatus('${thread.threadId}', 'Read')">
+            Mark Read
+          </button>
+
+          <button class="small-btn" onclick="setMessageStatus('${thread.threadId}', 'Resolved')">
+            Resolve
+          </button>
+        </div>
       </div>
     `;
   }).join("");
