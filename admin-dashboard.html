@@ -30,7 +30,35 @@
     .conversation-message { padding:12px; border-radius:8px; margin:9px 0; white-space:pre-wrap; line-height:1.5; }
     .conversation-message.parent { background:#f1f1f1; margin-right:35px; }
     .conversation-message.admin { background:#ffeaea; border-left:4px solid #b30000; margin-left:35px; }
-    .admin-reply-box { width:100%; min-height:90px; margin-top:10px; }
+    .admin-reply-box {
+      width:100%;
+      min-height:65px;
+      max-height:130px;
+      margin-top:10px;
+      padding:9px;
+      resize:vertical;
+    }
+
+    .collapsed-new-message {
+      display:none;
+      align-items:center;
+      gap:6px;
+      margin-left:auto;
+      margin-right:10px;
+      color:#b30000;
+      font-size:14px;
+      font-weight:700;
+      white-space:nowrap;
+    }
+
+    .collapsed-new-message .star {
+      font-size:20px;
+      line-height:1;
+    }
+
+    .link-card.is-open .collapsed-new-message {
+      display:none !important;
+    }
     .message-unread { display:inline-block; background:#b30000; color:#fff; border-radius:999px; padding:3px 8px; font-size:12px; font-weight:bold; }
 
     .collapsible-header {
@@ -519,6 +547,30 @@ function initializeCollapsibleSections() {
     const toggleSection = () => {
       const isOpen = card.classList.toggle("is-open");
       header.setAttribute("aria-expanded", String(isOpen));
+
+
+      if (
+        heading.textContent
+          .trim()
+          .toLowerCase()
+          .includes("parent messages")
+      ) {
+        const indicator =
+          header.querySelector(".collapsed-new-message");
+
+        if (indicator) {
+          const badgeText =
+            document.getElementById("adminUnreadBadge")?.textContent || "";
+
+          const unreadCount =
+            Number(badgeText.match(/\d+/)?.[0] || 0);
+
+          indicator.style.display =
+            !isOpen && unreadCount > 0
+              ? "inline-flex"
+              : "none";
+        }
+      }
     };
 
     header.addEventListener("click", toggleSection);
@@ -908,6 +960,42 @@ function formatMessageDate(value) {
   });
 }
 
+function updateAdminCollapsedMessageIndicator(unreadCount) {
+  const messageCard =
+    [...document.querySelectorAll(".main-links > .link-card")]
+      .find(card => {
+        const heading = card.querySelector(".collapsible-title");
+        return heading &&
+          heading.textContent.trim().toLowerCase().includes("parent messages");
+      });
+
+  if (!messageCard) return;
+
+  const header = messageCard.querySelector(".collapsible-header");
+  if (!header) return;
+
+  let indicator = header.querySelector(".collapsed-new-message");
+
+  if (!indicator) {
+    indicator = document.createElement("span");
+    indicator.className = "collapsed-new-message";
+    indicator.innerHTML = '<span class="star">★</span><span>New Message</span>';
+
+    const icon = header.querySelector(".collapse-icon");
+    header.insertBefore(indicator, icon);
+  }
+
+  if (Number(unreadCount || 0) > 0 && !messageCard.classList.contains("is-open")) {
+    indicator.style.display = "inline-flex";
+    indicator.querySelector("span:last-child").textContent =
+      Number(unreadCount) === 1
+        ? "New Message"
+        : Number(unreadCount) + " New Messages";
+  } else {
+    indicator.style.display = "none";
+  }
+}
+
 async function loadAdminMessages() {
   const list = document.getElementById("adminMessagesList");
   const filter = document.getElementById("messageStatusFilter");
@@ -928,6 +1016,8 @@ async function loadAdminMessages() {
   }
 
   const unreadCount = Number(data.unreadCount || 0);
+
+  updateAdminCollapsedMessageIndicator(unreadCount);
 
   if (badge) {
     if (unreadCount > 0) {

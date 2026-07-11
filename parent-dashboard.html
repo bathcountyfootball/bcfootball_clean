@@ -335,6 +335,71 @@
     }
 
 
+    .collapsible-header {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:15px;
+      margin:-25px -25px 0;
+      padding:20px 25px;
+      cursor:pointer;
+      user-select:none;
+      border-radius:12px 12px 0 0;
+      transition:background .2s ease;
+    }
+
+    .collapsible-header:hover {
+      background:rgba(179,0,0,.07);
+    }
+
+    .collapsible-header:focus {
+      outline:3px solid rgba(179,0,0,.22);
+      outline-offset:-3px;
+    }
+
+    .collapsible-title {
+      margin:0 !important;
+    }
+
+    .collapse-icon {
+      flex:0 0 auto;
+      width:34px;
+      height:34px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:50%;
+      background:#b30000;
+      color:white;
+      font-size:24px;
+      font-weight:700;
+      line-height:1;
+      transition:transform .25s ease, background .2s ease;
+    }
+
+    .collapsible-content {
+      display:none;
+      padding-top:20px;
+    }
+
+    .dashboard-card.is-open .collapsible-content {
+      display:block;
+    }
+
+    .dashboard-card.is-open .collapse-icon {
+      transform:rotate(45deg);
+      background:#7d0000;
+    }
+
+    .dashboard-card:not(.is-open) {
+      padding-bottom:0;
+    }
+
+    .dashboard-card:not(.is-open) .collapsible-header {
+      border-radius:12px;
+    }
+
+
     .conversation-thread {
       border: 1px solid #ddd;
       border-left: 6px solid #b30000;
@@ -387,11 +452,34 @@
 
     .thread-reply-box {
       width: 100%;
-      min-height: 90px;
-      padding: 10px;
+      min-height: 65px;
+      max-height: 130px;
+      padding: 9px;
       border: 1px solid #ccc;
       border-radius: 7px;
       margin-top: 10px;
+      resize: vertical;
+    }
+
+    .collapsed-new-message {
+      display:none;
+      align-items:center;
+      gap:6px;
+      margin-left:auto;
+      margin-right:10px;
+      color:#b30000;
+      font-size:14px;
+      font-weight:700;
+      white-space:nowrap;
+    }
+
+    .collapsed-new-message .star {
+      font-size:20px;
+      line-height:1;
+    }
+
+    .dashboard-card.is-open .collapsed-new-message {
+      display:none !important;
     }
 
 
@@ -526,7 +614,7 @@
     <textarea
       id="parentMessage"
       placeholder="Type your message here..."
-      style="width:100%; min-height:140px; padding:12px; margin-top:6px; border:1px solid #ccc; border-radius:6px;"
+      style="width:100%; min-height:90px; padding:10px; margin-top:6px; border:1px solid #ccc; border-radius:6px;"
     ></textarea>
 
     <button
@@ -892,6 +980,8 @@ document.addEventListener(
   'DOMContentLoaded',
 
   async () => {
+
+    initializeCollapsibleSections();
 
     await loadDashboard();
 
@@ -1430,6 +1520,207 @@ function renderPaymentSummary(players) {
 
 
 // ============================================================
+// COLLAPSIBLE DASHBOARD SECTIONS
+// ============================================================
+
+function initializeCollapsibleSections() {
+
+  const cards =
+    document.querySelectorAll(
+      '.main-links > .dashboard-card'
+    );
+
+  cards.forEach(
+    (card, index) => {
+
+      const heading =
+        card.querySelector(
+          ':scope > h2'
+        );
+
+      if (
+        !heading ||
+        card.dataset.collapsibleReady ===
+          'true'
+      ) {
+        return;
+      }
+
+      card.dataset.collapsibleReady =
+        'true';
+
+      const content =
+        document.createElement(
+          'div'
+        );
+
+      content.className =
+        'collapsible-content';
+
+      let node =
+        heading.nextSibling;
+
+      while (node) {
+
+        const nextNode =
+          node.nextSibling;
+
+        content.appendChild(
+          node
+        );
+
+        node =
+          nextNode;
+      }
+
+      heading.classList.add(
+        'collapsible-title'
+      );
+
+      const header =
+        document.createElement(
+          'div'
+        );
+
+      header.className =
+        'collapsible-header';
+
+      header.setAttribute(
+        'role',
+        'button'
+      );
+
+      header.setAttribute(
+        'tabindex',
+        '0'
+      );
+
+      header.setAttribute(
+        'aria-expanded',
+        'false'
+      );
+
+      const icon =
+        document.createElement(
+          'span'
+        );
+
+      icon.className =
+        'collapse-icon';
+
+      icon.setAttribute(
+        'aria-hidden',
+        'true'
+      );
+
+      icon.textContent =
+        '+';
+
+      card.insertBefore(
+        header,
+        heading
+      );
+
+      header.appendChild(
+        heading
+      );
+
+      header.appendChild(
+        icon
+      );
+
+      card.appendChild(
+        content
+      );
+
+      // Keep "Your Information" open when the page first loads.
+      if (index === 0) {
+
+        card.classList.add(
+          'is-open'
+        );
+
+        header.setAttribute(
+          'aria-expanded',
+          'true'
+        );
+      }
+
+      const toggleSection =
+        () => {
+
+          const isOpen =
+            card.classList.toggle(
+              'is-open'
+            );
+
+          header.setAttribute(
+            'aria-expanded',
+            String(isOpen)
+          );
+
+
+          if (
+            heading.textContent
+              .trim()
+              .toLowerCase() ===
+            'message football administration'
+          ) {
+
+            const indicator =
+              header.querySelector(
+                '.collapsed-new-message'
+              );
+
+            if (indicator) {
+
+              indicator.style.display =
+                isOpen
+                  ? 'none'
+                  : (
+                      Number(
+                        document
+                          .getElementById(
+                            'parentUnreadBadge'
+                          )
+                          ?.textContent
+                          .match(/\d+/)?.[0] || 0
+                      ) > 0
+                        ? 'inline-flex'
+                        : 'none'
+                    );
+            }
+          }
+        };
+
+      header.addEventListener(
+        'click',
+        toggleSection
+      );
+
+      header.addEventListener(
+        'keydown',
+        event => {
+
+          if (
+            event.key ===
+              'Enter' ||
+            event.key ===
+              ' '
+          ) {
+
+            event.preventDefault();
+
+            toggleSection();
+          }
+        }
+      );
+    }
+  );
+}
+
+
+// ============================================================
 // TWO-WAY MESSAGING
 // ============================================================
 
@@ -1594,6 +1885,90 @@ async function sendParentMessage(threadId = '') {
 }
 
 
+function updateParentCollapsedMessageIndicator(unreadCount) {
+
+  const messageCard =
+    [...document.querySelectorAll('.main-links > .dashboard-card')]
+      .find(card => {
+
+        const heading =
+          card.querySelector('.collapsible-title');
+
+        return heading &&
+          heading.textContent
+            .trim()
+            .toLowerCase() ===
+          'message football administration';
+      });
+
+  if (!messageCard) {
+    return;
+  }
+
+  const header =
+    messageCard.querySelector(
+      '.collapsible-header'
+    );
+
+  if (!header) {
+    return;
+  }
+
+  let indicator =
+    header.querySelector(
+      '.collapsed-new-message'
+    );
+
+  if (!indicator) {
+
+    indicator =
+      document.createElement(
+        'span'
+      );
+
+    indicator.className =
+      'collapsed-new-message';
+
+    indicator.innerHTML =
+      '<span class="star">★</span><span>New Message</span>';
+
+    const icon =
+      header.querySelector(
+        '.collapse-icon'
+      );
+
+    header.insertBefore(
+      indicator,
+      icon
+    );
+  }
+
+  if (
+    Number(unreadCount || 0) > 0 &&
+    !messageCard.classList.contains(
+      'is-open'
+    )
+  ) {
+
+    indicator.style.display =
+      'inline-flex';
+
+    indicator.querySelector(
+      'span:last-child'
+    ).textContent =
+      Number(unreadCount) === 1
+        ? 'New Message'
+        : Number(unreadCount) +
+          ' New Messages';
+
+  } else {
+
+    indicator.style.display =
+      'none';
+  }
+}
+
+
 async function loadParentMessageThreads() {
 
   const email =
@@ -1646,6 +2021,11 @@ async function loadParentMessageThreads() {
       Number(
         data.unreadCount || 0
       );
+
+
+    updateParentCollapsedMessageIndicator(
+      unreadCount
+    );
 
     if (unreadCount > 0) {
 
