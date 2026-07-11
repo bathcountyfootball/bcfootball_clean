@@ -817,6 +817,7 @@ function renderTable() {
         <td>
           <strong>${escapeHtml(r.name)}</strong><br>
           <button class="small-btn" onclick="openEditPlayer('${r.id}')">Edit Player</button>
+          <button class="small-btn" onclick="deleteRegistration('${r.id}')">Delete Registration</button>
         </td>
         <td>
           <select id="playerStatus-${r.id}">${buildPlayerStatusOptions(r)}</select>
@@ -881,6 +882,38 @@ function markNoCharge(id) {
   const player = allRows.find(r => String(r.id) === String(id));
   if (!confirm("Set " + (player ? player.name : "this player") + " to No Charge and $0.00?")) return;
   setPaymentStatus(id, "No Charge");
+}
+
+async function deleteRegistration(id) {
+  const player = allRows.find(r => String(r.id) === String(id));
+  const playerName = player ? player.name : "this player";
+
+  const confirmed = confirm(
+    "Permanently delete the registration for " +
+    playerName +
+    "?\n\nThis removes the player from the parent dashboard, totals, reports, coach rosters, and exports. This cannot be undone."
+  );
+
+  if (!confirmed) return;
+
+  const secondConfirmed = confirm(
+    "Final confirmation: permanently delete " + playerName + "'s registration?"
+  );
+
+  if (!secondConfirmed) return;
+
+  const data = await api({
+    action: "deleteRegistration",
+    id
+  });
+
+  if (!data.success) {
+    alert(data.message || "Could not delete registration.");
+    return;
+  }
+
+  alert("Registration permanently deleted.");
+  await loadRegistrations();
 }
 
 function exportCSV() {
