@@ -2,25 +2,27 @@
 <html>
 <head>
   <title>Admin Dashboard</title>
-  <link rel="stylesheet" href="css/theme.css?v=2">
+  <link rel="stylesheet" href="css/theme.css?v=3">
 
   <style>
     .section-container { max-width: 1400px; margin: auto; padding: 20px; }
     .table-wrapper { overflow-x: auto; margin-top: 15px; }
-    table { width: 100%; min-width: 1400px; border-collapse: collapse; font-size: 14px; }
+    table { width: 100%; min-width: 1450px; border-collapse: collapse; font-size: 14px; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: left; vertical-align: top; }
     th { background: #b30000; color: white; }
-    .paid, .signed, .active-status { color: green; font-weight: bold; }
-    .pending, .not-signed, .inactive-status { color: #b30000; font-weight: bold; }
-    select, input, textarea { padding: 7px; width: 100%; margin-bottom: 8px; }
+    .paid,.signed,.active-status { color: green; font-weight: bold; }
+    .pending,.not-signed,.inactive-status { color: #b30000; font-weight: bold; }
+    select,input,textarea { padding: 8px; width: 100%; margin-bottom: 10px; }
     textarea { min-height: 80px; }
     .small-btn { padding: 7px 10px; cursor: pointer; margin: 2px; }
     .assignment-box { min-width: 180px; }
     .status-message { margin-top: 5px; font-size: 12px; font-weight: bold; }
-    .schedule-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-    .schedule-card { border-left: 5px solid #b30000; background:#fff; padding:12px; margin:10px 0; border-radius:8px; }
+    .two-column { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
+    .three-column { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+    .schedule-card { border-left:5px solid #b30000; background:#fff; padding:12px; margin:10px 0; border-radius:8px; }
     .editing-message { display:none; margin-bottom:12px; padding:10px; background:#fff3cd; border:1px solid #ffe69c; border-radius:5px; font-weight:bold; }
-    @media(max-width: 800px) { .schedule-grid { grid-template-columns: 1fr; } }
+    .result-row { border:1px solid #ddd; border-radius:8px; padding:10px; margin:8px 0; background:#fff; }
+    @media(max-width:800px){ .two-column,.three-column { grid-template-columns:1fr; } }
   </style>
 </head>
 
@@ -48,16 +50,135 @@ if (!localStorage.getItem("adminUser")) {
     </div>
 
     <div class="link-card">
+      <h3>Add In-Person Registration</h3>
+      <p>Email is not required. The registration can be linked to a parent account later.</p>
+
+      <div class="two-column">
+        <div>
+          <label>Parent / Guardian Name</label>
+          <input id="ipParentName">
+
+          <label>Parent Phone</label>
+          <input id="ipParentPhone">
+
+          <label>Parent Address</label>
+          <input id="ipParentAddress">
+
+          <label>Emergency Contact Name</label>
+          <input id="ipEmergencyName">
+
+          <label>Emergency Contact Phone</label>
+          <input id="ipEmergencyPhone">
+        </div>
+
+        <div>
+          <label>Player First Name</label>
+          <input id="ipFirstName">
+
+          <label>Player Last Name</label>
+          <input id="ipLastName">
+
+          <label>Birthdate</label>
+          <input type="date" id="ipBirthdate">
+
+          <label>Grade</label>
+          <select id="ipGrade">
+            <option value="">Select Grade</option>
+            <option>Kindergarten</option>
+            <option>1st</option>
+            <option>2nd</option>
+            <option>3rd</option>
+            <option>4th</option>
+            <option>5th</option>
+            <option>6th</option>
+          </select>
+
+          <label>School</label>
+          <input id="ipSchool">
+        </div>
+      </div>
+
+      <div class="three-column">
+        <div>
+          <label>League</label>
+          <select id="ipLeague">
+            <option value="">Select League</option>
+            <option value="Flag">Flag</option>
+            <option value="Jr Pro">Jr Pro</option>
+          </select>
+
+          <label>Shirt Size</label>
+          <input id="ipShirtSize">
+        </div>
+
+        <div>
+          <label>Fee Charged</label>
+          <input type="number" step="0.01" id="ipFinalFee">
+
+          <label>Payment Status</label>
+          <select id="ipPaymentStatus">
+            <option>Pending</option>
+            <option>Partially Paid</option>
+            <option>Paid</option>
+            <option>No Charge</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Player Status</label>
+          <select id="ipPlayerStatus">
+            <option>Active</option>
+            <option>Inactive</option>
+          </select>
+
+          <label>Team</label>
+          <input id="ipTeam" placeholder="Optional">
+        </div>
+      </div>
+
+      <label>Medical Conditions</label>
+      <textarea id="ipMedical" placeholder="None"></textarea>
+
+      <label>Allergies</label>
+      <textarea id="ipAllergies" placeholder="None"></textarea>
+
+      <button class="action-btn" onclick="saveInPersonRegistration()">Save In-Person Registration</button>
+    </div>
+
+    <div class="link-card">
+      <h3>Link In-Person Registrations to Parent Account</h3>
+
+      <div class="two-column">
+        <div>
+          <label>Search Unlinked Registrations</label>
+          <input id="unlinkedSearch" placeholder="Player, parent, or phone">
+          <button class="action-btn" onclick="searchUnlinkedRegistrations()">Search Registrations</button>
+          <div id="unlinkedResults"></div>
+        </div>
+
+        <div>
+          <label>Search Parent Accounts</label>
+          <input id="parentAccountSearch" placeholder="Name, email, or phone">
+          <button class="action-btn" onclick="searchParentAccounts()">Search Parents</button>
+          <div id="parentAccountResults"></div>
+        </div>
+      </div>
+
+      <p><b>Selected parent:</b> <span id="selectedParentLabel">None</span></p>
+      <button class="action-btn" onclick="linkSelectedRegistrations()">Link Selected Registrations</button>
+    </div>
+
+    <div class="link-card">
       <h3>Schedule Manager</h3>
 
       <div id="scheduleEditingMessage" class="editing-message">
         You are editing an existing schedule event.
       </div>
 
-      <div class="schedule-grid">
+      <div class="two-column">
         <div>
           <label>Event Title</label>
-          <input type="text" id="scheduleTitle" placeholder="Practice, Game, Equipment Pickup">
+          <input type="text" id="scheduleTitle">
 
           <label>Date</label>
           <input type="date" id="scheduleDate">
@@ -66,7 +187,7 @@ if (!localStorage.getItem("adminUser")) {
           <input type="time" id="scheduleTime">
 
           <label>Location</label>
-          <input type="text" id="scheduleLocation" placeholder="Bath County Field">
+          <input type="text" id="scheduleLocation">
         </div>
 
         <div>
@@ -87,7 +208,7 @@ if (!localStorage.getItem("adminUser")) {
           </select>
 
           <label>Notes</label>
-          <textarea id="scheduleNotes" placeholder="Optional details"></textarea>
+          <textarea id="scheduleNotes"></textarea>
         </div>
       </div>
 
@@ -120,25 +241,18 @@ if (!localStorage.getItem("adminUser")) {
 <div id="equipmentModal" class="modal">
   <div class="modal-content">
     <h2>Assign Equipment to Player</h2>
-
     <label>Search Jr Pro Player</label>
-    <input type="text" id="equipSearchAdmin" placeholder="Type name">
-
+    <input type="text" id="equipSearchAdmin">
     <button class="action-btn" onclick="loadEquipmentPlayerAdmin()">Search</button>
-
     <div id="equipmentFormAdmin" style="margin-top:20px;"></div>
-
     <button class="action-btn" onclick="closeEquipment()">Close</button>
   </div>
 </div>
 
-<footer>
-  <p>© 2026 Bath County Youth Football</p>
-</footer>
+<footer><p>© 2026 Bath County Youth Football</p></footer>
 
 <script>
-const API_URL =
-  "https://script.google.com/macros/s/AKfycbwJR0mM--IOixP7NLMKN4owPphBM9FOtzryRJ3KbfkH0Nci8ylR2Gcg_Kg52XrwWWJQ/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwJR0mM--IOixP7NLMKN4owPphBM9FOtzryRJ3KbfkH0Nci8ylR2Gcg_Kg52XrwWWJQ/exec";
 
 let allRows = [];
 let allCoaches = [];
@@ -148,6 +262,7 @@ let selectedEquipmentPlayer = null;
 let existingEquipment = null;
 let currentScheduleEvents = [];
 let editingScheduleId = null;
+let selectedParentEmail = "";
 
 document.getElementById("adminProfile").innerText =
   (localStorage.getItem("adminName") || "Admin") +
@@ -181,6 +296,136 @@ function logout() {
   window.location.href = "admin.html";
 }
 
+/* IN-PERSON REGISTRATION */
+
+async function saveInPersonRegistration() {
+  const payload = {
+    action: "adminRegisterPlayer",
+    parentName: ipParentName.value.trim(),
+    parentPhone: ipParentPhone.value.trim(),
+    parentAddress: ipParentAddress.value.trim(),
+    firstName: ipFirstName.value.trim(),
+    lastName: ipLastName.value.trim(),
+    birthdate: ipBirthdate.value,
+    grade: ipGrade.value,
+    school: ipSchool.value.trim(),
+    league: ipLeague.value,
+    team: ipTeam.value.trim(),
+    shirtSize: ipShirtSize.value.trim(),
+    medical: ipMedical.value.trim(),
+    allergies: ipAllergies.value.trim(),
+    emergencyName: ipEmergencyName.value.trim(),
+    emergencyPhone: ipEmergencyPhone.value.trim(),
+    finalFee: ipFinalFee.value,
+    paymentStatus: ipPaymentStatus.value,
+    playerStatus: ipPlayerStatus.value
+  };
+
+  const data = await api(payload);
+
+  if (!data.success) {
+    alert(data.message || "Could not save registration.");
+    return;
+  }
+
+  alert("In-person registration saved.");
+
+  [
+    ipParentName, ipParentPhone, ipParentAddress, ipFirstName, ipLastName,
+    ipBirthdate, ipSchool, ipTeam, ipShirtSize, ipMedical, ipAllergies,
+    ipEmergencyName, ipEmergencyPhone, ipFinalFee
+  ].forEach(el => el.value = "");
+
+  ipGrade.value = "";
+  ipLeague.value = "";
+  ipPaymentStatus.value = "Pending";
+  ipPlayerStatus.value = "Active";
+
+  await loadRegistrations();
+}
+
+/* LINKING */
+
+async function searchUnlinkedRegistrations() {
+  const data = await api({
+    action: "getUnlinkedInPersonRegistrations",
+    search: unlinkedSearch.value.trim()
+  });
+
+  if (!data.success || !data.registrations.length) {
+    unlinkedResults.innerHTML = "<p>No unlinked in-person registrations found.</p>";
+    return;
+  }
+
+  unlinkedResults.innerHTML = data.registrations.map(r => `
+    <label class="result-row">
+      <input type="checkbox" class="link-registration-checkbox" value="${escapeHtml(r.id)}">
+      <b>${escapeHtml(r.name)}</b><br>
+      Parent: ${escapeHtml(r.parentName || "Not entered")}<br>
+      Phone: ${escapeHtml(r.parentPhone || "Not entered")}<br>
+      League: ${escapeHtml(r.league || "")}
+    </label>
+  `).join("");
+}
+
+async function searchParentAccounts() {
+  const data = await api({
+    action: "getParents",
+    search: parentAccountSearch.value.trim()
+  });
+
+  if (!data.success || !data.parents.length) {
+    parentAccountResults.innerHTML = "<p>No parent accounts found.</p>";
+    return;
+  }
+
+  parentAccountResults.innerHTML = data.parents.map(p => `
+    <div class="result-row">
+      <b>${escapeHtml(p.name)}</b><br>
+      ${escapeHtml(p.email)}<br>
+      ${escapeHtml(p.phone || "")}<br>
+      <button class="small-btn" onclick="selectParentAccount('${escapeHtml(p.email)}','${escapeHtml(p.name)}')">
+        Select Parent
+      </button>
+    </div>
+  `).join("");
+}
+
+function selectParentAccount(email, name) {
+  selectedParentEmail = email;
+  selectedParentLabel.textContent = name + " (" + email + ")";
+}
+
+async function linkSelectedRegistrations() {
+  const ids = [...document.querySelectorAll(".link-registration-checkbox:checked")]
+    .map(cb => cb.value);
+
+  if (!selectedParentEmail) {
+    alert("Select a parent account first.");
+    return;
+  }
+
+  if (!ids.length) {
+    alert("Select at least one in-person registration.");
+    return;
+  }
+
+  const data = await api({
+    action: "linkRegistrationsToParent",
+    parentEmail: selectedParentEmail,
+    registrationIds: ids
+  });
+
+  alert(data.message || (data.success ? "Registrations linked." : "Could not link registrations."));
+
+  if (data.success) {
+    selectedParentEmail = "";
+    selectedParentLabel.textContent = "None";
+    await searchUnlinkedRegistrations();
+    await loadRegistrations();
+  }
+}
+
 /* SCHEDULE */
 
 async function saveScheduleEvent() {
@@ -196,16 +441,6 @@ async function saveScheduleEvent() {
     notes: scheduleNotes.value.trim()
   };
 
-  if (!payload.title) {
-    alert("Please enter an event title.");
-    return;
-  }
-
-  if (!payload.date) {
-    alert("Please enter an event date.");
-    return;
-  }
-
   const data = await api(payload);
 
   if (!data.success) {
@@ -214,14 +449,12 @@ async function saveScheduleEvent() {
   }
 
   alert(editingScheduleId ? "Schedule event updated." : "Schedule event saved.");
-
   clearScheduleForm();
-  loadScheduleEvents();
+  await loadScheduleEvents();
 }
 
 function clearScheduleForm() {
   editingScheduleId = null;
-
   scheduleTitle.value = "";
   scheduleDate.value = "";
   scheduleTime.value = "";
@@ -229,21 +462,30 @@ function clearScheduleForm() {
   scheduleTeam.value = "All";
   scheduleAudience.value = "All";
   scheduleNotes.value = "";
+  scheduleSaveBtn.textContent = "Save Schedule Event";
+  scheduleEditingMessage.style.display = "none";
+}
 
-  document.getElementById("scheduleSaveBtn").textContent = "Save Schedule Event";
-  document.getElementById("scheduleEditingMessage").style.display = "none";
+function normalizeTimeForInput(timeText) {
+  if (!timeText) return "";
+  const text = String(timeText).trim();
+  if (/^\d{2}:\d{2}$/.test(text)) return text;
+
+  const match = text.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (!match) return "";
+
+  let hours = Number(match[1]);
+  if (match[3].toUpperCase() === "PM" && hours < 12) hours += 12;
+  if (match[3].toUpperCase() === "AM" && hours === 12) hours = 0;
+
+  return String(hours).padStart(2, "0") + ":" + match[2];
 }
 
 function editScheduleEvent(id) {
-  const event = currentScheduleEvents.find(item => String(item.id) === String(id));
-
-  if (!event) {
-    alert("Schedule event not found.");
-    return;
-  }
+  const event = currentScheduleEvents.find(e => String(e.id) === String(id));
+  if (!event) return;
 
   editingScheduleId = event.id;
-
   scheduleTitle.value = event.title || "";
   scheduleDate.value = event.date || "";
   scheduleTime.value = normalizeTimeForInput(event.time || "");
@@ -251,42 +493,15 @@ function editScheduleEvent(id) {
   scheduleTeam.value = event.team || "All";
   scheduleAudience.value = event.audience || "All";
   scheduleNotes.value = event.notes || "";
-
-  document.getElementById("scheduleSaveBtn").textContent = "Update Schedule Event";
-  document.getElementById("scheduleEditingMessage").style.display = "block";
-  document.getElementById("scheduleTitle").scrollIntoView({ behavior: "smooth", block: "center" });
-}
-
-function normalizeTimeForInput(timeText) {
-  if (!timeText) return "";
-
-  const text = String(timeText).trim();
-
-  if (/^\d{2}:\d{2}$/.test(text)) return text;
-
-  const match = text.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
-  if (!match) return "";
-
-  let hours = Number(match[1]);
-  const minutes = match[2];
-  const ampm = match[3].toUpperCase();
-
-  if (ampm === "PM" && hours < 12) hours += 12;
-  if (ampm === "AM" && hours === 12) hours = 0;
-
-  return String(hours).padStart(2, "0") + ":" + minutes;
+  scheduleSaveBtn.textContent = "Update Schedule Event";
+  scheduleEditingMessage.style.display = "block";
+  scheduleTitle.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
 async function deleteScheduleEvent(id) {
-  const event = currentScheduleEvents.find(item => String(item.id) === String(id));
-  const eventTitle = event ? event.title : "this event";
+  if (!confirm("Delete this schedule event?")) return;
 
-  if (!confirm('Are you sure you want to delete "' + eventTitle + '"?')) return;
-
-  const data = await api({
-    action: "deleteScheduleEvent",
-    id
-  });
+  const data = await api({ action: "deleteScheduleEvent", id });
 
   if (!data.success) {
     alert(data.message || "Could not delete event.");
@@ -294,49 +509,38 @@ async function deleteScheduleEvent(id) {
   }
 
   if (String(editingScheduleId) === String(id)) clearScheduleForm();
-
-  alert("Schedule event deleted.");
-  loadScheduleEvents();
+  await loadScheduleEvents();
 }
 
 function formatScheduleDate(dateText) {
   if (!dateText) return "";
-
   const d = new Date(dateText + "T00:00:00");
-
   return d.toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    year: "numeric"
+    weekday: "short", month: "short", day: "numeric", year: "numeric"
   });
 }
 
 async function loadScheduleEvents() {
-  const box = document.getElementById("scheduleList");
-  box.innerHTML = "<p>Loading schedule...</p>";
-
   const data = await api({ action: "getScheduleEvents" });
 
-  if (!data.success || !data.events || !data.events.length) {
+  if (!data.success || !data.events.length) {
     currentScheduleEvents = [];
-    box.innerHTML = "<p>No schedule events saved yet.</p>";
+    scheduleList.innerHTML = "<p>No schedule events saved yet.</p>";
     return;
   }
 
   currentScheduleEvents = data.events;
 
-  box.innerHTML = data.events.map(event => `
+  scheduleList.innerHTML = data.events.map(e => `
     <div class="schedule-card">
-      <strong>${escapeHtml(event.title)}</strong><br>
-      ${formatScheduleDate(event.date)} ${escapeHtml(event.time || "")}<br>
-      <b>Location:</b> ${escapeHtml(event.location || "TBA")}<br>
-      <b>Team:</b> ${escapeHtml(event.team || "All")} |
-      <b>Audience:</b> ${escapeHtml(event.audience || "All")}<br>
-      ${escapeHtml(event.notes || "")}
-      <br><br>
-      <button class="small-btn" onclick="editScheduleEvent('${event.id}')">Edit</button>
-      <button class="small-btn" onclick="deleteScheduleEvent('${event.id}')">Delete</button>
+      <strong>${escapeHtml(e.title)}</strong><br>
+      ${formatScheduleDate(e.date)} ${escapeHtml(e.time || "")}<br>
+      <b>Location:</b> ${escapeHtml(e.location || "TBA")}<br>
+      <b>Team:</b> ${escapeHtml(e.team || "All")} |
+      <b>Audience:</b> ${escapeHtml(e.audience || "All")}<br>
+      ${escapeHtml(e.notes || "")}<br><br>
+      <button class="small-btn" onclick="editScheduleEvent('${e.id}')">Edit</button>
+      <button class="small-btn" onclick="deleteScheduleEvent('${e.id}')">Delete</button>
     </div>
   `).join("");
 }
@@ -344,94 +548,62 @@ async function loadScheduleEvents() {
 /* REGISTRATIONS */
 
 async function loadRegistrations() {
-  registrationsTable.innerHTML = "<p>Loading registrations, coaches, and waivers...</p>";
+  registrationsTable.innerHTML = "<p>Loading registrations...</p>";
 
-  try {
-    const data = await api({
-      action: "searchAllPlayers",
-      search: ""
-    });
+  const data = await api({ action: "searchAllPlayers", search: "" });
 
-    if (!data.success) {
-      registrationsTable.innerHTML = "<p>Could not load registrations.</p>";
-      return;
-    }
-
-    allRows = data.players || [];
-    allCoaches = data.coaches || [];
-
-    await loadWaiverStatuses();
-    renderTable();
-
-  } catch (err) {
-    registrationsTable.innerHTML =
-      "<p>Error loading registrations: " + escapeHtml(err.message) + "</p>";
+  if (!data.success) {
+    registrationsTable.innerHTML = "<p>Could not load registrations.</p>";
+    return;
   }
+
+  allRows = data.players || [];
+  allCoaches = data.coaches || [];
+  await loadWaiverStatuses();
+  renderTable();
 }
 
 async function loadWaiverStatuses() {
   waiverStatusByEmail = {};
 
-  const emails = [
-    ...new Set(
-      allRows
-        .map(row => String(row.parentEmail || "").trim().toLowerCase())
-        .filter(Boolean)
-    )
-  ];
+  const emails = [...new Set(
+    allRows.map(r => String(r.parentEmail || "").trim().toLowerCase()).filter(Boolean)
+  )];
 
-  await Promise.all(
-    emails.map(async email => {
-      try {
-        const data = await api({
-          action: "getParentWaiver",
-          parentEmail: email
-        });
-        waiverStatusByEmail[email] = data.success && data.signed;
-      } catch (err) {
-        waiverStatusByEmail[email] = false;
-      }
-    })
-  );
+  await Promise.all(emails.map(async email => {
+    const data = await api({ action: "getParentWaiver", parentEmail: email });
+    waiverStatusByEmail[email] = data.success && data.signed;
+  }));
 }
 
-function buildCoachOptions(registration) {
+function buildCoachOptions(r) {
   let html = `<option value="">Unassigned</option>`;
 
-  allCoaches.forEach(coach => {
-    const email = String(coach.email || "").trim().toLowerCase();
+  allCoaches.forEach(c => {
     const selected =
-      email === String(registration.coachEmail || "").trim().toLowerCase()
-        ? "selected"
-        : "";
+      String(c.email || "").trim().toLowerCase() ===
+      String(r.coachEmail || "").trim().toLowerCase()
+        ? "selected" : "";
 
-    html += `
-      <option value="${escapeHtml(coach.email)}" ${selected}>
-        ${escapeHtml(coach.name || coach.username || coach.email)}
-      </option>
-    `;
+    html += `<option value="${escapeHtml(c.email)}" ${selected}>
+      ${escapeHtml(c.name || c.username || c.email)}
+    </option>`;
   });
 
   return html;
 }
 
-function buildTeamOptions(registration) {
-  const teams = ["", "Flag", "Jr Pro", "3rd/4th Grade", "5th/6th Grade"];
-  let html = "";
-
-  teams.forEach(team => {
-    const selected = String(registration.team || "") === team ? "selected" : "";
-    const label = team || "Unassigned";
-
-    html += `<option value="${escapeHtml(team)}" ${selected}>${escapeHtml(label)}</option>`;
-  });
-
-  return html;
+function buildTeamOptions(r) {
+  const teams = ["","Flag","Jr Pro","3rd/4th Grade","5th/6th Grade"];
+  return teams.map(team => `
+    <option value="${escapeHtml(team)}" ${String(r.team || "") === team ? "selected" : ""}>
+      ${escapeHtml(team || "Unassigned")}
+    </option>
+  `).join("");
 }
 
-function buildPlayerStatusOptions(registration) {
-  const current = String(registration.playerStatus || "Active").trim() || "Active";
-
+function buildPlayerStatusOptions(r) {
+  const current = String(r.playerStatus || "Active").trim() || "Active";
   return `
     <option value="Active" ${current === "Active" ? "selected" : ""}>Active</option>
     <option value="Inactive" ${current === "Inactive" ? "selected" : ""}>Inactive</option>
@@ -447,392 +619,233 @@ function renderTable() {
   let html = `
     <div class="table-wrapper">
       <table>
-        <thead>
-          <tr>
-            <th>Player</th>
-            <th>Status</th>
-            <th>Parent</th>
-            <th>League</th>
-            <th>Grade</th>
-            <th>Fee</th>
-            <th>Payment</th>
-            <th>Waiver</th>
-            <th>Coach Assignment</th>
-            <th>Team</th>
-            <th>Assignment Action</th>
-            <th>Payment Actions</th>
-          </tr>
-        </thead>
-        <tbody>
+        <thead><tr>
+          <th>Player</th><th>Status</th><th>Source</th><th>Linked</th>
+          <th>Parent</th><th>League</th><th>Grade</th><th>Fee</th>
+          <th>Payment</th><th>Waiver</th><th>Coach</th><th>Team</th>
+          <th>Assignment</th><th>Payment Actions</th>
+        </tr></thead><tbody>
   `;
 
-  allRows.forEach(registration => {
-    const email = String(registration.parentEmail || "").trim().toLowerCase();
+  allRows.forEach(r => {
+    const email = String(r.parentEmail || "").trim().toLowerCase();
     const waiverSigned = email && waiverStatusByEmail[email];
-
-    const paymentStatus = String(registration.paymentStatus || "").trim();
-    const paymentComplete =
-      paymentStatus.toLowerCase() === "paid" ||
-      paymentStatus.toLowerCase() === "no charge";
-
-    const playerStatus = String(registration.playerStatus || "Active").trim() || "Active";
-    const statusClass = playerStatus === "Inactive" ? "inactive-status" : "active-status";
+    const paymentStatus = String(r.paymentStatus || "Pending").trim();
+    const paymentComplete = ["paid","no charge"].includes(paymentStatus.toLowerCase());
 
     html += `
       <tr>
-        <td><strong>${escapeHtml(registration.name)}</strong></td>
-
+        <td><strong>${escapeHtml(r.name)}</strong></td>
         <td>
-          <select id="playerStatus-${registration.id}" class="${statusClass}">
-            ${buildPlayerStatusOptions(registration)}
-          </select>
-          <button class="small-btn" onclick="savePlayerStatus('${registration.id}')">Save Status</button>
-          <div id="player-status-message-${registration.id}" class="status-message"></div>
+          <select id="playerStatus-${r.id}">${buildPlayerStatusOptions(r)}</select>
+          <button class="small-btn" onclick="savePlayerStatus('${r.id}')">Save</button>
         </td>
-
+        <td>${escapeHtml(r.registrationSource || "Online")}</td>
+        <td>${escapeHtml(r.linkedToParentAccount || (r.parentEmail ? "Yes" : "No"))}</td>
         <td>
-          ${escapeHtml(registration.parentName)}<br>
-          <small>${escapeHtml(registration.parentEmail)}</small>
+          ${escapeHtml(r.parentName)}<br>
+          <small>${escapeHtml(r.parentEmail || r.parentPhone || "")}</small>
         </td>
-
-        <td>${escapeHtml(registration.league)}</td>
-        <td>${escapeHtml(registration.grade)}</td>
-        <td>$${money(registration.finalFee)}</td>
-
-        <td class="${paymentComplete ? "paid" : "pending"}">
-          ${escapeHtml(registration.paymentStatus || "Pending")}
-        </td>
-
+        <td>${escapeHtml(r.league)}</td>
+        <td>${escapeHtml(r.grade)}</td>
+        <td>$${money(r.finalFee)}</td>
+        <td class="${paymentComplete ? "paid" : "pending"}">${escapeHtml(paymentStatus)}</td>
         <td class="${waiverSigned ? "signed" : "not-signed"}">
-          ${waiverSigned ? "Signed" : "Not Signed"}
+          ${email ? (waiverSigned ? "Signed" : "Not Signed") : "Not Linked"}
         </td>
-
-        <td class="assignment-box">
-          <select id="coach-${registration.id}">
-            ${buildCoachOptions(registration)}
-          </select>
-          <div>Current: <strong>${escapeHtml(registration.coachName || "Unassigned")}</strong></div>
-        </td>
-
-        <td class="assignment-box">
-          <select id="team-${registration.id}">
-            ${buildTeamOptions(registration)}
-          </select>
-        </td>
-
         <td>
-          <button class="small-btn" onclick="saveAssignment('${registration.id}')">
-            Save Assignment
-          </button>
-          <div id="assignment-status-${registration.id}" class="status-message"></div>
+          <select id="coach-${r.id}">${buildCoachOptions(r)}</select>
+          <small>${escapeHtml(r.coachName || "Unassigned")}</small>
         </td>
-
+        <td><select id="team-${r.id}">${buildTeamOptions(r)}</select></td>
+        <td><button class="small-btn" onclick="saveAssignment('${r.id}')">Save Assignment</button></td>
         <td>
-          <button class="small-btn" onclick="markPaid('${registration.id}')">Mark Paid</button>
-          <button class="small-btn" onclick="markPartial('${registration.id}')">Partially Paid</button>
-          <button class="small-btn" onclick="markPending('${registration.id}')">Mark Pending</button>
-          <button class="small-btn" onclick="markNoCharge('${registration.id}')">No Charge</button>
+          <button class="small-btn" onclick="setPaymentStatus('${r.id}','Paid')">Paid</button>
+          <button class="small-btn" onclick="setPaymentStatus('${r.id}','Partially Paid')">Partial</button>
+          <button class="small-btn" onclick="setPaymentStatus('${r.id}','Pending')">Pending</button>
+          <button class="small-btn" onclick="markNoCharge('${r.id}')">No Charge</button>
         </td>
       </tr>
     `;
   });
 
-  html += `</tbody></table></div>`;
+  html += "</tbody></table></div>";
   registrationsTable.innerHTML = html;
 }
 
 async function savePlayerStatus(id) {
   const playerStatus = document.getElementById("playerStatus-" + id).value;
-  const statusBox = document.getElementById("player-status-message-" + id);
-
-  statusBox.textContent = "Saving...";
-
-  const data = await api({
-    action: "updatePlayerStatus",
-    id,
-    playerStatus
-  });
-
-  if (!data.success) {
-    statusBox.textContent = data.message || "Could not save.";
-    return;
-  }
-
-  statusBox.textContent = "Saved!";
+  const data = await api({ action: "updatePlayerStatus", id, playerStatus });
+  if (!data.success) alert(data.message || "Could not update status.");
   await loadRegistrations();
 }
 
 async function saveAssignment(id) {
   const coachEmail = document.getElementById("coach-" + id).value;
   const team = document.getElementById("team-" + id).value;
-  const statusBox = document.getElementById("assignment-status-" + id);
 
-  statusBox.textContent = "Saving...";
-
-  const data = await api({
-    action: "assignPlayer",
-    id,
-    coachEmail,
-    team
-  });
-
-  statusBox.textContent = data.success ? "Saved!" : (data.message || "Could not save.");
+  const data = await api({ action: "assignPlayer", id, coachEmail, team });
+  if (!data.success) alert(data.message || "Could not save assignment.");
   await loadRegistrations();
 }
 
 async function setPaymentStatus(id, paymentStatus) {
-  const data = await api({
-    action: "markPaymentStatus",
-    id,
-    paymentStatus
-  });
-
-  if (!data.success) {
-    alert(data.message || "Failed to update payment status.");
-    return;
-  }
-
+  const data = await api({ action: "markPaymentStatus", id, paymentStatus });
+  if (!data.success) alert(data.message || "Could not update payment.");
   await loadRegistrations();
 }
 
-function markPaid(id) {
-  setPaymentStatus(id, "Paid");
-}
-
-function markPartial(id) {
-  setPaymentStatus(id, "Partially Paid");
-}
-
-function markPending(id) {
-  setPaymentStatus(id, "Pending");
-}
-
 function markNoCharge(id) {
-  const registration = allRows.find(row => String(row.id) === String(id));
-  const playerName = registration ? registration.name : "this player";
-
-  const confirmed = confirm(
-    "Set " + playerName + "'s registration fee to $0.00 and mark this registration as No Charge?"
-  );
-
-  if (!confirmed) return;
-
+  const player = allRows.find(r => String(r.id) === String(id));
+  if (!confirm("Set " + (player ? player.name : "this player") + " to No Charge and $0.00?")) return;
   setPaymentStatus(id, "No Charge");
 }
 
 function exportCSV() {
-  if (!allRows.length) {
-    alert("Load registrations first.");
-    return;
-  }
+  if (!allRows.length) return alert("Load registrations first.");
 
   const headers = [
-    "Player", "Player Status", "Parent", "Email", "Phone", "League", "Grade", "School",
-    "Coach", "Coach Email", "Team", "Fee", "Payment Status",
-    "Emergency Contact", "Emergency Phone", "Medical", "Allergies"
+    "Player","Player Status","Registration Source","Linked",
+    "Parent","Email","Phone","League","Grade","School",
+    "Coach","Team","Fee","Payment Status"
   ];
 
   const csvRows = [headers.join(",")];
 
-  allRows.forEach(row => {
-    const csvRow = [
-      row.name, row.playerStatus || "Active", row.parentName, row.parentEmail, row.parentPhone,
-      row.league, row.grade, row.school, row.coachName, row.coachEmail,
-      row.team, row.finalFee, row.paymentStatus, row.emergencyName,
-      row.emergencyPhone, row.medical, row.allergies
-    ].map(value => `"${String(value || "").replace(/"/g, '""')}"`);
+  allRows.forEach(r => {
+    const row = [
+      r.name,r.playerStatus || "Active",r.registrationSource || "Online",
+      r.linkedToParentAccount || "",r.parentName,r.parentEmail,r.parentPhone,
+      r.league,r.grade,r.school,r.coachName,r.team,r.finalFee,r.paymentStatus
+    ].map(v => `"${String(v || "").replace(/"/g,'""')}"`);
 
-    csvRows.push(csvRow.join(","));
+    csvRows.push(row.join(","));
   });
 
-  const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
+  const blob = new Blob([csvRows.join("\n")], { type:"text/csv" });
   const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-
-  anchor.href = url;
-  anchor.download = "registrations.csv";
-  anchor.click();
-
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "registrations.csv";
+  a.click();
   URL.revokeObjectURL(url);
 }
 
 /* EQUIPMENT */
 
-function openEquipment() {
-  equipmentModal.style.display = "flex";
-}
-
-function closeEquipment() {
-  equipmentModal.style.display = "none";
-}
+function openEquipment() { equipmentModal.style.display = "flex"; }
+function closeEquipment() { equipmentModal.style.display = "none"; }
 
 async function loadInventory() {
-  const data = await api({ action: "getInventory" });
-
-  if (data.success) {
-    inventory = data.inventory || [];
-  }
+  const data = await api({ action:"getInventory" });
+  if (data.success) inventory = data.inventory || [];
 }
 
 async function loadEquipmentPlayerAdmin() {
   const search = equipSearchAdmin.value.trim().toLowerCase();
 
-  if (!search) {
-    equipmentFormAdmin.innerHTML = "<p>Please enter a player name.</p>";
-    return;
-  }
-
-  const jrProPlayers = allRows.filter(player =>
-    String(player.league || "").toLowerCase().includes("jr") &&
-    String(player.name || "").toLowerCase().includes(search)
+  const matches = allRows.filter(p =>
+    String(p.league || "").toLowerCase().includes("jr") &&
+    String(p.name || "").toLowerCase().includes(search)
   );
 
-  if (!jrProPlayers.length) {
-    equipmentFormAdmin.innerHTML = "<p>No Jr Pro players found.</p>";
+  if (!matches.length) {
+    equipmentFormAdmin.innerHTML = "<p>No Jr Pro player found.</p>";
     return;
   }
 
-  selectedEquipmentPlayer = jrProPlayers[0];
+  selectedEquipmentPlayer = matches[0];
 
   const equipData = await api({
-    action: "getEquipment",
-    playerId: selectedEquipmentPlayer.id,
-    name: selectedEquipmentPlayer.name
+    action:"getEquipment",
+    playerId:selectedEquipmentPlayer.id,
+    name:selectedEquipmentPlayer.name
   });
 
   existingEquipment = equipData.success ? equipData.equipment : null;
-
   await loadInventory();
-
   renderEquipmentFormAdmin();
 }
 
 function itemLabel(item) {
   if (!item) return "";
-
   let label = item.type || "";
-
   if (item.size) label += " - " + item.size;
   if (item.number) label += " #" + item.number;
   if (item.condition) label += " (" + item.condition + ")";
-
   return label;
 }
 
-function buildInventoryOptions(type, currentId) {
+function buildInventoryOptions(type,currentId) {
   let html = `<option value="">None Selected</option>`;
 
   inventory
     .filter(item =>
       String(item.type || "") === type &&
-      (
-        String(item.status || "") === "Available" ||
-        String(item.id || "") === String(currentId || "")
-      )
+      (String(item.status || "") === "Available" ||
+       String(item.id || "") === String(currentId || ""))
     )
     .forEach(item => {
-      const selected =
-        String(item.id || "") === String(currentId || "") ? "selected" : "";
-
-      html += `
-        <option value="${escapeHtml(item.id)}" ${selected}>
-          ${escapeHtml(itemLabel(item))}
-        </option>
-      `;
+      html += `<option value="${escapeHtml(item.id)}"
+        ${String(item.id) === String(currentId || "") ? "selected" : ""}>
+        ${escapeHtml(itemLabel(item))}
+      </option>`;
     });
 
   return html;
 }
 
 function renderEquipmentFormAdmin() {
-  if (!selectedEquipmentPlayer) return;
-
+  const p = selectedEquipmentPlayer;
   const eq = existingEquipment || {};
 
   equipmentFormAdmin.innerHTML = `
-    <h3>${escapeHtml(selectedEquipmentPlayer.name)}</h3>
-    <p>
-      <b>Grade:</b> ${escapeHtml(selectedEquipmentPlayer.grade)}<br>
-      <b>School:</b> ${escapeHtml(selectedEquipmentPlayer.school)}<br>
-      <b>Team:</b> ${escapeHtml(selectedEquipmentPlayer.team || "Unassigned")}
-    </p>
-
+    <h3>${escapeHtml(p.name)}</h3>
     <label>Helmet</label>
-    <select id="helmetInventoryIdAdmin">
-      ${buildInventoryOptions("Helmet", eq.helmetInventoryId)}
-    </select>
-
+    <select id="helmetInventoryIdAdmin">${buildInventoryOptions("Helmet",eq.helmetInventoryId)}</select>
     <label>Pads</label>
-    <select id="padsInventoryIdAdmin">
-      ${buildInventoryOptions("Pads", eq.padsInventoryId)}
-    </select>
-
+    <select id="padsInventoryIdAdmin">${buildInventoryOptions("Pads",eq.padsInventoryId)}</select>
     <label>Pants</label>
-    <select id="pantsInventoryIdAdmin">
-      ${buildInventoryOptions("Pants", eq.pantsInventoryId)}
-    </select>
-
+    <select id="pantsInventoryIdAdmin">${buildInventoryOptions("Pants",eq.pantsInventoryId)}</select>
     <label>Jersey</label>
-    <select id="jerseyInventoryIdAdmin">
-      ${buildInventoryOptions("Jersey", eq.jerseyInventoryId)}
-    </select>
-
-    <label>Helmet Return Status / Notes</label>
-    <input type="text" id="helmetReturnAdmin" value="${escapeHtml(eq.helmetReturn || "")}" placeholder="Returned, Missing, Damaged, etc.">
-
-    <label>Pads Return Status / Notes</label>
-    <input type="text" id="padsReturnAdmin" value="${escapeHtml(eq.padsReturn || "")}" placeholder="Returned, Missing, Damaged, etc.">
-
-    <label>Pants Return Status / Notes</label>
-    <input type="text" id="pantsReturnAdmin" value="${escapeHtml(eq.pantsReturn || "")}" placeholder="Returned, Missing, Damaged, etc.">
-
-    <label>Jersey Return Status / Notes</label>
-    <input type="text" id="jerseyReturnAdmin" value="${escapeHtml(eq.jerseyReturn || "")}" placeholder="Returned, Missing, Damaged, etc.">
-
+    <select id="jerseyInventoryIdAdmin">${buildInventoryOptions("Jersey",eq.jerseyInventoryId)}</select>
+    <label>Helmet Return Notes</label><input id="helmetReturnAdmin" value="${escapeHtml(eq.helmetReturn || "")}">
+    <label>Pads Return Notes</label><input id="padsReturnAdmin" value="${escapeHtml(eq.padsReturn || "")}">
+    <label>Pants Return Notes</label><input id="pantsReturnAdmin" value="${escapeHtml(eq.pantsReturn || "")}">
+    <label>Jersey Return Notes</label><input id="jerseyReturnAdmin" value="${escapeHtml(eq.jerseyReturn || "")}">
     <button class="action-btn" onclick="savePlayerEquipmentAdmin()">Save Equipment Assignment</button>
   `;
 }
 
 async function savePlayerEquipmentAdmin() {
-  if (!selectedEquipmentPlayer) {
-    alert("No player selected.");
-    return;
-  }
+  const p = selectedEquipmentPlayer;
 
-  const payload = {
-    action: "savePlayerEquipment",
-    playerId: selectedEquipmentPlayer.id,
-    name: selectedEquipmentPlayer.name,
-    grade: selectedEquipmentPlayer.grade,
-    team: selectedEquipmentPlayer.team,
-    helmetInventoryId: helmetInventoryIdAdmin.value,
-    padsInventoryId: padsInventoryIdAdmin.value,
-    pantsInventoryId: pantsInventoryIdAdmin.value,
-    jerseyInventoryId: jerseyInventoryIdAdmin.value,
-    helmetReturn: helmetReturnAdmin.value,
-    padsReturn: padsReturnAdmin.value,
-    pantsReturn: pantsReturnAdmin.value,
-    jerseyReturn: jerseyReturnAdmin.value,
-    updatedBy: localStorage.getItem("adminEmail")
-  };
+  const data = await api({
+    action:"savePlayerEquipment",
+    playerId:p.id,
+    name:p.name,
+    grade:p.grade,
+    team:p.team,
+    helmetInventoryId:helmetInventoryIdAdmin.value,
+    padsInventoryId:padsInventoryIdAdmin.value,
+    pantsInventoryId:pantsInventoryIdAdmin.value,
+    jerseyInventoryId:jerseyInventoryIdAdmin.value,
+    helmetReturn:helmetReturnAdmin.value,
+    padsReturn:padsReturnAdmin.value,
+    pantsReturn:pantsReturnAdmin.value,
+    jerseyReturn:jerseyReturnAdmin.value,
+    updatedBy:localStorage.getItem("adminEmail")
+  });
 
-  const data = await api(payload);
-
-  if (!data.success) {
-    alert(data.message || "Could not save equipment.");
-    return;
-  }
-
-  alert("Equipment assignment saved.");
-
+  alert(data.success ? "Equipment assignment saved." : data.message || "Could not save.");
   await loadInventory();
   await loadEquipmentPlayerAdmin();
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  loadRegistrations();
-  loadScheduleEvents();
-  loadInventory();
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadRegistrations();
+  await loadScheduleEvents();
+  await loadInventory();
 });
 </script>
 
