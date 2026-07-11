@@ -22,6 +22,16 @@
     .schedule-card { border-left:5px solid #b30000; background:#fff; padding:12px; margin:10px 0; border-radius:8px; }
     .editing-message { display:none; margin-bottom:12px; padding:10px; background:#fff3cd; border:1px solid #ffe69c; border-radius:5px; font-weight:bold; }
     .result-row { border:1px solid #ddd; border-radius:8px; padding:10px; margin:8px 0; background:#fff; }
+    .message-card { border:1px solid #ddd; border-left:6px solid #b30000; border-radius:10px; padding:16px; margin:12px 0; background:#fff; }
+    .message-card.status-read { border-left-color:#777; }
+    .message-card.status-resolved { border-left-color:green; opacity:.88; }
+    .message-meta { color:#666; font-size:13px; margin-bottom:10px; }
+    .message-body { white-space:pre-wrap; line-height:1.5; background:#f7f7f7; border-radius:8px; padding:12px; margin:10px 0; }
+    .conversation-message { padding:12px; border-radius:8px; margin:9px 0; white-space:pre-wrap; line-height:1.5; }
+    .conversation-message.parent { background:#f1f1f1; margin-right:35px; }
+    .conversation-message.admin { background:#ffeaea; border-left:4px solid #b30000; margin-left:35px; }
+    .admin-reply-box { width:100%; min-height:90px; margin-top:10px; }
+    .message-unread { display:inline-block; background:#b30000; color:#fff; border-radius:999px; padding:3px 8px; font-size:12px; font-weight:bold; }
 
     .collapsible-header {
       display:flex;
@@ -284,6 +294,31 @@ if (!localStorage.getItem("adminUser")) {
       <h4>Current Schedule</h4>
       <button class="action-btn" onclick="loadScheduleEvents()">Refresh Schedule</button>
       <div id="scheduleList">Loading schedule...</div>
+    </div>
+
+    <div class="link-card">
+      <h3>
+        Parent Messages
+        <span id="adminUnreadBadge" class="message-unread" style="display:none;"></span>
+      </h3>
+
+      <p>
+        Messages submitted by parents from their dashboard appear here.
+      </p>
+
+      <label>Show Messages</label>
+      <select id="messageStatusFilter" onchange="loadAdminMessages()">
+        <option value="All">All</option>
+        <option value="New">New</option>
+        <option value="Read">Read</option>
+        <option value="Resolved">Resolved</option>
+      </select>
+
+      <button class="action-btn" onclick="loadAdminMessages()">Refresh Messages</button>
+
+      <div id="adminMessagesList">
+        Loading messages...
+      </div>
     </div>
 
     <div class="link-card">
@@ -853,6 +888,183 @@ async function saveEditedPlayer() {
   await loadRegistrations();
 }
 
+/* PARENT MESSAGES */
+
+function formatMessageDate(value) {
+  if (!value) return "";
+
+  const date = new Date(value);
+
+  if (isNaN(date.getTime())) {
+    return String(value);
+  }
+
+  return date.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit"
+  });
+}
+
+async function loadAdminMessages() {
+  const list = document.getElementById("adminMessagesList");
+  const filter = document.getElementById("messageStatusFilter");
+  const badge = document.getElementById("adminUnreadBadge");
+
+  if (!list) return;
+
+  list.innerHTML = "<p>Loading messages...</p>";
+
+  const data = await api({
+    action: "getAdminMessages",
+    status: filter ? filter.value : "All"
+  });
+
+  if (!data.success) {
+    list.innerHTML = "<p>Could not load parent messages.</p>";
+    return;
+  }
+
+  const unreadCount = Number(data.unreadCount || 0);
+
+  if (badge) {
+    if (unreadCount > 0) {
+      badge.style.display = "inline-block";
+      badge.textContent = unreadCount + " New";
+    } else {
+      badge.style.display = "none";
+    }
+  }
+
+  const threads = data.threads || [];
+
+  if (!threads.length) {
+    list.innerHTML = "<p>No conversations found.</p>";
+    return;
+  }
+
+  list.innerHTML = threads.map(thread => {
+    const status = String(thread.status || "New");
+    const statusClass = status.toLowerCase().replace(/\s+/g, "-");
+
+    const conversationHtml = (thread.messages || []).map(message => {
+      const senderRole = String(message.senderRole || "Parent").toLowerCase();
+      const senderClass = senderRole === "admin" ? "admin" : "parent";
+      const senderLabel = senderRole === "admin"
+        ? (message.senderName || "Football Administration")
+        : (message.parentName || message.senderName || "Parent");
+
+      return `
+        <div class="conversation-message ${senderClass}">
+          <div class="message-meta">
+            <b>${escapeHtml(senderLabel)}</b>
+            &nbsp; • &nbsp;
+            ${escapeHtml(formatMessageDate(message.createdAt))}
+          </div>
+
+          ${escapeHtml(message.message || "")}
+        </div>
+      `;
+    }).join("");
+
+    return `
+      <div class="message-card status-${statusClass}">
+        <h4>
+          ${escapeHtml(thread.subject || "General Question")}
+          ${thread.unreadForAdmin
+            ? `<span class="message-unread">${thread.unreadForAdmin} New</span>`
+            : ""}
+        </h4>
+
+        <div class="message-meta">
+          <b>Parent:</b> ${escapeHtml(thread.parentName || "Parent")}
+          &nbsp; | &nbsp;
+          <b>Email:</b> ${escapeHtml(thread.parentEmail || "")}
+          &nbsp; | &nbsp;
+          <b>Updated:</b> ${escapeHtml(formatMessageDate(thread.latestAt))}
+          &nbsp; | &nbsp;
+          <b>Status:</b> ${escapeHtml(status)}
+        </div>
+
+        ${conversationHtml}
+
+        ${status === "Resolved"
+          ? "<p><b>This conversation is resolved.</b></p>"
+          : `
+            <textarea
+              id="adminReply-${thread.threadId}"
+              class="admin-reply-box"
+              placeholder="Type a reply to the parent..."
+            ></textarea>
+
+            <button
+              class="small-btn"
+              onclick="sendAdminReply('${thread.threadId}')"
+            >
+              Send Reply
+            </button>
+          `
+        }
+
+        <button class="small-btn" onclick="setMessageStatus('${thread.threadId}', 'New')">
+          Mark New
+        </button>
+
+        <button class="small-btn" onclick="setMessageStatus('${thread.threadId}', 'Read')">
+          Mark Read
+        </button>
+
+        <button class="small-btn" onclick="setMessageStatus('${thread.threadId}', 'Resolved')">
+          Resolve
+        </button>
+      </div>
+    `;
+  }).join("");
+}
+
+async function sendAdminReply(threadId) {
+  const replyBox = document.getElementById("adminReply-" + threadId);
+  const message = replyBox ? replyBox.value.trim() : "";
+
+  if (!message) {
+    alert("Please enter a reply.");
+    return;
+  }
+
+  const data = await api({
+    action: "sendAdminReply",
+    threadId,
+    message,
+    adminName: localStorage.getItem("adminName") || "Football Administration",
+    adminEmail: localStorage.getItem("adminEmail") || ""
+  });
+
+  if (!data.success) {
+    alert(data.message || "Could not send reply.");
+    return;
+  }
+
+  alert("Reply sent to parent.");
+  await loadAdminMessages();
+}
+
+async function setMessageStatus(threadId, status) {
+  const data = await api({
+    action: "updateMessageStatus",
+    threadId,
+    status
+  });
+
+  if (!data.success) {
+    alert(data.message || "Could not update conversation status.");
+    return;
+  }
+
+  await loadAdminMessages();
+}
+
 /* REGISTRATIONS */
 
 async function loadRegistrations() {
@@ -1188,6 +1400,7 @@ async function savePlayerEquipmentAdmin() {
 
 document.addEventListener("DOMContentLoaded", async () => {
   initializeCollapsibleSections();
+  await loadAdminMessages();
   await loadRegistrations();
   await loadScheduleEvents();
   await loadInventory();

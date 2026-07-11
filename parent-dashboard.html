@@ -335,6 +335,66 @@
     }
 
 
+    .conversation-thread {
+      border: 1px solid #ddd;
+      border-left: 6px solid #b30000;
+      border-radius: 10px;
+      padding: 16px;
+      margin: 16px 0;
+      background: #fff;
+    }
+
+    .conversation-thread.resolved {
+      border-left-color: green;
+      opacity: .9;
+    }
+
+    .conversation-message {
+      padding: 12px;
+      border-radius: 9px;
+      margin: 10px 0;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    .conversation-message.parent {
+      background: #f1f1f1;
+      margin-right: 25px;
+    }
+
+    .conversation-message.admin {
+      background: #ffeaea;
+      border-left: 4px solid #b30000;
+      margin-left: 25px;
+    }
+
+    .conversation-meta {
+      color: #666;
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+
+    .unread-badge {
+      display: inline-block;
+      background: #b30000;
+      color: white;
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-left: 8px;
+    }
+
+    .thread-reply-box {
+      width: 100%;
+      min-height: 90px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 7px;
+      margin-top: 10px;
+    }
+
+
     footer {
 
       text-align:
@@ -428,6 +488,78 @@
     >
       Register Another Player
     </a>
+
+  </div>
+
+
+
+  <!-- MESSAGE ADMIN -->
+
+  <div class="dashboard-card">
+
+    <h2>
+      Message Football Administration
+    </h2>
+
+    <p>
+      Send a question or message to the Bath County Youth Football administrators.
+    </p>
+
+    <label for="messageSubject">
+      Subject
+    </label>
+
+    <select id="messageSubject">
+      <option value="General Question">General Question</option>
+      <option value="Registration">Registration</option>
+      <option value="Payment">Payment</option>
+      <option value="Schedule">Schedule</option>
+      <option value="Coach / Team">Coach / Team</option>
+      <option value="Equipment">Equipment</option>
+      <option value="Other">Other</option>
+    </select>
+
+    <label for="parentMessage">
+      Message
+    </label>
+
+    <textarea
+      id="parentMessage"
+      placeholder="Type your message here..."
+      style="width:100%; min-height:140px; padding:12px; margin-top:6px; border:1px solid #ccc; border-radius:6px;"
+    ></textarea>
+
+    <button
+      type="button"
+      id="sendMessageBtn"
+      class="btn"
+    >
+      Send Message
+    </button>
+
+    <p
+      id="messageSendStatus"
+      style="font-weight:bold;"
+    ></p>
+
+    <hr style="margin:25px 0;">
+
+    <h3>
+      My Messages
+      <span id="parentUnreadBadge" class="unread-badge" style="display:none;"></span>
+    </h3>
+
+    <button
+      type="button"
+      class="btn dark"
+      onclick="loadParentMessageThreads()"
+    >
+      Refresh Messages
+    </button>
+
+    <div id="parentMessageThreads">
+      Loading messages...
+    </div>
 
   </div>
 
@@ -762,6 +894,8 @@ document.addEventListener(
   async () => {
 
     await loadDashboard();
+
+    await loadParentMessageThreads();
 
     await loadWaiver();
   }
@@ -1292,6 +1426,402 @@ function renderPaymentSummary(players) {
   `;
 
 }
+
+
+
+// ============================================================
+// TWO-WAY MESSAGING
+// ============================================================
+
+function formatConversationDate(value) {
+
+  if (!value) {
+    return '';
+  }
+
+  const date =
+    new Date(value);
+
+  if (isNaN(date.getTime())) {
+    return String(value);
+  }
+
+  return date.toLocaleString(
+    'en-US',
+    {
+      month:
+        'short',
+
+      day:
+        'numeric',
+
+      year:
+        'numeric',
+
+      hour:
+        'numeric',
+
+      minute:
+        '2-digit'
+    }
+  );
+}
+
+
+async function sendParentMessage(threadId = '') {
+
+  const email =
+    (
+      localStorage.getItem(
+        'parentEmail'
+      ) || ''
+    )
+      .trim()
+      .toLowerCase();
+
+  const parentName =
+    document
+      .getElementById(
+        'parentName'
+      )
+      .textContent
+      .trim();
+
+  const isReply =
+    Boolean(threadId);
+
+  const subject =
+    isReply
+      ? ''
+      : document
+          .getElementById(
+            'messageSubject'
+          )
+          .value;
+
+  const messageElement =
+    isReply
+      ? document.getElementById(
+          'threadReply-' +
+          threadId
+        )
+      : document.getElementById(
+          'parentMessage'
+        );
+
+  const message =
+    messageElement
+      ? messageElement.value.trim()
+      : '';
+
+  const status =
+    document
+      .getElementById(
+        'messageSendStatus'
+      );
+
+  if (!message) {
+
+    alert(
+      'Please enter a message.'
+    );
+
+    return;
+  }
+
+  try {
+
+    const data =
+      await api({
+
+        action:
+          'sendParentMessage',
+
+        threadId:
+          threadId,
+
+        parentEmail:
+          email,
+
+        parentName:
+          parentName,
+
+        subject:
+          subject,
+
+        message:
+          message
+      });
+
+    if (!data.success) {
+
+      alert(
+        data.message ||
+        'Could not send the message.'
+      );
+
+      return;
+    }
+
+    messageElement.value =
+      '';
+
+    if (!isReply) {
+
+      document
+        .getElementById(
+          'messageSubject'
+        )
+        .value =
+        'General Question';
+
+      status.style.color =
+        'green';
+
+      status.textContent =
+        'Your message was sent successfully.';
+    }
+
+    await loadParentMessageThreads();
+
+  } catch (err) {
+
+    alert(
+      'Could not send the message: ' +
+      err.message
+    );
+  }
+}
+
+
+async function loadParentMessageThreads() {
+
+  const email =
+    (
+      localStorage.getItem(
+        'parentEmail'
+      ) || ''
+    )
+      .trim()
+      .toLowerCase();
+
+  const list =
+    document.getElementById(
+      'parentMessageThreads'
+    );
+
+  const badge =
+    document.getElementById(
+      'parentUnreadBadge'
+    );
+
+  if (!list) {
+    return;
+  }
+
+  list.innerHTML =
+    '<p>Loading messages...</p>';
+
+  try {
+
+    const data =
+      await api({
+
+        action:
+          'getParentMessageThreads',
+
+        parentEmail:
+          email
+      });
+
+    if (!data.success) {
+
+      list.innerHTML =
+        '<p>Could not load messages.</p>';
+
+      return;
+    }
+
+    const unreadCount =
+      Number(
+        data.unreadCount || 0
+      );
+
+    if (unreadCount > 0) {
+
+      badge.style.display =
+        'inline-block';
+
+      badge.textContent =
+        unreadCount +
+        ' New';
+
+    } else {
+
+      badge.style.display =
+        'none';
+    }
+
+    const threads =
+      data.threads || [];
+
+    if (!threads.length) {
+
+      list.innerHTML =
+        '<p>You have not sent any messages yet.</p>';
+
+      return;
+    }
+
+    list.innerHTML =
+      threads.map(thread => {
+
+        const messages =
+          thread.messages || [];
+
+        const messagesHtml =
+          messages.map(message => {
+
+            const role =
+              String(
+                message.senderRole ||
+                'Parent'
+              ).toLowerCase();
+
+            const roleClass =
+              role === 'admin'
+                ? 'admin'
+                : 'parent';
+
+            return `
+
+              <div class="conversation-message ${roleClass}">
+
+                <div class="conversation-meta">
+
+                  <b>
+                    ${role === 'admin'
+                      ? 'Football Administration'
+                      : 'You'}
+                  </b>
+
+                  &nbsp;•&nbsp;
+
+                  ${formatConversationDate(
+                    message.createdAt
+                  )}
+
+                </div>
+
+                ${escapeMessageHtml(
+                  message.message || ''
+                )}
+
+              </div>
+
+            `;
+
+          }).join('');
+
+        const resolved =
+          String(
+            thread.status || ''
+          ).toLowerCase() ===
+          'resolved';
+
+        return `
+
+          <div class="conversation-thread ${resolved ? 'resolved' : ''}">
+
+            <h4>
+
+              ${escapeMessageHtml(
+                thread.subject ||
+                'General Question'
+              )}
+
+            </h4>
+
+            <p>
+
+              <b>Status:</b>
+
+              ${escapeMessageHtml(
+                thread.status ||
+                'New'
+              )}
+
+              ${thread.unreadForParent
+                ? `<span class="unread-badge">${thread.unreadForParent} New</span>`
+                : ''}
+
+            </p>
+
+            ${messagesHtml}
+
+            ${resolved
+
+              ? '<p><b>This conversation has been resolved.</b></p>'
+
+              : `
+
+                <textarea
+                  id="threadReply-${thread.threadId}"
+                  class="thread-reply-box"
+                  placeholder="Type your reply..."
+                ></textarea>
+
+                <button
+                  type="button"
+                  class="btn"
+                  onclick="sendParentMessage('${thread.threadId}')"
+                >
+                  Send Reply
+                </button>
+
+              `
+            }
+
+          </div>
+
+        `;
+
+      }).join('');
+
+  } catch (err) {
+
+    list.innerHTML =
+      '<p>Could not load messages: ' +
+      escapeMessageHtml(
+        err.message
+      ) +
+      '</p>';
+  }
+}
+
+
+function escapeMessageHtml(value) {
+
+  return String(value || '')
+
+    .replace(/&/g, '&amp;')
+
+    .replace(/</g, '&lt;')
+
+    .replace(/>/g, '&gt;')
+
+    .replace(/"/g, '&quot;')
+
+    .replace(/'/g, '&#039;');
+}
+
+
+document
+  .getElementById(
+    'sendMessageBtn'
+  )
+  .onclick =
+  () => sendParentMessage('');
 
 
 
