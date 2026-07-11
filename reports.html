@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Admin Reports</title>
-  <link rel="stylesheet" href="css/theme.css?v=2">
+  <link rel="stylesheet" href="css/theme.css?v=3">
 
   <style>
     .section-container {
@@ -35,10 +35,8 @@
       font-weight: bold;
     }
 
-    .report-note {
-      font-size: 13px;
-      color: #666;
-      margin-top: 5px;
+    .table-wrapper {
+      overflow-x: auto;
     }
 
     table {
@@ -46,12 +44,13 @@
       border-collapse: collapse;
       margin-top: 15px;
       font-size: 14px;
+      background: white;
     }
 
     th,
     td {
       border: 1px solid #ccc;
-      padding: 8px;
+      padding: 9px;
       text-align: left;
     }
 
@@ -98,1318 +97,651 @@ if (!localStorage.getItem("adminUser")) {
 </header>
 
 <div class="section-container">
-
   <section class="main-links">
 
     <div class="link-card">
-
       <h2>Reports Dashboard</h2>
 
       <p>
-        Registration, payment, league, grade, and waiver reports include
-        active players only.
+        Registration, payment, league, grade, waiver, and uniform reports
+        include active players only.
       </p>
 
-      <button
-        class="action-btn"
-        onclick="loadReports()">
-        Refresh Reports
-      </button>
+      <button class="action-btn" onclick="loadReports()">Refresh Reports</button>
+      <button class="action-btn" onclick="exportRegistrationReport()">Export Active Registration Report</button>
+      <button class="action-btn" onclick="exportUniformReport()">Export Player Uniform Report</button>
+      <button class="action-btn" onclick="exportInventoryReport()">Export Inventory Report</button>
+      <a class="action-btn" href="admin-dashboard.html">Back to Admin Dashboard</a>
 
-      <button
-        class="action-btn"
-        onclick="exportRegistrationReport()">
-        Export Active Registration Report
-      </button>
-
-      <button
-        class="action-btn"
-        onclick="exportInventoryReport()">
-        Export Inventory Report
-      </button>
-
-      <a
-        class="action-btn"
-        href="admin-dashboard.html">
-        Back to Admin Dashboard
-      </a>
-
-      <div
-        id="summaryCards"
-        class="report-grid"
-        style="margin-top:20px;">
-      </div>
-
+      <div id="summaryCards" class="report-grid" style="margin-top:20px;"></div>
     </div>
 
+    <div class="link-card">
+      <h3>Player Uniform Report</h3>
+      <p>Active players listed by player name, team, and shirt size.</p>
+      <div id="uniformReport"></div>
+    </div>
 
     <div class="link-card">
-
       <h3>Active Player Grade Breakdown</h3>
-
       <div id="gradeReport"></div>
-
     </div>
 
-
     <div class="link-card">
-
       <h3>League Counts</h3>
-
       <div id="leagueReport"></div>
-
     </div>
 
-
     <div class="link-card">
-
       <h3>Payment Report</h3>
-
       <div id="paymentReport"></div>
-
     </div>
 
-
     <div class="link-card">
-
       <h3>Waiver Report</h3>
-
       <div id="waiverReport"></div>
-
     </div>
 
-
     <div class="link-card">
-
       <h3>Equipment Inventory Report</h3>
-
       <div id="inventoryReport"></div>
-
     </div>
 
   </section>
-
 </div>
-
 
 <footer>
   <p>© 2026 Bath County Youth Football</p>
 </footer>
 
-
 <script>
-
 const API_URL =
-"https://script.google.com/macros/s/AKfycbwJR0mM--IOixP7NLMKN4owPphBM9FOtzryRJ3KbfkH0Nci8ylR2Gcg_Kg52XrwWWJQ/exec";
-
+  "https://script.google.com/macros/s/AKfycbwJR0mM--IOixP7NLMKN4owPphBM9FOtzryRJ3KbfkH0Nci8ylR2Gcg_Kg52XrwWWJQ/exec";
 
 let registrations = [];
-
 let allRegistrations = [];
-
-let coaches = [];
-
 let inventory = [];
-
 let waiverStatusByEmail = {};
-
-
-/* ---------------------------------------------------------
-   GENERAL HELPERS
---------------------------------------------------------- */
 
 function money(value) {
   return Number(value || 0).toFixed(2);
 }
 
-
 function escapeHtml(value) {
-
   return String(value || "")
-
     .replace(/&/g, "&amp;")
-
     .replace(/</g, "&lt;")
-
     .replace(/>/g, "&gt;")
-
     .replace(/"/g, "&quot;")
-
     .replace(/'/g, "&#039;");
 }
 
-
 async function api(payload) {
-
-  const res = await fetch(API_URL, {
-
+  const response = await fetch(API_URL, {
     method: "POST",
-
     body: JSON.stringify(payload)
-
   });
 
-
-  return await res.json();
+  return await response.json();
 }
-
-
-/* ---------------------------------------------------------
-   PLAYER STATUS HELPERS
---------------------------------------------------------- */
 
 function getPlayerStatus(player) {
-
-  return String(
-    player.playerStatus || "Active"
-  ).trim().toLowerCase();
-
+  return String(player.playerStatus || "Active").trim().toLowerCase();
 }
-
 
 function isActivePlayer(player) {
-
   return getPlayerStatus(player) !== "inactive";
-
 }
-
-
-/* ---------------------------------------------------------
-   GRADE HELPERS
---------------------------------------------------------- */
 
 function normalizeGrade(value) {
+  const grade = String(value || "").trim().toLowerCase();
 
-  const grade = String(value || "")
-    .trim()
-    .toLowerCase();
-
-
-  if (
-    grade === "3" ||
-    grade === "3rd" ||
-    grade === "3rd grade" ||
-    grade === "grade 3"
-  ) {
-    return "3rd";
-  }
-
-
-  if (
-    grade === "4" ||
-    grade === "4th" ||
-    grade === "4th grade" ||
-    grade === "grade 4"
-  ) {
-    return "4th";
-  }
-
-
-  if (
-    grade === "5" ||
-    grade === "5th" ||
-    grade === "5th grade" ||
-    grade === "grade 5"
-  ) {
-    return "5th";
-  }
-
-
-  if (
-    grade === "6" ||
-    grade === "6th" ||
-    grade === "6th grade" ||
-    grade === "grade 6"
-  ) {
-    return "6th";
-  }
-
+  if (["3", "3rd", "3rd grade", "grade 3"].includes(grade)) return "3rd";
+  if (["4", "4th", "4th grade", "grade 4"].includes(grade)) return "4th";
+  if (["5", "5th", "5th grade", "grade 5"].includes(grade)) return "5th";
+  if (["6", "6th", "6th grade", "grade 6"].includes(grade)) return "6th";
 
   return String(value || "").trim() || "Unknown";
-
 }
 
-
-/* ---------------------------------------------------------
-   LOAD REPORTS
---------------------------------------------------------- */
-
 async function loadReports() {
+  summaryCards.innerHTML = "<p>Loading reports...</p>";
 
-  summaryCards.innerHTML =
-    "<p>Loading reports...</p>";
-
-
-  const regData = await api({
-
+  const registrationData = await api({
     action: "searchAllPlayers",
-
     search: ""
-
   });
 
-
-  const invData = await api({
-
+  const inventoryData = await api({
     action: "getInventory"
-
   });
 
-
-  if (!regData.success) {
-
-    summaryCards.innerHTML =
-      "<p>Could not load registrations.</p>";
-
+  if (!registrationData.success) {
+    summaryCards.innerHTML = "<p>Could not load registrations.</p>";
     return;
-
   }
 
-
-  allRegistrations =
-    regData.players || [];
-
-
-  /*
-    IMPORTANT:
-
-    Every registration-based report below uses
-    this active-player array.
-
-    Inactive players remain in the spreadsheet
-    and admin dashboard but do not appear here.
-  */
-
-  registrations =
-    allRegistrations.filter(isActivePlayer);
-
-
-  coaches =
-    regData.coaches || [];
-
-
-  inventory =
-    invData.success
-      ? invData.inventory || []
-      : [];
-
+  allRegistrations = registrationData.players || [];
+  registrations = allRegistrations.filter(isActivePlayer);
+  inventory = inventoryData.success ? inventoryData.inventory || [] : [];
 
   await loadWaiverStatuses();
 
-
   renderSummaryCards();
-
+  renderUniformReport();
   renderGradeReport();
-
   renderLeagueReport();
-
   renderPaymentReport();
-
   renderWaiverReport();
-
   renderInventoryReport();
-
 }
-
-
-/* ---------------------------------------------------------
-   WAIVERS
---------------------------------------------------------- */
 
 async function loadWaiverStatuses() {
-
   waiverStatusByEmail = {};
 
-
-  /*
-    Only parents who have at least one
-    ACTIVE player are checked.
-  */
-
   const emails = [
-
     ...new Set(
-
       registrations
-
-        .map(row =>
-          String(row.parentEmail || "")
-            .trim()
-            .toLowerCase()
-        )
-
+        .map(player => String(player.parentEmail || "").trim().toLowerCase())
         .filter(Boolean)
-
     )
-
   ];
 
-
   await Promise.all(
-
     emails.map(async email => {
-
       try {
-
         const data = await api({
-
           action: "getParentWaiver",
-
           parentEmail: email
-
         });
 
-
-        waiverStatusByEmail[email] =
-          data.success && data.signed;
-
-
-      } catch (err) {
-
+        waiverStatusByEmail[email] = data.success && data.signed;
+      } catch (error) {
         waiverStatusByEmail[email] = false;
-
       }
-
     })
-
   );
-
 }
-
-
-/* ---------------------------------------------------------
-   SUMMARY CARDS
---------------------------------------------------------- */
 
 function renderSummaryCards() {
+  const totalPlayers = registrations.length;
 
-  const totalPlayers =
-    registrations.length;
+  const flagCount = registrations.filter(player =>
+    String(player.league || "").trim().toLowerCase() === "flag"
+  ).length;
 
+  const jrProCount = registrations.filter(player =>
+    String(player.league || "").trim().toLowerCase().includes("jr")
+  ).length;
 
-  const flagCount =
-    registrations.filter(player =>
+  const thirdGradeCount = registrations.filter(player =>
+    normalizeGrade(player.grade) === "3rd"
+  ).length;
 
-      String(player.league || "")
-        .trim()
-        .toLowerCase() === "flag"
+  const fourthGradeCount = registrations.filter(player =>
+    normalizeGrade(player.grade) === "4th"
+  ).length;
 
-    ).length;
+  const fifthGradeCount = registrations.filter(player =>
+    normalizeGrade(player.grade) === "5th"
+  ).length;
 
+  const sixthGradeCount = registrations.filter(player =>
+    normalizeGrade(player.grade) === "6th"
+  ).length;
 
-  const jrProCount =
-    registrations.filter(player =>
+  const totalFees = registrations.reduce(
+    (sum, player) => sum + Number(player.finalFee || 0),
+    0
+  );
 
-      String(player.league || "")
-        .trim()
-        .toLowerCase()
-        .includes("jr")
-
-    ).length;
-
-
-  const thirdGradeCount =
-    registrations.filter(player =>
-      normalizeGrade(player.grade) === "3rd"
-    ).length;
-
-
-  const fourthGradeCount =
-    registrations.filter(player =>
-      normalizeGrade(player.grade) === "4th"
-    ).length;
-
-
-  const fifthGradeCount =
-    registrations.filter(player =>
-      normalizeGrade(player.grade) === "5th"
-    ).length;
-
-
-  const sixthGradeCount =
-    registrations.filter(player =>
-      normalizeGrade(player.grade) === "6th"
-    ).length;
-
-
-  const totalFees =
-    registrations.reduce(
-
-      (sum, player) =>
-        sum + Number(player.finalFee || 0),
-
+  const paidAmount = registrations
+    .filter(player =>
+      String(player.paymentStatus || "").trim().toLowerCase() === "paid"
+    )
+    .reduce(
+      (sum, player) => sum + Number(player.finalFee || 0),
       0
-
     );
 
+  const outstandingAmount = registrations
+    .filter(player => {
+      const status = String(player.paymentStatus || "").trim().toLowerCase();
+      return status !== "paid" && status !== "no charge";
+    })
+    .reduce(
+      (sum, player) => sum + Number(player.finalFee || 0),
+      0
+    );
 
-  const paidAmount =
-    registrations
-
-      .filter(player =>
-
-        String(player.paymentStatus || "")
-          .trim()
-          .toLowerCase() === "paid"
-
-      )
-
-      .reduce(
-
-        (sum, player) =>
-          sum + Number(player.finalFee || 0),
-
-        0
-
-      );
-
-
-  const outstandingAmount =
-    registrations
-
-      .filter(player => {
-
-        const status =
-
-          String(player.paymentStatus || "")
-            .trim()
-            .toLowerCase();
-
-
-        return (
-          status !== "paid" &&
-          status !== "no charge"
-        );
-
-      })
-
-      .reduce(
-
-        (sum, player) =>
-          sum + Number(player.finalFee || 0),
-
-        0
-
-      );
-
-
-  const signedEmails =
-
-    Object.values(waiverStatusByEmail)
-
-      .filter(Boolean)
-
-      .length;
-
-
-  const totalFamilies =
-
-    Object.keys(waiverStatusByEmail)
-
-      .length;
-
+  const signedEmails = Object.values(waiverStatusByEmail).filter(Boolean).length;
+  const totalFamilies = Object.keys(waiverStatusByEmail).length;
 
   summaryCards.innerHTML = `
-
     <div class="report-card">
-
       <h3>Total Active Players</h3>
-
-      <div class="big-number">
-        ${totalPlayers}
-      </div>
-
+      <div class="big-number">${totalPlayers}</div>
     </div>
 
-
     <div class="report-card">
-
       <h3>Flag Players</h3>
-
-      <div class="big-number">
-        ${flagCount}
-      </div>
-
+      <div class="big-number">${flagCount}</div>
     </div>
 
-
     <div class="report-card">
-
       <h3>Jr Pro Players</h3>
-
-      <div class="big-number">
-        ${jrProCount}
-      </div>
-
+      <div class="big-number">${jrProCount}</div>
     </div>
 
-
     <div class="report-card">
-
       <h3>3rd Grade</h3>
-
-      <div class="big-number">
-        ${thirdGradeCount}
-      </div>
-
+      <div class="big-number">${thirdGradeCount}</div>
     </div>
 
-
     <div class="report-card">
-
       <h3>4th Grade</h3>
-
-      <div class="big-number">
-        ${fourthGradeCount}
-      </div>
-
+      <div class="big-number">${fourthGradeCount}</div>
     </div>
 
-
     <div class="report-card">
-
       <h3>5th Grade</h3>
-
-      <div class="big-number">
-        ${fifthGradeCount}
-      </div>
-
+      <div class="big-number">${fifthGradeCount}</div>
     </div>
 
-
     <div class="report-card">
-
       <h3>6th Grade</h3>
-
-      <div class="big-number">
-        ${sixthGradeCount}
-      </div>
-
+      <div class="big-number">${sixthGradeCount}</div>
     </div>
 
-
     <div class="report-card">
-
       <h3>Total Fees</h3>
-
-      <div class="big-number">
-        $${money(totalFees)}
-      </div>
-
+      <div class="big-number">$${money(totalFees)}</div>
     </div>
 
-
     <div class="report-card">
-
       <h3>Marked Paid</h3>
-
-      <div class="big-number">
-        $${money(paidAmount)}
-      </div>
-
+      <div class="big-number">$${money(paidAmount)}</div>
     </div>
 
-
     <div class="report-card">
-
       <h3>Outstanding</h3>
-
-      <div class="big-number">
-        $${money(outstandingAmount)}
-      </div>
-
+      <div class="big-number">$${money(outstandingAmount)}</div>
     </div>
 
-
     <div class="report-card">
-
       <h3>Waivers Signed</h3>
-
-      <div class="big-number">
-        ${signedEmails}/${totalFamilies}
-      </div>
-
+      <div class="big-number">${signedEmails}/${totalFamilies}</div>
     </div>
-
 
     <div class="report-card">
-
       <h3>Inventory Items</h3>
-
-      <div class="big-number">
-        ${inventory.length}
-      </div>
-
+      <div class="big-number">${inventory.length}</div>
     </div>
+  `;
+}
 
+function renderUniformReport() {
+  const sortedPlayers = [...registrations].sort((a, b) => {
+    const teamCompare = String(a.team || "Unassigned")
+      .localeCompare(String(b.team || "Unassigned"));
+
+    if (teamCompare !== 0) return teamCompare;
+
+    return String(a.name || "").localeCompare(String(b.name || ""));
+  });
+
+  if (!sortedPlayers.length) {
+    uniformReport.innerHTML = "<p>No active players found.</p>";
+    return;
+  }
+
+  let html = `
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Player</th>
+            <th>Team</th>
+            <th>Shirt Size</th>
+          </tr>
+        </thead>
+        <tbody>
   `;
 
+  sortedPlayers.forEach(player => {
+    html += `
+      <tr>
+        <td>${escapeHtml(player.name || "")}</td>
+        <td>${escapeHtml(player.team || "Not assigned yet")}</td>
+        <td>${escapeHtml(player.shirtSize || "Not entered")}</td>
+      </tr>
+    `;
+  });
+
+  html += `
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  uniformReport.innerHTML = html;
 }
-
-
-/* ---------------------------------------------------------
-   GRADE REPORT
---------------------------------------------------------- */
 
 function renderGradeReport() {
-
   const groups = {
-
     "3rd Grade": 0,
-
     "4th Grade": 0,
-
     "5th Grade": 0,
-
     "6th Grade": 0
-
   };
 
-
   registrations.forEach(player => {
+    const grade = normalizeGrade(player.grade);
 
-    const grade =
-      normalizeGrade(player.grade);
-
-
-    if (grade === "3rd") {
-
-      groups["3rd Grade"]++;
-
-    }
-
-
-    if (grade === "4th") {
-
-      groups["4th Grade"]++;
-
-    }
-
-
-    if (grade === "5th") {
-
-      groups["5th Grade"]++;
-
-    }
-
-
-    if (grade === "6th") {
-
-      groups["6th Grade"]++;
-
-    }
-
+    if (grade === "3rd") groups["3rd Grade"]++;
+    if (grade === "4th") groups["4th Grade"]++;
+    if (grade === "5th") groups["5th Grade"]++;
+    if (grade === "6th") groups["6th Grade"]++;
   });
 
-
-  gradeReport.innerHTML =
-
-    makeSimpleTable(
-
-      [
-        "Grade",
-        "Active Players"
-      ],
-
-      Object.entries(groups)
-
-    );
-
+  gradeReport.innerHTML = makeSimpleTable(
+    ["Grade", "Active Players"],
+    Object.entries(groups)
+  );
 }
-
-
-/* ---------------------------------------------------------
-   LEAGUE REPORT
---------------------------------------------------------- */
 
 function renderLeagueReport() {
-
   const groups = {};
 
-
   registrations.forEach(player => {
-
-    const league =
-      player.league || "Unknown";
-
-
-    groups[league] =
-      (groups[league] || 0) + 1;
-
+    const league = player.league || "Unknown";
+    groups[league] = (groups[league] || 0) + 1;
   });
 
-
-  leagueReport.innerHTML =
-
-    makeSimpleTable(
-
-      [
-        "League",
-        "Active Players"
-      ],
-
-      Object.entries(groups)
-
-    );
-
+  leagueReport.innerHTML = makeSimpleTable(
+    ["League", "Active Players"],
+    Object.entries(groups)
+  );
 }
-
-
-/* ---------------------------------------------------------
-   PAYMENT REPORT
---------------------------------------------------------- */
 
 function renderPaymentReport() {
-
   const groups = {
-
     "Pending": 0,
-
     "Partially Paid": 0,
-
     "Paid": 0,
-
     "No Charge": 0,
-
     "Other": 0
-
   };
 
-
   registrations.forEach(player => {
-
-    const status =
-      player.paymentStatus || "Pending";
-
+    const status = player.paymentStatus || "Pending";
 
     if (groups[status] !== undefined) {
-
       groups[status]++;
-
-    }
-
-    else {
-
+    } else {
       groups.Other++;
-
     }
-
   });
 
-
-  paymentReport.innerHTML =
-
-    makeSimpleTable(
-
-      [
-        "Payment Status",
-        "Active Players"
-      ],
-
-      Object.entries(groups)
-
-    );
-
+  paymentReport.innerHTML = makeSimpleTable(
+    ["Payment Status", "Active Players"],
+    Object.entries(groups)
+  );
 }
 
-
-/* ---------------------------------------------------------
-   WAIVER REPORT
---------------------------------------------------------- */
-
 function renderWaiverReport() {
-
   const families = {};
 
-
-  /*
-    registrations contains ACTIVE players only.
-
-    Therefore, parents whose children are all
-    inactive are excluded automatically.
-  */
-
   registrations.forEach(player => {
-
-    const email =
-
-      String(player.parentEmail || "")
-        .trim()
-        .toLowerCase();
-
+    const email = String(player.parentEmail || "").trim().toLowerCase();
 
     if (!email) return;
 
-
     if (!families[email]) {
-
       families[email] = {
-
-        parentName:
-          player.parentName || "",
-
-        parentEmail:
-          player.parentEmail || "",
-
-        signed:
-          waiverStatusByEmail[email]
-
+        parentName: player.parentName || "",
+        parentEmail: player.parentEmail || "",
+        signed: waiverStatusByEmail[email]
       };
-
     }
-
   });
 
-
-  const familyList =
-    Object.values(families);
-
-
-  const signed =
-    familyList.filter(family =>
-      family.signed
-    );
-
-
-  const notSigned =
-    familyList.filter(family =>
-      !family.signed
-    );
-
+  const familyList = Object.values(families);
+  const signed = familyList.filter(family => family.signed);
+  const notSigned = familyList.filter(family => !family.signed);
 
   let html = `
-
     <p>
-
-      <b>Signed:</b>
-      ${signed.length}
-
+      <b>Signed:</b> ${signed.length}
       |
-
-      <b>Not Signed:</b>
-      ${notSigned.length}
-
+      <b>Not Signed:</b> ${notSigned.length}
     </p>
 
-
-    <table>
-
-      <thead>
-
-        <tr>
-
-          <th>Parent</th>
-
-          <th>Email</th>
-
-          <th>Waiver</th>
-
-        </tr>
-
-      </thead>
-
-
-      <tbody>
-
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Parent</th>
+            <th>Email</th>
+            <th>Waiver</th>
+          </tr>
+        </thead>
+        <tbody>
   `;
-
 
   familyList.forEach(family => {
-
     html += `
-
       <tr>
-
-        <td>
-          ${escapeHtml(family.parentName)}
-        </td>
-
-        <td>
-          ${escapeHtml(family.parentEmail)}
-        </td>
-
+        <td>${escapeHtml(family.parentName)}</td>
+        <td>${escapeHtml(family.parentEmail)}</td>
         <td class="${family.signed ? "signed" : "not-signed"}">
-
           ${family.signed ? "Signed" : "Not Signed"}
-
         </td>
-
       </tr>
-
     `;
-
   });
 
-
   html += `
-
-      </tbody>
-
-    </table>
-
+        </tbody>
+      </table>
+    </div>
   `;
-
 
   waiverReport.innerHTML = html;
-
 }
-
-
-/* ---------------------------------------------------------
-   INVENTORY REPORT
---------------------------------------------------------- */
 
 function renderInventoryReport() {
-
   const groups = {};
 
-
   inventory.forEach(item => {
-
     const key =
-
-      (item.type || "Unknown")
-
-      + " - " +
-
+      (item.type || "Unknown") +
+      " - " +
       (item.status || "Unknown");
 
-
-    groups[key] =
-      (groups[key] || 0) + 1;
-
+    groups[key] = (groups[key] || 0) + 1;
   });
 
-
-  inventoryReport.innerHTML =
-
-    makeSimpleTable(
-
-      [
-        "Equipment / Status",
-        "Count"
-      ],
-
-      Object.entries(groups)
-
-    );
-
+  inventoryReport.innerHTML = makeSimpleTable(
+    ["Equipment / Status", "Count"],
+    Object.entries(groups)
+  );
 }
-
-
-/* ---------------------------------------------------------
-   TABLE BUILDER
---------------------------------------------------------- */
 
 function makeSimpleTable(headers, rows) {
-
   let html = `
-
-    <table>
-
-      <thead>
-
-        <tr>
-
-          ${headers.map(header =>
-            `<th>${escapeHtml(header)}</th>`
-          ).join("")}
-
-        </tr>
-
-      </thead>
-
-
-      <tbody>
-
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            ${headers.map(header => `<th>${escapeHtml(header)}</th>`).join("")}
+          </tr>
+        </thead>
+        <tbody>
   `;
-
 
   rows.forEach(row => {
-
     html += `
-
       <tr>
-
-        ${row.map(cell =>
-          `<td>${escapeHtml(cell)}</td>`
-        ).join("")}
-
+        ${row.map(cell => `<td>${escapeHtml(cell)}</td>`).join("")}
       </tr>
-
     `;
-
   });
-
 
   html += `
-
-      </tbody>
-
-    </table>
-
+        </tbody>
+      </table>
+    </div>
   `;
 
-
   return html;
-
 }
-
-
-/* ---------------------------------------------------------
-   EXPORT ACTIVE REGISTRATION REPORT
---------------------------------------------------------- */
 
 function exportRegistrationReport() {
-
   if (!registrations.length) {
-
     alert("There are no active registrations to export.");
-
     return;
-
   }
 
-
   const headers = [
-
     "Player",
-
     "Player Status",
-
     "Parent",
-
     "Email",
-
     "Phone",
-
     "League",
-
     "Grade",
-
     "School",
-
     "Team",
-
     "Coach",
-
+    "Shirt Size",
     "Fee",
-
     "Payment Status",
-
     "Waiver Signed"
-
   ];
 
-
-  const csvRows = [
-
-    headers.join(",")
-
-  ];
-
+  const csvRows = [headers.join(",")];
 
   registrations.forEach(player => {
-
-    const email =
-
-      String(player.parentEmail || "")
-        .trim()
-        .toLowerCase();
-
+    const email = String(player.parentEmail || "").trim().toLowerCase();
 
     const row = [
-
       player.name,
-
       player.playerStatus || "Active",
-
       player.parentName,
-
       player.parentEmail,
-
       player.parentPhone,
-
       player.league,
-
       player.grade,
-
       player.school,
-
       player.team,
-
       player.coachName,
-
+      player.shirtSize,
       player.finalFee,
-
       player.paymentStatus,
-
-      waiverStatusByEmail[email]
-        ? "Signed"
-        : "Not Signed"
-
+      waiverStatusByEmail[email] ? "Signed" : "Not Signed"
     ].map(value =>
-
-      `"${String(value || "")
-        .replace(/"/g, '""')}"`
-
+      `"${String(value || "").replace(/"/g, '""')}"`
     );
 
-
-    csvRows.push(
-      row.join(",")
-    );
-
+    csvRows.push(row.join(","));
   });
 
-
-  downloadCSV(
-
-    csvRows,
-
-    "active-registration-report.csv"
-
-  );
-
+  downloadCSV(csvRows, "active-registration-report.csv");
 }
 
-
-/* ---------------------------------------------------------
-   EXPORT INVENTORY REPORT
---------------------------------------------------------- */
-
-function exportInventoryReport() {
-
-  if (!inventory.length) {
-
-    alert("Load reports first.");
-
+function exportUniformReport() {
+  if (!registrations.length) {
+    alert("There are no active players to export.");
     return;
-
   }
 
+  const sortedPlayers = [...registrations].sort((a, b) => {
+    const teamCompare = String(a.team || "Unassigned")
+      .localeCompare(String(b.team || "Unassigned"));
 
-  const headers = [
+    if (teamCompare !== 0) return teamCompare;
 
-    "Type",
-
-    "Size",
-
-    "Number",
-
-    "Condition",
-
-    "Status",
-
-    "Assigned To",
-
-    "Notes"
-
-  ];
-
-
-  const csvRows = [
-
-    headers.join(",")
-
-  ];
-
-
-  inventory.forEach(item => {
-
-    const row = [
-
-      item.type,
-
-      item.size,
-
-      item.number,
-
-      item.condition,
-
-      item.status,
-
-      item.assignedTo,
-
-      item.notes
-
-    ].map(value =>
-
-      `"${String(value || "")
-        .replace(/"/g, '""')}"`
-
-    );
-
-
-    csvRows.push(
-      row.join(",")
-    );
-
+    return String(a.name || "").localeCompare(String(b.name || ""));
   });
 
+  const headers = [
+    "Player",
+    "Team",
+    "Shirt Size"
+  ];
 
-  downloadCSV(
+  const csvRows = [headers.join(",")];
 
-    csvRows,
-
-    "inventory-report.csv"
-
-  );
-
-}
-
-
-/* ---------------------------------------------------------
-   CSV DOWNLOAD
---------------------------------------------------------- */
-
-function downloadCSV(csvRows, filename) {
-
-  const blob =
-
-    new Blob(
-
-      [csvRows.join("\n")],
-
-      {
-        type: "text/csv"
-      }
-
+  sortedPlayers.forEach(player => {
+    const row = [
+      player.name,
+      player.team || "Not assigned yet",
+      player.shirtSize || "Not entered"
+    ].map(value =>
+      `"${String(value || "").replace(/"/g, '""')}"`
     );
 
+    csvRows.push(row.join(","));
+  });
 
-  const url =
-    URL.createObjectURL(blob);
-
-
-  const anchor =
-    document.createElement("a");
-
-
-  anchor.href = url;
-
-  anchor.download = filename;
-
-  anchor.click();
-
-
-  URL.revokeObjectURL(url);
-
+  downloadCSV(csvRows, "player-uniform-report.csv");
 }
 
+function exportInventoryReport() {
+  if (!inventory.length) {
+    alert("There are no inventory items to export.");
+    return;
+  }
 
-/* ---------------------------------------------------------
-   START PAGE
---------------------------------------------------------- */
+  const headers = [
+    "Type",
+    "Size",
+    "Number",
+    "Condition",
+    "Status",
+    "Assigned To",
+    "Notes"
+  ];
 
-document.addEventListener(
+  const csvRows = [headers.join(",")];
 
-  "DOMContentLoaded",
+  inventory.forEach(item => {
+    const row = [
+      item.type,
+      item.size,
+      item.number,
+      item.condition,
+      item.status,
+      item.assignedTo,
+      item.notes
+    ].map(value =>
+      `"${String(value || "").replace(/"/g, '""')}"`
+    );
 
-  loadReports
+    csvRows.push(row.join(","));
+  });
 
-);
+  downloadCSV(csvRows, "inventory-report.csv");
+}
 
+function downloadCSV(csvRows, filename) {
+  const blob = new Blob(
+    [csvRows.join("\n")],
+    { type: "text/csv" }
+  );
+
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.click();
+
+  URL.revokeObjectURL(url);
+}
+
+document.addEventListener("DOMContentLoaded", loadReports);
 </script>
 
 </body>
