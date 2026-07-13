@@ -35,6 +35,55 @@
       font-weight: bold;
     }
 
+    .equipment-filter-grid {
+      display:grid;
+      grid-template-columns:repeat(5, minmax(120px, 1fr));
+      gap:10px;
+      margin:15px 0;
+    }
+
+    .equipment-filter-option {
+      display:flex;
+      align-items:center;
+      gap:8px;
+      background:#f7f7f7;
+      border:1px solid #ddd;
+      border-radius:8px;
+      padding:10px 12px;
+      cursor:pointer;
+    }
+
+    .equipment-filter-option input {
+      width:auto;
+      margin:0;
+    }
+
+    .equipment-total-cards {
+      display:grid;
+      grid-template-columns:repeat(4, minmax(140px, 1fr));
+      gap:12px;
+      margin:18px 0;
+    }
+
+    .equipment-total-card {
+      background:#fff;
+      border-left:5px solid #b30000;
+      border-radius:10px;
+      padding:14px;
+      box-shadow:0 3px 8px rgba(0,0,0,.1);
+    }
+
+    .equipment-total-card strong {
+      display:block;
+      color:#b30000;
+      margin-bottom:5px;
+    }
+
+    .equipment-total-card span {
+      font-size:26px;
+      font-weight:bold;
+    }
+
     .table-wrapper {
       overflow-x: auto;
     }
@@ -134,13 +183,20 @@
     }
 
     @media(max-width: 1000px) {
-      .report-grid {
+      .report-grid,
+      .equipment-total-cards {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .equipment-filter-grid {
         grid-template-columns: repeat(2, 1fr);
       }
     }
 
     @media(max-width: 600px) {
-      .report-grid {
+      .report-grid,
+      .equipment-total-cards,
+      .equipment-filter-grid {
         grid-template-columns: 1fr;
       }
     }
@@ -208,6 +264,68 @@ if (!localStorage.getItem("adminUser")) {
 
     <div class="link-card">
       <h3>Equipment Inventory Report</h3>
+
+      <p>
+        Select one or more equipment types to view totals and matching inventory.
+      </p>
+
+      <div class="equipment-filter-grid">
+        <label class="equipment-filter-option">
+          <input
+            type="checkbox"
+            id="equipmentAll"
+            checked
+            onchange="toggleAllEquipmentTypes()"
+          >
+          All
+        </label>
+
+        <label class="equipment-filter-option">
+          <input
+            type="checkbox"
+            class="equipment-type-filter"
+            value="Helmet"
+            onchange="updateEquipmentReport()"
+          >
+          Helmets
+        </label>
+
+        <label class="equipment-filter-option">
+          <input
+            type="checkbox"
+            class="equipment-type-filter"
+            value="Jersey"
+            onchange="updateEquipmentReport()"
+          >
+          Jerseys
+        </label>
+
+        <label class="equipment-filter-option">
+          <input
+            type="checkbox"
+            class="equipment-type-filter"
+            value="Pants"
+            onchange="updateEquipmentReport()"
+          >
+          Pants
+        </label>
+
+        <label class="equipment-filter-option">
+          <input
+            type="checkbox"
+            class="equipment-type-filter"
+            value="Pads"
+            onchange="updateEquipmentReport()"
+          >
+          Pads
+        </label>
+      </div>
+
+      <button class="action-btn" onclick="exportSelectedEquipmentReport()">
+        Export Selected Equipment Report
+      </button>
+
+      <div id="equipmentTotals"></div>
       <div id="inventoryReport"></div>
     </div>
 
@@ -677,21 +795,191 @@ function renderWaiverReport() {
   waiverReport.innerHTML = html;
 }
 
+function getSelectedEquipmentTypes() {
+  const allChecked =
+    document.getElementById("equipmentAll")?.checked;
+
+  if (allChecked) {
+    return ["Helmet", "Jersey", "Pants", "Pads"];
+  }
+
+  return [
+    ...document.querySelectorAll(".equipment-type-filter:checked")
+  ].map(checkbox => checkbox.value);
+}
+
+function toggleAllEquipmentTypes() {
+  const allCheckbox =
+    document.getElementById("equipmentAll");
+
+  const typeCheckboxes =
+    document.querySelectorAll(".equipment-type-filter");
+
+  if (allCheckbox.checked) {
+    typeCheckboxes.forEach(checkbox => {
+      checkbox.checked = false;
+    });
+  }
+
+  updateEquipmentReport();
+}
+
+function updateEquipmentReport() {
+  const allCheckbox =
+    document.getElementById("equipmentAll");
+
+  const typeCheckboxes =
+    [...document.querySelectorAll(".equipment-type-filter")];
+
+  if (typeCheckboxes.some(checkbox => checkbox.checked)) {
+    allCheckbox.checked = false;
+  }
+
+  if (!allCheckbox.checked &&
+      !typeCheckboxes.some(checkbox => checkbox.checked)) {
+    allCheckbox.checked = true;
+  }
+
+  renderInventoryReport();
+}
+
 function renderInventoryReport() {
-  const groups = {};
+  const selectedTypes =
+    getSelectedEquipmentTypes();
 
-  inventory.forEach(item => {
-    const key =
-      (item.type || "Unknown") +
-      " - " +
-      (item.status || "Unknown");
+  const selectedItems =
+    inventory.filter(item =>
+      selectedTypes.includes(
+        String(item.type || "").trim()
+      )
+    );
 
-    groups[key] = (groups[key] || 0) + 1;
+  const totalsByType = {};
+
+  selectedTypes.forEach(type => {
+    totalsByType[type] =
+      selectedItems.filter(item =>
+        String(item.type || "").trim() === type
+      ).length;
   });
 
-  inventoryReport.innerHTML = makeSimpleTable(
-    ["Equipment / Status", "Count"],
-    Object.entries(groups)
+  equipmentTotals.innerHTML = `
+    <div class="equipment-total-cards">
+      ${selectedTypes.map(type => `
+        <div class="equipment-total-card">
+          <strong>${escapeHtml(type)} Total</strong>
+          <span>${totalsByType[type] || 0}</span>
+        </div>
+      `).join("")}
+
+      <div class="equipment-total-card">
+        <strong>Selected Total</strong>
+        <span>${selectedItems.length}</span>
+      </div>
+    </div>
+  `;
+
+  if (!selectedItems.length) {
+    inventoryReport.innerHTML =
+      "<p>No matching inventory items found.</p>";
+    return;
+  }
+
+  const grouped = {};
+
+  selectedItems.forEach(item => {
+    const type =
+      String(item.type || "Unknown").trim();
+
+    const status =
+      String(item.status || "Unknown").trim();
+
+    const key =
+      type + "||" + status;
+
+    if (!grouped[key]) {
+      grouped[key] = {
+        type,
+        status,
+        count: 0
+      };
+    }
+
+    grouped[key].count++;
+  });
+
+  const rows =
+    Object.values(grouped)
+      .sort((a, b) => {
+        const typeCompare =
+          a.type.localeCompare(b.type);
+
+        if (typeCompare !== 0) {
+          return typeCompare;
+        }
+
+        return a.status.localeCompare(b.status);
+      })
+      .map(group => [
+        group.type,
+        group.status,
+        group.count
+      ]);
+
+  inventoryReport.innerHTML =
+    makeSimpleTable(
+      ["Equipment Type", "Status", "Count"],
+      rows
+    );
+}
+
+function exportSelectedEquipmentReport() {
+  const selectedTypes =
+    getSelectedEquipmentTypes();
+
+  const selectedItems =
+    inventory.filter(item =>
+      selectedTypes.includes(
+        String(item.type || "").trim()
+      )
+    );
+
+  if (!selectedItems.length) {
+    alert("There are no matching inventory items to export.");
+    return;
+  }
+
+  const headers = [
+    "Type",
+    "Size",
+    "Number",
+    "Condition",
+    "Status",
+    "Assigned To",
+    "Notes"
+  ];
+
+  const csvRows = [headers.join(",")];
+
+  selectedItems.forEach(item => {
+    const row = [
+      item.type,
+      item.size,
+      item.number,
+      item.condition,
+      item.status,
+      item.assignedTo,
+      item.notes
+    ].map(value =>
+      `"${String(value || "").replace(/"/g, '""')}"`
+    );
+
+    csvRows.push(row.join(","));
+  });
+
+  downloadCSV(
+    csvRows,
+    "selected-equipment-report.csv"
   );
 }
 
