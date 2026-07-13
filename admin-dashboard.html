@@ -436,6 +436,10 @@ if (!localStorage.getItem("adminUser")) {
 
     <div class="link-card">
       <h3>Equipment</h3>
+      <p>
+        Equipment choices are grouped by type and size, with sizes ordered from
+        XSmall through 5XL.
+      </p>
       <a class="action-btn" href="inventory.html">Manage Equipment Inventory</a>
       <button class="action-btn" onclick="openEquipment()">Assign Equipment to Player</button>
     </div>
@@ -1536,23 +1540,194 @@ function itemLabel(item) {
   return label;
 }
 
-function buildInventoryOptions(type,currentId) {
+
+function normalizeEquipmentSize(value) {
+  return String(value || "")
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, "")
+    .replace(/-/g, "");
+}
+
+function equipmentSizeRank(value) {
+  const size = normalizeEquipmentSize(value);
+
+  const aliases = {
+    "XXS": 0,
+    "2XS": 0,
+    "EXTRAXSMALL": 0,
+
+    "XS": 1,
+    "XSMALL": 1,
+    "EXTRASMALL": 1,
+
+    "S": 2,
+    "SMALL": 2,
+
+    "M": 3,
+    "MEDIUM": 3,
+
+    "L": 4,
+    "LARGE": 4,
+
+    "XL": 5,
+    "XLARGE": 5,
+    "EXTRALARGE": 5,
+
+    "XXL": 6,
+    "2XL": 6,
+    "XXLARGE": 6,
+
+    "XXXL": 7,
+    "3XL": 7,
+    "XXXLARGE": 7,
+
+    "4XL": 8,
+    "XXXXL": 8,
+
+    "5XL": 9,
+    "XXXXXL": 9
+  };
+
+  return aliases[size] !== undefined
+    ? aliases[size]
+    : 100;
+}
+
+function displayEquipmentSize(value) {
+  const size = normalizeEquipmentSize(value);
+
+  const labels = {
+    "XXS": "XXSmall",
+    "2XS": "XXSmall",
+    "EXTRAXSMALL": "XXSmall",
+
+    "XS": "XSmall",
+    "XSMALL": "XSmall",
+    "EXTRASMALL": "XSmall",
+
+    "S": "Small",
+    "SMALL": "Small",
+
+    "M": "Medium",
+    "MEDIUM": "Medium",
+
+    "L": "Large",
+    "LARGE": "Large",
+
+    "XL": "XL",
+    "XLARGE": "XL",
+    "EXTRALARGE": "XL",
+
+    "XXL": "2XL",
+    "2XL": "2XL",
+    "XXLARGE": "2XL",
+
+    "XXXL": "3XL",
+    "3XL": "3XL",
+    "XXXLARGE": "3XL",
+
+    "4XL": "4XL",
+    "XXXXL": "4XL",
+
+    "5XL": "5XL",
+    "XXXXXL": "5XL"
+  };
+
+  return labels[size] || String(value || "No Size").trim() || "No Size";
+}
+
+function sortEquipmentItems(items) {
+  return [...items].sort((a, b) => {
+    const rankDifference =
+      equipmentSizeRank(a.size) -
+      equipmentSizeRank(b.size);
+
+    if (rankDifference !== 0) {
+      return rankDifference;
+    }
+
+    const sizeDifference =
+      displayEquipmentSize(a.size)
+        .localeCompare(displayEquipmentSize(b.size));
+
+    if (sizeDifference !== 0) {
+      return sizeDifference;
+    }
+
+    const numberA = Number(a.number);
+    const numberB = Number(b.number);
+
+    if (!Number.isNaN(numberA) && !Number.isNaN(numberB)) {
+      return numberA - numberB;
+    }
+
+    return String(a.number || "")
+      .localeCompare(String(b.number || ""));
+  });
+}
+
+function buildCategorizedInventoryOptions(type, currentId) {
+  const matchingItems = sortEquipmentItems(
+    inventory.filter(item =>
+      String(item.type || "") === type &&
+      (
+        String(item.status || "") === "Available" ||
+        String(item.id || "") === String(currentId || "")
+      )
+    )
+  );
+
   let html = `<option value="">None Selected</option>`;
 
-  inventory
-    .filter(item =>
-      String(item.type || "") === type &&
-      (String(item.status || "") === "Available" ||
-       String(item.id || "") === String(currentId || ""))
-    )
-    .forEach(item => {
-      html += `<option value="${escapeHtml(item.id)}"
-        ${String(item.id) === String(currentId || "") ? "selected" : ""}>
-        ${escapeHtml(itemLabel(item))}
-      </option>`;
+  const grouped = {};
+
+  matchingItems.forEach(item => {
+    const sizeLabel = displayEquipmentSize(item.size);
+
+    if (!grouped[sizeLabel]) {
+      grouped[sizeLabel] = [];
+    }
+
+    grouped[sizeLabel].push(item);
+  });
+
+  const orderedSizes = Object.keys(grouped).sort((a, b) => {
+    const rankDifference =
+      equipmentSizeRank(a) -
+      equipmentSizeRank(b);
+
+    if (rankDifference !== 0) {
+      return rankDifference;
+    }
+
+    return a.localeCompare(b);
+  });
+
+  orderedSizes.forEach(sizeLabel => {
+    html += `<optgroup label="${escapeHtml(sizeLabel)}">`;
+
+    grouped[sizeLabel].forEach(item => {
+      const selected =
+        String(item.id || "") === String(currentId || "")
+          ? "selected"
+          : "";
+
+      html += `
+        <option value="${escapeHtml(item.id)}" ${selected}>
+          ${escapeHtml(itemLabel(item))}
+        </option>
+      `;
     });
 
+    html += `</optgroup>`;
+  });
+
   return html;
+}
+
+function buildInventoryOptions(type,currentId) {
+  return buildCategorizedInventoryOptions(type,currentId);
 }
 
 function renderEquipmentFormAdmin() {
