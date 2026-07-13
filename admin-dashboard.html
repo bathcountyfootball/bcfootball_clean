@@ -11,6 +11,43 @@
     th, td { border: 1px solid #ccc; padding: 8px; text-align: left; vertical-align: top; }
     th { background: #b30000; color: white; }
     .paid,.signed,.active-status { color: green; font-weight: bold; }
+    .registration-row.inactive-row {
+      background:#d9d9d9;
+      color:#555;
+    }
+
+    .registration-row.inactive-row td {
+      background:#d9d9d9;
+    }
+
+    .registration-row.changed-row td {
+      background:#fff4cc;
+    }
+
+    .registration-row.inactive-row.changed-row td {
+      background:#d8cfaa;
+    }
+
+    .bulk-save-bar {
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      margin:14px 0;
+      padding:12px;
+      background:#f7f7f7;
+      border:1px solid #ddd;
+      border-radius:9px;
+    }
+
+    .changes-count {
+      font-weight:bold;
+      color:#b30000;
+    }
+
+    .bulk-field {
+      min-width:115px;
+    }
     .pending,.not-signed,.inactive-status { color: #b30000; font-weight: bold; }
     select,input,textarea { padding: 8px; width: 100%; margin-bottom: 10px; }
     textarea { min-height: 80px; }
@@ -431,6 +468,22 @@ if (!localStorage.getItem("adminUser")) {
       <a class="action-btn" href="reports.html">View Admin Reports</a>
       <button class="action-btn" onclick="loadRegistrations()">Refresh Registrations</button>
       <button class="action-btn" onclick="exportCSV()">Export CSV</button>
+
+      <div class="bulk-save-bar">
+        <button
+          id="saveAllChangesBtn"
+          class="action-btn"
+          onclick="saveAllRegistrationChanges()"
+          disabled
+        >
+          Save All Changes
+        </button>
+
+        <span id="changesCount" class="changes-count">
+          No unsaved changes
+        </span>
+      </div>
+
       <div id="registrationsTable"></div>
     </div>
 
@@ -543,6 +596,7 @@ let currentScheduleEvents = [];
 let editingScheduleId = null;
 let selectedParentEmail = "";
 let selectedEditPlayer = null;
+let changedRegistrationIds = new Set();
 
 document.getElementById("adminProfile").innerText =
   (localStorage.getItem("adminName") || "Admin") +
@@ -1276,6 +1330,13 @@ async function setMessageStatus(threadId, status) {
 /* REGISTRATIONS */
 
 async function loadRegistrations() {
+  if (
+    changedRegistrationIds.size &&
+    !confirm("You have unsaved changes. Refresh and discard them?")
+  ) {
+    return;
+  }
+
   registrationsTable.innerHTML = "<p>Loading registrations...</p>";
 
   const data = await api({ action: "searchAllPlayers", search: "" });
@@ -1338,64 +1399,235 @@ function buildPlayerStatusOptions(r) {
   `;
 }
 
+function buildPaymentStatusOptions(r) {
+  const current = String(r.paymentStatus || "Pending").trim() || "Pending";
+  const statuses = ["Pending", "Partially Paid", "Paid", "No Charge"];
+
+  return statuses.map(status => `
+    <option value="${status}" ${current === status ? "selected" : ""}>
+      ${status}
+    </option>
+  `).join("");
+}
+
+function buildLeagueOptions(r) {
+  const current = String(r.league || "").trim();
+  const leagues = ["", "Flag", "Jr Pro"];
+
+  if (current && !leagues.includes(current)) {
+    leagues.push(current);
+  }
+
+  return leagues.map(league => `
+    <option value="${escapeHtml(league)}" ${current === league ? "selected" : ""}>
+      ${escapeHtml(league || "Select")}
+    </option>
+  `).join("");
+}
+
+function buildGradeOptions(r) {
+  const current = String(r.grade || "").trim();
+  const grades = ["", "Kindergarten", "1st", "2nd", "3rd", "4th", "5th", "6th"];
+
+  if (current && !grades.includes(current)) {
+    grades.push(current);
+  }
+
+  return grades.map(grade => `
+    <option value="${escapeHtml(grade)}" ${current === grade ? "selected" : ""}>
+      ${escapeHtml(grade || "Select")}
+    </option>
+  `).join("");
+}
+
+function markRegistrationChanged(id) {
+  changedRegistrationIds.add(String(id));
+
+  const row = document.getElementById("registration-row-" + id);
+
+  if (row) {
+    row.classList.add("changed-row");
+  }
+
+  updateChangesCount();
+}
+
+function updateChangesCount() {
+  const count = changedRegistrationIds.size;
+  const label = document.getElementById("changesCount");
+  const button = document.getElementById("saveAllChangesBtn");
+
+  if (label) {
+    label.textContent = count
+      ? count + " player" + (count === 1 ? "" : "s") + " with unsaved changes"
+      : "No unsaved changes";
+  }
+
+  if (button) {
+    button.disabled = count === 0;
+  }
+}
+
+function sortRegistrationsForDisplay(rows) {
+  return [...rows].sort((a, b) => {
+    const aInactive =
+      String(a.playerStatus || "Active").trim().toLowerCase() === "inactive";
+
+    const bInactive =
+      String(b.playerStatus || "Active").trim().toLowerCase() === "inactive";
+
+    if (aInactive !== bInactive) {
+      return aInactive ? 1 : -1;
+    }
+
+    return String(a.name || "").localeCompare(String(b.name || ""));
+  });
+}
+
 function renderTable() {
+  changedRegistrationIds.clear();
+  updateChangesCount();
+
   if (!allRows.length) {
     registrationsTable.innerHTML = "<p>No registrations found.</p>";
     return;
   }
 
+  const sortedRows = sortRegistrationsForDisplay(allRows);
+
   let html = `
     <div class="table-wrapper">
       <table>
-        <thead><tr>
-          <th>Player</th><th>Status</th><th>Source</th><th>Linked</th>
-          <th>Parent</th><th>League</th><th>Grade</th><th>Fee</th>
-          <th>Payment</th><th>Waiver</th><th>Coach</th><th>Team</th>
-          <th>Assignment</th><th>Payment Actions</th>
-        </tr></thead><tbody>
+        <thead>
+          <tr>
+            <th>Player</th>
+            <th>Status</th>
+            <th>League</th>
+            <th>Grade</th>
+            <th>School</th>
+            <th>Shirt Size</th>
+            <th>Coach</th>
+            <th>Team</th>
+            <th>Payment</th>
+            <th>Fee</th>
+            <th>Waiver</th>
+            <th>Source / Linked</th>
+          </tr>
+        </thead>
+        <tbody>
   `;
 
-  allRows.forEach(r => {
+  sortedRows.forEach(r => {
     const email = String(r.parentEmail || "").trim().toLowerCase();
     const waiverSigned = email && waiverStatusByEmail[email];
-    const paymentStatus = String(r.paymentStatus || "Pending").trim();
-    const paymentComplete = ["paid","no charge"].includes(paymentStatus.toLowerCase());
+    const isInactive =
+      String(r.playerStatus || "Active").trim().toLowerCase() === "inactive";
 
     html += `
-      <tr>
+      <tr
+        id="registration-row-${r.id}"
+        class="registration-row ${isInactive ? "inactive-row" : ""}"
+      >
         <td>
           <strong>${escapeHtml(r.name)}</strong><br>
-          <button class="small-btn" onclick="openEditPlayer('${r.id}')">Edit Player</button>
-          <button class="small-btn" onclick="deleteRegistration('${r.id}')">Delete Registration</button>
+          <small>${escapeHtml(r.parentName || "")}</small><br>
+          <button class="small-btn" onclick="openEditPlayer('${r.id}')">
+            Edit Details
+          </button>
         </td>
+
         <td>
-          <select id="playerStatus-${r.id}">${buildPlayerStatusOptions(r)}</select>
-          <button class="small-btn" onclick="savePlayerStatus('${r.id}')">Save</button>
+          <select
+            id="playerStatus-${r.id}"
+            class="bulk-field"
+            onchange="markRegistrationChanged('${r.id}')"
+          >
+            ${buildPlayerStatusOptions(r)}
+          </select>
         </td>
-        <td>${escapeHtml(r.registrationSource || "Online")}</td>
-        <td>${escapeHtml(r.linkedToParentAccount || (r.parentEmail ? "Yes" : "No"))}</td>
+
         <td>
-          ${escapeHtml(r.parentName)}<br>
-          <small>${escapeHtml(r.parentEmail || r.parentPhone || "")}</small>
+          <select
+            id="league-${r.id}"
+            class="bulk-field"
+            onchange="markRegistrationChanged('${r.id}')"
+          >
+            ${buildLeagueOptions(r)}
+          </select>
         </td>
-        <td>${escapeHtml(r.league)}</td>
-        <td>${escapeHtml(r.grade)}</td>
+
+        <td>
+          <select
+            id="grade-${r.id}"
+            class="bulk-field"
+            onchange="markRegistrationChanged('${r.id}')"
+          >
+            ${buildGradeOptions(r)}
+          </select>
+        </td>
+
+        <td>
+          <input
+            id="school-${r.id}"
+            class="bulk-field"
+            value="${escapeHtml(r.school || "")}"
+            oninput="markRegistrationChanged('${r.id}')"
+          >
+        </td>
+
+        <td>
+          <input
+            id="shirtSize-${r.id}"
+            class="bulk-field"
+            value="${escapeHtml(r.shirtSize || "")}"
+            oninput="markRegistrationChanged('${r.id}')"
+          >
+        </td>
+
+        <td>
+          <select
+            id="coach-${r.id}"
+            class="bulk-field"
+            onchange="markRegistrationChanged('${r.id}')"
+          >
+            ${buildCoachOptions(r)}
+          </select>
+        </td>
+
+        <td>
+          <select
+            id="team-${r.id}"
+            class="bulk-field"
+            onchange="markRegistrationChanged('${r.id}')"
+          >
+            ${buildTeamOptions(r)}
+          </select>
+        </td>
+
+        <td>
+          <select
+            id="paymentStatus-${r.id}"
+            class="bulk-field"
+            onchange="markRegistrationChanged('${r.id}')"
+          >
+            ${buildPaymentStatusOptions(r)}
+          </select>
+        </td>
+
         <td>$${money(r.finalFee)}</td>
-        <td class="${paymentComplete ? "paid" : "pending"}">${escapeHtml(paymentStatus)}</td>
+
         <td class="${waiverSigned ? "signed" : "not-signed"}">
           ${email ? (waiverSigned ? "Signed" : "Not Signed") : "Not Linked"}
         </td>
+
         <td>
-          <select id="coach-${r.id}">${buildCoachOptions(r)}</select>
-          <small>${escapeHtml(r.coachName || "Unassigned")}</small>
-        </td>
-        <td><select id="team-${r.id}">${buildTeamOptions(r)}</select></td>
-        <td><button class="small-btn" onclick="saveAssignment('${r.id}')">Save Assignment</button></td>
-        <td>
-          <button class="small-btn" onclick="setPaymentStatus('${r.id}','Paid')">Paid</button>
-          <button class="small-btn" onclick="setPaymentStatus('${r.id}','Partially Paid')">Partial</button>
-          <button class="small-btn" onclick="setPaymentStatus('${r.id}','Pending')">Pending</button>
-          <button class="small-btn" onclick="markNoCharge('${r.id}')">No Charge</button>
+          ${escapeHtml(r.registrationSource || "Online")}<br>
+          <small>
+            ${escapeHtml(
+              r.linkedToParentAccount ||
+              (r.parentEmail ? "Linked" : "Not Linked")
+            )}
+          </small>
         </td>
       </tr>
     `;
@@ -1405,26 +1637,76 @@ function renderTable() {
   registrationsTable.innerHTML = html;
 }
 
-async function savePlayerStatus(id) {
-  const playerStatus = document.getElementById("playerStatus-" + id).value;
-  const data = await api({ action: "updatePlayerStatus", id, playerStatus });
-  if (!data.success) alert(data.message || "Could not update status.");
-  await loadRegistrations();
-}
+async function saveAllRegistrationChanges() {
+  const ids = [...changedRegistrationIds];
 
-async function saveAssignment(id) {
-  const coachEmail = document.getElementById("coach-" + id).value;
-  const team = document.getElementById("team-" + id).value;
+  if (!ids.length) {
+    alert("There are no changes to save.");
+    return;
+  }
 
-  const data = await api({ action: "assignPlayer", id, coachEmail, team });
-  if (!data.success) alert(data.message || "Could not save assignment.");
-  await loadRegistrations();
-}
+  const updates = ids.map(id => ({
+    id,
+    playerStatus: document.getElementById("playerStatus-" + id).value,
+    league: document.getElementById("league-" + id).value,
+    grade: document.getElementById("grade-" + id).value,
+    school: document.getElementById("school-" + id).value.trim(),
+    shirtSize: document.getElementById("shirtSize-" + id).value.trim(),
+    coachEmail: document.getElementById("coach-" + id).value,
+    team: document.getElementById("team-" + id).value,
+    paymentStatus: document.getElementById("paymentStatus-" + id).value
+  }));
 
-async function setPaymentStatus(id, paymentStatus) {
-  const data = await api({ action: "markPaymentStatus", id, paymentStatus });
-  if (!data.success) alert(data.message || "Could not update payment.");
-  await loadRegistrations();
+  const confirmed = confirm(
+    "Save changes for " +
+    updates.length +
+    " player" +
+    (updates.length === 1 ? "" : "s") +
+    "?"
+  );
+
+  if (!confirmed) return;
+
+  const button = document.getElementById("saveAllChangesBtn");
+  button.disabled = true;
+  button.textContent = "Saving Changes...";
+
+  try {
+    const data = await api({
+      action: "bulkUpdateRegistrations",
+      updates
+    });
+
+    if (!data.success) {
+      alert(data.message || "Could not save registration changes.");
+      return;
+    }
+
+    let message = data.updatedCount + " registration(s) updated.";
+
+    if (data.failedCount) {
+      const failures = (data.results || [])
+        .filter(result => !result.success)
+        .map(result => result.message)
+        .filter(Boolean);
+
+      message +=
+        "\n\n" +
+        data.failedCount +
+        " update(s) failed." +
+        (failures.length ? "\n" + failures.join("\n") : "");
+    }
+
+    alert(message);
+    await loadRegistrations();
+
+  } catch (error) {
+    alert("Could not save changes: " + error.message);
+
+  } finally {
+    button.textContent = "Save All Changes";
+    updateChangesCount();
+  }
 }
 
 function markNoCharge(id) {
