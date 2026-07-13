@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Equipment Inventory</title>
-  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/theme.css?v=3">
 
   <style>
     .section-container { max-width: 1200px; margin: auto; padding: 20px; }
@@ -48,15 +48,26 @@
 
           <label>Number</label>
           <input type="text" id="number" placeholder="Jersey number only">
+
+          <label>Quantity</label>
+          <input type="number" id="quantity" min="1" max="500" step="1" value="1">
+
+          <small>
+            Each quantity is saved as a separate inventory item.
+            Leave Number blank when adding more than one item.
+          </small>
         </div>
 
         <div>
           <label>Condition</label>
           <select id="condition">
-            <option value="Good">Good</option>
+            <option value="New">New</option>
+            <option value="Good" selected>Good</option>
             <option value="Fair">Fair</option>
             <option value="Poor">Poor</option>
             <option value="Damaged">Damaged</option>
+            <option value="Reconditioned">Reconditioned</option>
+            <option value="Not Reconditioned">Not Reconditioned</option>
           </select>
 
           <label>Status</label>
@@ -76,7 +87,7 @@
       <label>Notes</label>
       <textarea id="notes" placeholder="Optional notes"></textarea>
 
-      <button class="action-btn" onclick="saveNewItem()">Add Item</button>
+      <button class="action-btn" onclick="saveNewItem()">Add Inventory</button>
       <a class="action-btn" href="admin-dashboard.html">Back to Admin Dashboard</a>
     </div>
 
@@ -146,11 +157,24 @@ async function api(payload) {
 }
 
 async function saveNewItem() {
+  const quantityValue = Number(quantity.value || 1);
+
+  if (!Number.isInteger(quantityValue) || quantityValue < 1 || quantityValue > 500) {
+    alert("Quantity must be a whole number between 1 and 500.");
+    return;
+  }
+
+  if (quantityValue > 1 && number.value.trim()) {
+    alert("Leave the Number field blank when adding more than one item. Enter jersey numbers individually afterward.");
+    return;
+  }
+
   const payload = {
     action: "saveInventoryItem",
     type: type.value,
     size: size.value.trim(),
     number: number.value.trim(),
+    quantity: quantityValue,
     condition: condition.value,
     status: status.value,
     assignedTo: assignedTo.value.trim(),
@@ -164,10 +188,15 @@ async function saveNewItem() {
     return;
   }
 
-  alert("Inventory item added.");
+  alert(
+    data.quantityAdded > 1
+      ? data.quantityAdded + " inventory items added."
+      : "Inventory item added."
+  );
 
   size.value = "";
   number.value = "";
+  quantity.value = "1";
   condition.value = "Good";
   status.value = "Available";
   assignedTo.value = "";
@@ -261,10 +290,13 @@ function renderInventory() {
 
         <td>
           <select id="condition-${item.id}">
+            <option value="New" ${item.condition === "New" ? "selected" : ""}>New</option>
             <option value="Good" ${item.condition === "Good" ? "selected" : ""}>Good</option>
             <option value="Fair" ${item.condition === "Fair" ? "selected" : ""}>Fair</option>
             <option value="Poor" ${item.condition === "Poor" ? "selected" : ""}>Poor</option>
             <option value="Damaged" ${item.condition === "Damaged" ? "selected" : ""}>Damaged</option>
+            <option value="Reconditioned" ${item.condition === "Reconditioned" ? "selected" : ""}>Reconditioned</option>
+            <option value="Not Reconditioned" ${item.condition === "Not Reconditioned" ? "selected" : ""}>Not Reconditioned</option>
           </select>
         </td>
 
