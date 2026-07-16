@@ -59,6 +59,37 @@
     .schedule-card { border-left:5px solid #b30000; background:#fff; padding:12px; margin:10px 0; border-radius:8px; }
     .editing-message { display:none; margin-bottom:12px; padding:10px; background:#fff3cd; border:1px solid #ffe69c; border-radius:5px; font-weight:bold; }
     .result-row { border:1px solid #ddd; border-radius:8px; padding:10px; margin:8px 0; background:#fff; }
+    .result-row {
+      display:block;
+      line-height:1.55;
+      overflow:hidden;
+    }
+
+    .result-row input[type="checkbox"] {
+      width:auto;
+      margin:0 8px 0 0;
+      vertical-align:middle;
+    }
+
+    .registration-result-header {
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin-bottom:8px;
+    }
+
+    .registration-result-details {
+      padding-left:26px;
+    }
+
+    .parent-search-note {
+      margin-top:10px;
+      padding:10px;
+      background:#fff4cc;
+      border:1px solid #e4cf75;
+      border-radius:7px;
+      font-size:13px;
+    }
     .message-card { border:1px solid #ddd; border-left:6px solid #b30000; border-radius:10px; padding:16px; margin:12px 0; background:#fff; }
     .message-card.status-read { border-left-color:#777; }
     .message-card.status-resolved { border-left-color:green; opacity:.88; }
@@ -782,41 +813,78 @@ async function searchUnlinkedRegistrations() {
 
   unlinkedResults.innerHTML = data.registrations.map(r => `
     <label class="result-row">
-      <input type="checkbox" class="link-registration-checkbox" value="${escapeHtml(r.id)}">
-      <b>${escapeHtml(r.name)}</b><br>
-      Parent: ${escapeHtml(r.parentName || "Not entered")}<br>
-      Phone: ${escapeHtml(r.parentPhone || "Not entered")}<br>
-      League: ${escapeHtml(r.league || "")}
+      <div class="registration-result-header">
+        <input
+          type="checkbox"
+          class="link-registration-checkbox"
+          value="${escapeHtml(r.id)}"
+        >
+        <b>${escapeHtml(r.name || "Unnamed Player")}</b>
+      </div>
+
+      <div class="registration-result-details">
+        <b>Parent:</b> ${escapeHtml(r.parentName || "Not entered")}<br>
+        <b>Phone:</b> ${escapeHtml(r.parentPhone || "Not entered")}<br>
+        <b>Grade:</b> ${escapeHtml(r.grade || "Not entered")}<br>
+        <b>School:</b> ${escapeHtml(r.school || "Not entered")}<br>
+        <b>League:</b> ${escapeHtml(r.league || "Not entered")}<br>
+        <b>Team:</b> ${escapeHtml(r.team || "Not assigned")}<br>
+        <b>Shirt Size:</b> ${escapeHtml(r.shirtSize || "Not entered")}<br>
+        <b>Status:</b> ${escapeHtml(r.playerStatus || "Active")}<br>
+        <b>Registration Source:</b> ${escapeHtml(r.registrationSource || "In Person")}
+      </div>
     </label>
   `).join("");
 }
 
 async function searchParentAccounts() {
+  const searchValue = parentAccountSearch.value.trim().toLowerCase();
+
   const data = await api({
     action: "getParents",
-    search: parentAccountSearch.value.trim()
+    search: searchValue
   });
 
   if (!data.success || !data.parents.length) {
-    parentAccountResults.innerHTML = "<p>No parent accounts found.</p>";
+    parentAccountResults.innerHTML = `
+      <p><b>No parent login account was found.</b></p>
+      <div class="parent-search-note">
+        A player registration and a parent login account are separate records.
+        Confirm that the parent created an account on the parent registration/login page.
+        Also verify the email in the <b>Parents</b> sheet.
+      </div>
+    `;
     return;
   }
 
-  parentAccountResults.innerHTML = data.parents.map(p => `
+  parentAccountResults.innerHTML = data.parents.map((p, index) => `
     <div class="result-row">
-      <b>${escapeHtml(p.name)}</b><br>
-      ${escapeHtml(p.email)}<br>
-      ${escapeHtml(p.phone || "")}<br>
-      <button class="small-btn" onclick="selectParentAccount('${escapeHtml(p.email)}','${escapeHtml(p.name)}')">
+      <b>${escapeHtml(p.name || "Parent")}</b><br>
+      <b>Email:</b> ${escapeHtml(p.email)}<br>
+      <b>Phone:</b> ${escapeHtml(p.phone || "Not entered")}<br>
+      <button
+        class="small-btn parent-select-button"
+        data-parent-index="${index}"
+      >
         Select Parent
       </button>
     </div>
   `).join("");
+
+  document
+    .querySelectorAll(".parent-select-button")
+    .forEach(button => {
+      button.addEventListener("click", () => {
+        const parent = data.parents[Number(button.dataset.parentIndex)];
+        selectParentAccount(parent.email, parent.name);
+      });
+    });
 }
 
 function selectParentAccount(email, name) {
-  selectedParentEmail = email;
-  selectedParentLabel.textContent = name + " (" + email + ")";
+  selectedParentEmail = String(email || "").trim().toLowerCase();
+  selectedParentLabel.textContent =
+    (name || "Parent") + " (" + selectedParentEmail + ")";
 }
 
 async function linkSelectedRegistrations() {
