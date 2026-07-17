@@ -67,6 +67,7 @@
             <option value="Poor">Poor</option>
             <option value="Damaged">Damaged</option>
             <option value="Needs Repair">Needs Repair</option>
+            <option value="Missing">Missing</option>
             <option value="Reconditioned">Reconditioned</option>
             <option value="Not Reconditioned">Not Reconditioned</option>
           </select>
@@ -297,6 +298,7 @@ function renderInventory() {
             <option value="Poor" ${item.condition === "Poor" ? "selected" : ""}>Poor</option>
             <option value="Damaged" ${item.condition === "Damaged" ? "selected" : ""}>Damaged</option>
             <option value="Needs Repair" ${item.condition === "Needs Repair" ? "selected" : ""}>Needs Repair</option>
+            <option value="Missing" ${item.condition === "Missing" ? "selected" : ""}>Missing</option>
             <option value="Reconditioned" ${item.condition === "Reconditioned" ? "selected" : ""}>Reconditioned</option>
             <option value="Not Reconditioned" ${item.condition === "Not Reconditioned" ? "selected" : ""}>Not Reconditioned</option>
           </select>
