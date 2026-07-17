@@ -100,7 +100,7 @@
         <div>
           <label>Filter Type</label>
           <select id="filterType" onchange="renderInventory()">
-            <option value="">All</option>
+            <option value="">All Types</option>
             <option value="Jersey">Jersey</option>
             <option value="Pants">Pants</option>
             <option value="Helmet">Helmet</option>
@@ -109,9 +109,39 @@
         </div>
 
         <div>
+          <label>Filter Size</label>
+          <input
+            type="text"
+            id="filterSize"
+            placeholder="Example: Large, XL, Youth Small"
+            oninput="renderInventory()"
+          >
+        </div>
+
+        <div>
+          <label>Filter Number</label>
+          <input
+            type="text"
+            id="filterNumber"
+            placeholder="Jersey number"
+            oninput="renderInventory()"
+          >
+        </div>
+
+        <div>
+          <label>Filter Assigned To</label>
+          <input
+            type="text"
+            id="filterAssignedTo"
+            placeholder="Player name"
+            oninput="renderInventory()"
+          >
+        </div>
+
+        <div>
           <label>Filter Status</label>
           <select id="filterStatus" onchange="renderInventory()">
-            <option value="">All</option>
+            <option value="">All Statuses</option>
             <option value="Available">Available</option>
             <option value="Assigned">Assigned</option>
             <option value="Returned">Returned</option>
@@ -120,6 +150,10 @@
           </select>
         </div>
       </div>
+
+      <button class="action-btn" onclick="clearInventoryFilters()">
+        Clear Filters
+      </button>
 
       <button class="action-btn" onclick="loadInventory()">Refresh Inventory</button>
       <button class="action-btn" onclick="exportInventoryCSV()">Export CSV</button>
@@ -222,11 +256,75 @@ async function loadInventory() {
 }
 
 function getFilteredInventory() {
+  const selectedType =
+    String(filterType.value || "").trim().toLowerCase();
+
+  const sizeSearch =
+    String(filterSize.value || "").trim().toLowerCase();
+
+  const numberSearch =
+    String(filterNumber.value || "").trim().toLowerCase();
+
+  const assignedSearch =
+    String(filterAssignedTo.value || "").trim().toLowerCase();
+
+  const selectedStatus =
+    String(filterStatus.value || "").trim().toLowerCase();
+
   return inventory.filter(item => {
-    const typeMatch = !filterType.value || item.type === filterType.value;
-    const statusMatch = !filterStatus.value || item.status === filterStatus.value;
-    return typeMatch && statusMatch;
+    const type =
+      String(item.type || "").trim().toLowerCase();
+
+    const size =
+      String(item.size || "").trim().toLowerCase();
+
+    const number =
+      String(item.number || "").trim().toLowerCase();
+
+    const assignedTo =
+      String(item.assignedTo || "").trim().toLowerCase();
+
+    const status =
+      String(item.status || "").trim().toLowerCase();
+
+    const typeMatch =
+      !selectedType ||
+      type === selectedType;
+
+    const sizeMatch =
+      !sizeSearch ||
+      size.includes(sizeSearch);
+
+    const numberMatch =
+      !numberSearch ||
+      number.includes(numberSearch);
+
+    const assignedMatch =
+      !assignedSearch ||
+      assignedTo.includes(assignedSearch);
+
+    const statusMatch =
+      !selectedStatus ||
+      status === selectedStatus;
+
+    return (
+      typeMatch &&
+      sizeMatch &&
+      numberMatch &&
+      assignedMatch &&
+      statusMatch
+    );
   });
+}
+
+function clearInventoryFilters() {
+  filterType.value = "";
+  filterSize.value = "";
+  filterNumber.value = "";
+  filterAssignedTo.value = "";
+  filterStatus.value = "";
+
+  renderInventory();
 }
 
 function renderSummary(items) {
