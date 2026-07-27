@@ -258,7 +258,8 @@ if (!localStorage.getItem("adminUser")) {
     </div>
 
     <div class="link-card">
-      <h3>Waiver Report</h3>
+      <h3>Unsigned Waiver Report</h3>
+      <p>Active families whose parent/guardian waiver has not been signed.</p>
       <div id="waiverReport"></div>
     </div>
 
@@ -739,49 +740,67 @@ function renderWaiverReport() {
 
   registrations.forEach(player => {
     const email = String(player.parentEmail || "").trim().toLowerCase();
+    const familyKey =
+      email ||
+      [
+        String(player.parentName || "").trim().toLowerCase(),
+        String(player.parentPhone || "").trim().toLowerCase()
+      ].join("|");
 
-    if (!email) return;
-
-    if (!families[email]) {
-      families[email] = {
-        parentName: player.parentName || "",
+    if (!families[familyKey]) {
+      families[familyKey] = {
+        parentName: player.parentName || "Parent name not entered",
         parentEmail: player.parentEmail || "",
-        signed: waiverStatusByEmail[email]
+        players: []
       };
     }
+
+    families[familyKey].players.push(player.name || "Unnamed player");
   });
 
-  const familyList = Object.values(families);
-  const signed = familyList.filter(family => family.signed);
-  const notSigned = familyList.filter(family => !family.signed);
+  const unsignedFamilies = Object.values(families)
+    .filter(family => {
+      const email = String(family.parentEmail || "").trim().toLowerCase();
+      return !email || waiverStatusByEmail[email] !== true;
+    })
+    .map(family => ({
+      ...family,
+      players: [...new Set(family.players)].sort((a, b) =>
+        String(a).localeCompare(String(b))
+      )
+    }))
+    .sort((a, b) =>
+      String(a.parentName || "").localeCompare(String(b.parentName || ""))
+    );
+
+  if (!unsignedFamilies.length) {
+    waiverReport.innerHTML = `
+      <p class="signed">✓ All active families have signed their waiver.</p>
+    `;
+    return;
+  }
 
   let html = `
-    <p>
-      <b>Signed:</b> ${signed.length}
-      |
-      <b>Not Signed:</b> ${notSigned.length}
-    </p>
+    <p><b>Unsigned Waivers:</b> ${unsignedFamilies.length}</p>
 
     <div class="table-wrapper">
       <table>
         <thead>
           <tr>
-            <th>Parent</th>
+            <th>Parent / Guardian</th>
             <th>Email</th>
-            <th>Waiver</th>
+            <th>Player(s)</th>
           </tr>
         </thead>
         <tbody>
   `;
 
-  familyList.forEach(family => {
+  unsignedFamilies.forEach(family => {
     html += `
       <tr>
-        <td>${escapeHtml(family.parentName)}</td>
-        <td>${escapeHtml(family.parentEmail)}</td>
-        <td class="${family.signed ? "signed" : "not-signed"}">
-          ${family.signed ? "Signed" : "Not Signed"}
-        </td>
+        <td>${escapeHtml(family.parentName || "Parent name not entered")}</td>
+        <td>${escapeHtml(family.parentEmail || "Not linked to a parent account")}</td>
+        <td>${family.players.map(player => escapeHtml(player)).join("<br>")}</td>
       </tr>
     `;
   });
