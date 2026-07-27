@@ -761,7 +761,11 @@ function renderWaiverReport() {
   const unsignedFamilies = Object.values(families)
     .filter(family => {
       const email = String(family.parentEmail || "").trim().toLowerCase();
-      return !email || waiverStatusByEmail[email] !== true;
+
+      // Skip registrations that are not linked to a parent account.
+      if (!email) return false;
+
+      return waiverStatusByEmail[email] !== true;
     })
     .map(family => ({
       ...family,
