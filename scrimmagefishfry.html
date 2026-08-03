@@ -6,28 +6,61 @@
 <style>
     body { font-family: Arial, sans-serif; background:#f7f7f7; padding:20px; }
     h1 { text-align:center; }
-    .slot-card {
-        background:white; padding:15px; margin:10px 0; border-radius:8px;
-        box-shadow:0 2px 5px rgba(0,0,0,0.1);
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background: white;
     }
-    .job {
-        margin:8px 0; padding:10px; background:#fafafa; border-radius:6px;
-        border:1px solid #ddd;
+    th, td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: center;
+    }
+    th {
+        background: #eaeaea;
+    }
+    input[type="text"] {
+        padding: 6px;
+        width: 250px;
+        margin-bottom: 10px;
     }
     button {
-        padding:6px 12px; border:none; border-radius:5px; cursor:pointer;
-        background:#007bff; color:white;
+        padding: 6px 12px;
+        margin-top: 5px;
+        background:#007bff;
+        color:white;
+        border:none;
+        border-radius:5px;
+        cursor:pointer;
     }
-    button:disabled { background:#999; cursor:not-allowed; }
-    .taken { color:#b30000; font-weight:bold; }
-    .available { color:#008000; font-weight:bold; }
+    button:disabled {
+        background:#999;
+        cursor:not-allowed;
+    }
 </style>
 </head>
 <body>
 
 <h1>Volunteer Signup – August 7th (4:30pm–8:30pm)</h1>
 
-<div id="slots"></div>
+<label><strong>Your Name:</strong></label><br>
+<input type="text" id="volName" placeholder="Enter your name"><br>
+
+<table id="volTable">
+    <thead>
+        <tr>
+            <th>Time Slot</th>
+            <th>Concessions (3)</th>
+            <th>Frying/Grilling (3)</th>
+            <th>Drive Thru Runner (1)</th>
+        </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+</table>
+
+<h2>After Scrimmage Cleanup (4 spots)</h2>
+<div id="cleanupDiv"></div>
 
 <script>
 const jobs = {
@@ -41,86 +74,93 @@ const timeSlots = [
     "6:30 - 7:00", "7:00 - 7:30", "7:30 - 8:00", "8:00 - 8:30"
 ];
 
-let signupData = {}; // Tracks selections
+let signupData = {}; // { slot: { job: ["Name1","Name2"] } }
+let cleanupList = [];
 
-function renderSlots() {
-    const container = document.getElementById("slots");
-    container.innerHTML = "";
+function renderTable() {
+    const body = document.getElementById("tableBody");
+    body.innerHTML = "";
 
     timeSlots.forEach(slot => {
-        const card = document.createElement("div");
-        card.className = "slot-card";
-
-        card.innerHTML = `<h3>${slot}</h3>`;
+        const row = document.createElement("tr");
+        row.innerHTML = `<td><strong>${slot}</strong></td>`;
 
         Object.keys(jobs).forEach(job => {
-            const taken = signupData[slot]?.[job] || 0;
+            const names = signupData[slot]?.[job] || [];
             const capacity = jobs[job];
-            const available = capacity - taken;
+            const available = capacity - names.length;
 
-            const jobDiv = document.createElement("div");
-            jobDiv.className = "job";
+            const cell = document.createElement("td");
 
-            jobDiv.innerHTML = `
-                <strong>${job}</strong><br>
-                <span class="${available > 0 ? 'available' : 'taken'}">
-                    ${available > 0 ? available + " spots available" : "FULL"}
-                </span><br>
+            cell.innerHTML = `
+                <div>${names.join("<br>") || "<em>No volunteers</em>"}</div>
                 <button ${available === 0 ? "disabled" : ""} onclick="signup('${slot}','${job}')">
-                    Volunteer for ${job}
+                    Sign Up
                 </button>
             `;
 
-            card.appendChild(jobDiv);
+            row.appendChild(cell);
         });
 
-        container.appendChild(card);
+        body.appendChild(row);
     });
 
-    // Cleanup slot
-    const cleanupCard = document.createElement("div");
-    cleanupCard.className = "slot-card";
-    cleanupCard.innerHTML = `<h3>After Scrimmage (Cleanup)</h3>`;
+    // Cleanup section
+    const cleanupDiv = document.getElementById("cleanupDiv");
+    const availableCleanup = 4 - cleanupList.length;
 
-    const taken = signupData["Cleanup"]?.count || 0;
-    const available = 4 - taken;
-
-    cleanupCard.innerHTML += `
-        <div class="job">
-            <strong>Cleanup</strong><br>
-            <span class="${available > 0 ? 'available' : 'taken'}">
-                ${available > 0 ? available + " spots available" : "FULL"}
-            </span><br>
-            <button ${available === 0 ? "disabled" : ""} onclick="signupCleanup()">
-                Volunteer for Cleanup
-            </button>
-        </div>
+    cleanupDiv.innerHTML = `
+        <p><strong>Volunteers:</strong><br>${cleanupList.join("<br>") || "<em>No volunteers</em>"}</p>
+        <button ${availableCleanup === 0 ? "disabled" : ""} onclick="signupCleanup()">
+            Sign Up for Cleanup
+        </button>
     `;
-
-    container.appendChild(cleanupCard);
 }
 
 function signup(slot, job) {
-    // Prevent selecting two jobs in same time slot
-    if (signupData[slot] && Object.keys(signupData[slot]).length > 0 && !signupData[slot][job]) {
-        alert("You already selected a job for this time slot.");
+    const name = document.getElementById("volName").value.trim();
+    if (!name) {
+        alert("Please enter your name before signing up.");
         return;
     }
 
-    signupData[slot] = signupData[slot] || {};
-    signupData[slot][job] = (signupData[slot][job] || 0) + 1;
+    // Prevent double booking in same time slot
+    if (signupData[slot]) {
+        for (let j of Object.keys(signupData[slot])) {
+            if (signupData[slot][j].includes(name)) {
+                alert("You already signed up for a job in this time slot.");
+                return;
+            }
+        }
+    }
 
-    renderSlots();
+    signupData[slot] = signupData[slot] || {};
+    signupData[slot][job] = signupData[slot][job] || [];
+
+    signupData[slot][job].push(name);
+
+    renderTable();
 }
 
 function signupCleanup() {
-    signupData["Cleanup"] = signupData["Cleanup"] || { count: 0 };
-    signupData["Cleanup"].count++;
+    const name = document.getElementById("volName").value.trim();
+    if (!name) {
+        alert("Please enter your name before signing up.");
+        return;
+    }
 
-    renderSlots();
+    if (cleanupList.includes(name)) {
+        alert("You already signed up for cleanup.");
+        return;
+    }
+
+    if (cleanupList.length >= 4) return;
+
+    cleanupList.push(name);
+    renderTable();
 }
 
-renderSlots();
+renderTable();
 </script>
 
 </body>
