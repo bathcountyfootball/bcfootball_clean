@@ -1,155 +1,491 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Volunteer Signup – August 7th</title>
-<style>
-  body { font-family: Arial, sans-serif; background:#f7f7f7; padding:20px; }
-  h1 { text-align:center; }
-  table {
-    width:100%; border-collapse:collapse; margin-top:20px; background:white;
-  }
-  th, td {
-    border:1px solid #ccc; padding:8px; text-align:center;
-  }
-  th { background:#eaeaea; }
-  input[type="text"] {
-    padding:6px; width:250px; margin-bottom:10px;
-  }
-  button {
-    padding:6px 12px; margin-top:5px; background:#007bff; color:white;
-    border:none; border-radius:5px; cursor:pointer;
-  }
-  button:disabled { background:#999; cursor:not-allowed; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Fish Fry Volunteer Signup – August 7</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #f4f4f4;
+      color: #222;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #111, #b30000);
+      color: white;
+      padding: 36px 20px;
+      text-align: center;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(30px, 6vw, 52px);
+    }
+
+    .hero p {
+      margin: 9px 0 0;
+      font-size: 18px;
+    }
+
+    .page {
+      max-width: 1250px;
+      margin: 25px auto;
+      padding: 0 16px 35px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 14px;
+      padding: 22px;
+      margin-bottom: 22px;
+      box-shadow: 0 4px 14px rgba(0,0,0,.14);
+    }
+
+    .name-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: end;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #bbb;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    .refresh-btn,
+    .signup-btn {
+      border: none;
+      border-radius: 7px;
+      background: #b30000;
+      color: white;
+      padding: 10px 14px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .refresh-btn:hover,
+    .signup-btn:hover {
+      background: #8c0000;
+    }
+
+    .signup-btn:disabled {
+      background: #999;
+      cursor: not-allowed;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      min-width: 900px;
+      border-collapse: collapse;
+      margin-top: 16px;
+      background: white;
+    }
+
+    th,
+    td {
+      border: 1px solid #ccc;
+      padding: 12px;
+      vertical-align: top;
+      text-align: center;
+    }
+
+    th {
+      background: #222;
+      color: white;
+    }
+
+    td:first-child {
+      background: #f3f3f3;
+      white-space: nowrap;
+    }
+
+    .job-count {
+      display: inline-block;
+      margin-bottom: 8px;
+      border-radius: 999px;
+      padding: 4px 9px;
+      background: #e8f5e8;
+      color: #166516;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .job-count.full {
+      background: #f5dddd;
+      color: #8a0000;
+    }
+
+    .names {
+      min-height: 25px;
+      margin-bottom: 8px;
+      line-height: 1.45;
+    }
+
+    .volunteer-name {
+      display: block;
+      padding: 2px 0;
+      font-weight: bold;
+    }
+
+    .empty {
+      color: #777;
+      font-style: italic;
+    }
+
+    .cleanup-box {
+      border-left: 6px solid #b30000;
+      border-radius: 10px;
+      background: #fafafa;
+      padding: 18px;
+    }
+
+    .status {
+      min-height: 24px;
+      margin-top: 12px;
+      font-weight: bold;
+    }
+
+    .loading {
+      text-align: center;
+      color: #555;
+      padding: 15px;
+    }
+
+    @media(max-width: 650px) {
+      .name-row {
+        grid-template-columns: 1fr;
+      }
+
+      .refresh-btn {
+        width: 100%;
+      }
+
+      .card {
+        padding: 17px;
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<h1>Volunteer Signup – August 7th (4:30 pm – 8:30 pm)</h1>
+<header class="hero">
+  <h1>Fish Fry Volunteer Signup</h1>
+  <p>August 7, 2026 • 4:30 PM–8:30 PM</p>
+</header>
 
-<label><strong>Your Name:</strong></label><br>
-<input type="text" id="volName" placeholder="Enter your name"><br>
+<main class="page">
 
-<table id="volTable">
-  <thead>
-    <tr>
-      <th>Time Slot</th>
-      <th>Concessions (3)</th>
-      <th>Frying/Grilling (3)</th>
-      <th>Drive Thru Runner (1)</th>
-    </tr>
-  </thead>
-  <tbody id="tableBody"></tbody>
-</table>
+  <section class="card">
+    <div class="name-row">
+      <div>
+        <label for="volName">Your Name</label>
+        <input
+          type="text"
+          id="volName"
+          placeholder="Enter your first and last name"
+          autocomplete="name"
+        >
+      </div>
 
-<h2>After Scrimmage Cleanup (4 spots)</h2>
-<div id="cleanupDiv"></div>
+      <button class="refresh-btn" type="button" onclick="loadFromSheets()">
+        Refresh Signups
+      </button>
+    </div>
+
+    <div id="pageStatus" class="status"></div>
+  </section>
+
+  <section class="card">
+    <h2>Volunteer Time Slots</h2>
+    <p>
+      Each button shows how many positions remain. Names already signed up
+      are listed in the matching time and job.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Time Slot</th>
+            <th>Concessions (3)</th>
+            <th>Frying/Grilling (3)</th>
+            <th>Drive Thru Runner (1)</th>
+          </tr>
+        </thead>
+
+        <tbody id="tableBody">
+          <tr>
+            <td colspan="4" class="loading">Loading volunteer signups...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>After Scrimmage Cleanup</h2>
+    <div id="cleanupDiv" class="cleanup-box">
+      Loading cleanup signups...
+    </div>
+  </section>
+
+</main>
 
 <script>
+const API_URL =
+  "https://script.google.com/macros/s/AKfycbwJR0mM--IOixP7NLMKN4owPphBM9FOtzryRJ3KbfkH0Nci8ylR2Gcg_Kg52XrwWWJQ/exec";
+
 const jobs = {
-  "Concessions":3,
-  "Frying/Grilling":3,
-  "Drive Thru Runner":1
+  "Concessions": 3,
+  "Frying/Grilling": 3,
+  "Drive Thru Runner": 1
 };
 
 const timeSlots = [
-  "4:30 - 5:00","5:00 - 5:30","5:30 - 6:00","6:00 - 6:30",
-  "6:30 - 7:00","7:00 - 7:30","7:30 - 8:00","8:00 - 8:30"
+  "4:30 - 5:00",
+  "5:00 - 5:30",
+  "5:30 - 6:00",
+  "6:00 - 6:30",
+  "6:30 - 7:00",
+  "7:00 - 7:30",
+  "7:30 - 8:00",
+  "8:00 - 8:30"
 ];
 
 let signupData = {};
-let cleanupList = [];
+let cleanupData = {
+  capacity: 4,
+  names: [],
+  open: 4
+};
 
-const API_URL = "https://script.google.com/macros/s/AKfycbwJR0mM--IOixP7NLMKN4owPphBM9FOtzryRJ3KbfkH0Nci8ylR2Gcg_Kg52XrwWWJQ/exec";
-
-async function loadFromSheets(){
-  try{
-    const res = await fetch(API_URL,{
-      method:"POST",
-      body:JSON.stringify({action:"getFishFryVolunteers"})
-    });
-    const data = await res.json();
-    if(!data.success) return;
-
-    signupData={}; cleanupList=[];
-    data.volunteers.forEach(v=>{
-      if(v.slot==="After Scrimmage"){
-        cleanupList.push(v.name);
-      }else{
-        signupData[v.slot]=signupData[v.slot]||{};
-        signupData[v.slot][v.job]=signupData[v.slot][v.job]||[];
-        signupData[v.slot][v.job].push(v.name);
-      }
-    });
-    renderTable();
-  }catch(err){console.error("Error loading from Sheets",err);}
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
-function renderTable(){
-  const body=document.getElementById("tableBody");
-  body.innerHTML="";
-  timeSlots.forEach(slot=>{
-    const row=document.createElement("tr");
-    row.innerHTML=`<td><strong>${slot}</strong></td>`;
-    Object.keys(jobs).forEach(job=>{
-      const names=signupData[slot]?.[job]||[];
-      const capacity=jobs[job];
-      const available=capacity-names.length;
-      const cell=document.createElement("td");
-      cell.innerHTML=`
-        <div>${names.join("<br>")||"<em>No volunteers</em>"}</div>
-        <button ${available===0?"disabled":""} onclick="signup('${slot}','${job}')">
-          Sign Up
-        </button>`;
-      row.appendChild(cell);
-    });
-    body.appendChild(row);
+async function api(payload) {
+  const response = await fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify(payload)
   });
 
-  const cleanupDiv=document.getElementById("cleanupDiv");
-  const availableCleanup=4-cleanupList.length;
-  cleanupDiv.innerHTML=`
-    <p><strong>Volunteers:</strong><br>${cleanupList.join("<br>")||"<em>No volunteers</em>"}</p>
-    <button ${availableCleanup===0?"disabled":""} onclick="signupCleanup()">
-      Sign Up for Cleanup
-    </button>`;
-}
+  const data = await response.json();
 
-function sendToSheets(name,slot,job){
-  fetch(API_URL,{
-    method:"POST",
-    body:JSON.stringify({
-      action:"submitFishFryVolunteer",
-      name,slot,job
-    })
-  }).catch(err=>console.error("Error sending to Sheets",err));
-}
-
-function signup(slot,job){
-  const name=document.getElementById("volName").value.trim();
-  if(!name){alert("Please enter your name before signing up.");return;}
-  if(signupData[slot]){
-    for(let j of Object.keys(signupData[slot])){
-      if(signupData[slot][j].includes(name)){
-        alert("You already signed up for a job in this time slot.");return;
-      }
-    }
+  if (!response.ok) {
+    throw new Error(data.message || "Request failed.");
   }
-  signupData[slot]=signupData[slot]||{};
-  signupData[slot][job]=signupData[slot][job]||[];
-  signupData[slot][job].push(name);
-  sendToSheets(name,slot,job);
-  renderTable();
+
+  return data;
 }
 
-function signupCleanup(){
-  const name=document.getElementById("volName").value.trim();
-  if(!name){alert("Please enter your name before signing up.");return;}
-  if(cleanupList.includes(name)){alert("You already signed up for cleanup.");return;}
-  if(cleanupList.length>=4)return;
-  cleanupList.push(name);
-  sendToSheets(name,"After Scrimmage","Cleanup");
-  renderTable();
+function setStatus(message, isError = false) {
+  pageStatus.style.color = isError ? "#8a0000" : "#176617";
+  pageStatus.textContent = message || "";
+}
+
+async function loadFromSheets() {
+  tableBody.innerHTML = `
+    <tr>
+      <td colspan="4" class="loading">Loading volunteer signups...</td>
+    </tr>
+  `;
+
+  try {
+    const data = await api({
+      action: "getFishFryVolunteers"
+    });
+
+    if (!data.success) {
+      throw new Error(data.message || "Could not load volunteer signups.");
+    }
+
+    signupData = data.availability || {};
+    cleanupData = data.cleanup || {
+      capacity: 4,
+      names: [],
+      open: 4
+    };
+
+    renderTable();
+    renderCleanup();
+    setStatus("");
+
+  } catch (error) {
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="4" class="loading">
+          Could not load volunteer signups.
+        </td>
+      </tr>
+    `;
+
+    cleanupDiv.textContent = "Could not load cleanup signups.";
+    setStatus(error.message, true);
+  }
+}
+
+function renderNames(names) {
+  if (!names.length) {
+    return `<span class="empty">No volunteers yet</span>`;
+  }
+
+  return names
+    .map(name => `<span class="volunteer-name">${escapeHtml(name)}</span>`)
+    .join("");
+}
+
+function renderTable() {
+  tableBody.innerHTML = "";
+
+  timeSlots.forEach(slot => {
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+      <td><strong>${escapeHtml(slot)}</strong></td>
+    `;
+
+    Object.keys(jobs).forEach(job => {
+      const position =
+        signupData[slot]?.[job] || {
+          capacity: jobs[job],
+          names: [],
+          open: jobs[job]
+        };
+
+      const isFull = Number(position.open || 0) <= 0;
+      const cell = document.createElement("td");
+
+      cell.innerHTML = `
+        <div class="job-count ${isFull ? "full" : ""}">
+          ${isFull
+            ? "Full"
+            : escapeHtml(position.open) +
+              " spot" +
+              (Number(position.open) === 1 ? "" : "s") +
+              " open"}
+        </div>
+
+        <div class="names">
+          ${renderNames(position.names || [])}
+        </div>
+
+        <button
+          type="button"
+          class="signup-btn"
+          ${isFull ? "disabled" : ""}
+          data-slot="${escapeHtml(slot)}"
+          data-job="${escapeHtml(job)}"
+        >
+          ${isFull ? "Full" : "Sign Up"}
+        </button>
+      `;
+
+      const button = cell.querySelector(".signup-btn");
+
+      if (!isFull) {
+        button.addEventListener("click", () => signup(slot, job));
+      }
+
+      row.appendChild(cell);
+    });
+
+    tableBody.appendChild(row);
+  });
+}
+
+function renderCleanup() {
+  const isFull = Number(cleanupData.open || 0) <= 0;
+
+  cleanupDiv.innerHTML = `
+    <div class="job-count ${isFull ? "full" : ""}">
+      ${isFull
+        ? "Full"
+        : escapeHtml(cleanupData.open) +
+          " spot" +
+          (Number(cleanupData.open) === 1 ? "" : "s") +
+          " open"}
+    </div>
+
+    <div class="names">
+      ${renderNames(cleanupData.names || [])}
+    </div>
+
+    <button
+      type="button"
+      class="signup-btn"
+      ${isFull ? "disabled" : ""}
+      onclick="signupCleanup()"
+    >
+      ${isFull ? "Cleanup Full" : "Sign Up for Cleanup"}
+    </button>
+  `;
+}
+
+async function signup(slot, job) {
+  const name = volName.value.trim();
+
+  if (!name) {
+    alert("Please enter your name before signing up.");
+    volName.focus();
+    return;
+  }
+
+  setStatus("Saving your signup...");
+
+  try {
+    const data = await api({
+      action: "submitFishFryVolunteer",
+      name,
+      slot,
+      job
+    });
+
+    if (!data.success) {
+      throw new Error(data.message || "Could not save your signup.");
+    }
+
+    setStatus(data.message || "Volunteer signup saved.");
+    await loadFromSheets();
+
+  } catch (error) {
+    setStatus(error.message, true);
+    await loadFromSheets();
+  }
+}
+
+async function signupCleanup() {
+  await signup(
+    "After Scrimmage",
+    "Cleanup"
+  );
 }
 
 loadFromSheets();
