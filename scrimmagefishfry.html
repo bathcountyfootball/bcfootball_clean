@@ -210,7 +210,7 @@
         >
       </div>
 
-      <button class="refresh-btn" type="button" onclick="loadFromSheets()">
+      <button class="refresh-btn" type="button" onclick="loadFromSheets({force:true})">
         Refresh Signups
       </button>
     </div>
@@ -282,6 +282,9 @@ let cleanupData = {
   open: 4
 };
 
+let latestLoadRequest = 0;
+let isLoadingVolunteers = false;
+
 function escapeHtml(value) {
   return String(value || "")
     .replace(/&/g, "&amp;")
@@ -311,34 +314,47 @@ function setStatus(message, isError = false) {
   pageStatus.textContent = message || "";
 }
 
-async function loadFromSheets() {
-  tableBody.innerHTML = `
-    <tr>
-      <td colspan="4" class="loading">Loading volunteer signups...</td>
-    </tr>
-  `;
+async function loadFromSheets(options = {}) {
+  const requestId = ++latestLoadRequest;
+  const showLoading = options.showLoading !== false;
+
+  if (isLoadingVolunteers && !options.force) {
+    return;
+  }
+
+  isLoadingVolunteers = true;
+
+  if (showLoading) {
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="4" class="loading">Loading volunteer signups...</td>
+      </tr>
+    `;
+  }
 
   try {
     const data = await api({
-      action: "getFishFryVolunteers"
+      action: "getFishFryVolunteers",
+      requestTime: Date.now()
     });
+
+    // Ignore an older response if a newer request has already completed.
+    if (requestId !== latestLoadRequest) {
+      return;
+    }
 
     if (!data.success) {
       throw new Error(data.message || "Could not load volunteer signups.");
     }
 
-    signupData = data.availability || {};
-    cleanupData = data.cleanup || {
-      capacity: 4,
-      names: [],
-      open: 4
-    };
-
-    renderTable();
-    renderCleanup();
+    applyVolunteerSnapshot(data);
     setStatus("");
 
   } catch (error) {
+    if (requestId !== latestLoadRequest) {
+      return;
+    }
+
     tableBody.innerHTML = `
       <tr>
         <td colspan="4" class="loading">
@@ -349,7 +365,25 @@ async function loadFromSheets() {
 
     cleanupDiv.textContent = "Could not load cleanup signups.";
     setStatus(error.message, true);
+
+  } finally {
+    if (requestId === latestLoadRequest) {
+      isLoadingVolunteers = false;
+    }
   }
+}
+
+function applyVolunteerSnapshot(data) {
+  signupData = data.availability || {};
+
+  cleanupData = data.cleanup || {
+    capacity: 4,
+    names: [],
+    open: 4
+  };
+
+  renderTable();
+  renderCleanup();
 }
 
 function renderNames(names) {
@@ -472,12 +506,19 @@ async function signup(slot, job) {
       throw new Error(data.message || "Could not save your signup.");
     }
 
+    // The server now returns the complete, current signup list with the save.
+    // This avoids waiting for a second Apps Script request.
+    applyVolunteerSnapshot(data);
     setStatus(data.message || "Volunteer signup saved.");
-    await loadFromSheets();
 
   } catch (error) {
     setStatus(error.message, true);
-    await loadFromSheets();
+
+    // Refresh once only after an error so the page returns to the server truth.
+    await loadFromSheets({
+      force: true,
+      showLoading: false
+    });
   }
 }
 
@@ -488,7 +529,16 @@ async function signupCleanup() {
   );
 }
 
-loadFromSheets();
+loadFromSheets({force:true});
+
+setInterval(() => {
+  if (!document.hidden) {
+    loadFromSheets({
+      force: true,
+      showLoading: false
+    });
+  }
+}, 30000);
 </script>
 
 </body>
