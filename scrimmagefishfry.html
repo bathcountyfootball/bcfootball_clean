@@ -174,16 +174,127 @@
     }
 
     @media(max-width: 650px) {
+      body {
+        font-size: 16px;
+      }
+
+      .hero {
+        padding: 26px 14px;
+      }
+
+      .hero h1 {
+        font-size: 31px;
+        line-height: 1.1;
+      }
+
+      .hero p {
+        font-size: 16px;
+      }
+
+      .page {
+        margin: 16px auto;
+        padding: 0 10px 25px;
+      }
+
       .name-row {
         grid-template-columns: 1fr;
       }
 
-      .refresh-btn {
+      .refresh-btn,
+      .signup-btn {
         width: 100%;
+        min-height: 46px;
+        font-size: 16px;
       }
 
       .card {
-        padding: 17px;
+        padding: 16px;
+        border-radius: 11px;
+      }
+
+      input[type="text"] {
+        min-height: 48px;
+        font-size: 17px;
+      }
+
+      .table-wrap {
+        overflow: visible;
+      }
+
+      table,
+      thead,
+      tbody,
+      tr,
+      th,
+      td {
+        display: block;
+        width: 100%;
+      }
+
+      table {
+        min-width: 0;
+        border: 0;
+        background: transparent;
+      }
+
+      thead {
+        display: none;
+      }
+
+      tbody tr {
+        margin: 0 0 18px;
+        border: 2px solid #ddd;
+        border-radius: 12px;
+        overflow: hidden;
+        background: white;
+        box-shadow: 0 3px 9px rgba(0,0,0,.1);
+      }
+
+      tbody td {
+        border: 0;
+        border-bottom: 1px solid #ddd;
+        padding: 14px;
+        text-align: left;
+      }
+
+      tbody td:last-child {
+        border-bottom: 0;
+      }
+
+      tbody td:first-child {
+        background: #222;
+        color: white;
+        text-align: center;
+        font-size: 19px;
+        padding: 13px;
+      }
+
+      tbody td:not(:first-child)::before {
+        content: attr(data-label);
+        display: block;
+        margin-bottom: 9px;
+        color: #b30000;
+        font-size: 17px;
+        font-weight: bold;
+      }
+
+      .job-count {
+        margin-bottom: 10px;
+        font-size: 14px;
+      }
+
+      .names {
+        min-height: 0;
+        margin-bottom: 12px;
+      }
+
+      .volunteer-name {
+        padding: 4px 0;
+        font-size: 16px;
+      }
+
+      .cleanup-box {
+        padding: 15px;
       }
     }
   </style>
@@ -416,6 +527,7 @@ function renderTable() {
 
       const isFull = Number(position.open || 0) <= 0;
       const cell = document.createElement("td");
+      cell.setAttribute("data-label", job);
 
       cell.innerHTML = `
         <div class="job-count ${isFull ? "full" : ""}">
@@ -437,6 +549,7 @@ function renderTable() {
           ${isFull ? "disabled" : ""}
           data-slot="${escapeHtml(slot)}"
           data-job="${escapeHtml(job)}"
+          aria-label="Sign up for ${escapeHtml(job)} during ${escapeHtml(slot)}"
         >
           ${isFull ? "Full" : "Sign Up"}
         </button>
