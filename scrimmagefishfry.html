@@ -77,6 +77,8 @@ const timeSlots = [
 let signupData = {}; // { slot: { job: ["Name1","Name2"] } }
 let cleanupList = [];
 
+const API_URL = "YOUR_APPS_SCRIPT_URL_HERE"; // <-- replace this
+
 function renderTable() {
     const body = document.getElementById("tableBody");
     body.innerHTML = "";
@@ -117,6 +119,20 @@ function renderTable() {
     `;
 }
 
+function sendToSheets(name, slot, job) {
+    fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({
+            action: "submitFishFryVolunteer",
+            name: name,
+            slot: slot,
+            job: job
+        })
+    }).catch(err => {
+        console.error("Error sending to Sheets", err);
+    });
+}
+
 function signup(slot, job) {
     const name = document.getElementById("volName").value.trim();
     if (!name) {
@@ -136,8 +152,10 @@ function signup(slot, job) {
 
     signupData[slot] = signupData[slot] || {};
     signupData[slot][job] = signupData[slot][job] || [];
-
     signupData[slot][job].push(name);
+
+    // send to Google Sheets via Apps Script
+    sendToSheets(name, slot, job);
 
     renderTable();
 }
@@ -157,6 +175,10 @@ function signupCleanup() {
     if (cleanupList.length >= 4) return;
 
     cleanupList.push(name);
+
+    // send to Google Sheets via Apps Script
+    sendToSheets(name, "After Scrimmage", "Cleanup");
+
     renderTable();
 }
 
