@@ -1,248 +1,354 @@
+Yes. Since your registration site is a static GitHub Pages front end with Google Apps Script/Sheets behind it, we can shut registrations off without taking the whole site down.
+
+The cleanest approach is to leave the registration page available but replace/disable the registration form with a message such as:
+
+Registration is Closed
+Registration for the 2026 Bath County Youth Football season is now closed.
+If you have questions about an existing registration, please contact Bath County Youth Football.
+
+I’d also recommend disabling registration in the Apps Script backend, not just hiding the form. That way someone can’t use an old/cached copy of the page to submit a registration.
+
+I remember we had several pieces to your system—parent accounts, player registrations, dashboards, equipment, waivers, etc.—so we only want to stop new player registrations while leaving parents able to log in and use their dashboard.
+
+If you paste or upload your current registration HTML file and the Apps Script Code.gs, I can show you exactly what to change. We can make it so:
+
+New registrations = OFF, while parent login, existing players, messages, waivers, coach/admin dashboards, reports, and equipment = still working.
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bath County Football Registration</title>
+    <title>Player Registration – Bath County Football</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
 
-    <link rel="stylesheet" href="css/styles.css">
+<body>
 
-    <style>
-        *{
-            box-sizing:border-box;
-        }
+<div class="container">
+    <h1>Player Registration</h1>
+    <h2>Bath County Flag & Jr Pro Football</h2>
 
-        body{
-            font-family:Arial,Helvetica,sans-serif;
-            background:#f4f4f4;
-            margin:0;
-            padding:20px;
-        }
+    <!-- STEP CONTAINER -->
+    <div id="step-container">
 
-        .container{
-            max-width:1000px;
-            margin:auto;
-            background:white;
-            padding:25px;
-            border-radius:10px;
-            box-shadow:0 2px 8px rgba(0,0,0,.15);
-        }
+        <!-- STEP 1: Parent Info -->
+        <div class="step" id="step1">
+            <h3>Parent Information</h3>
 
-        h1,h2,h3{
-            text-align:center;
-        }
+            <label>Parent Name</label>
+            <input type="text" id="parentName">
 
-        .form-section{
-            border:1px solid #ddd;
-            padding:20px;
-            border-radius:8px;
-            margin-bottom:20px;
-            background:#fafafa;
-        }
+            <label>Parent Email</label>
+            <input type="email" id="parentEmail">
 
-        .player-card{
-            border:1px solid #ccc;
-            padding:20px;
-            margin-bottom:20px;
-            border-radius:8px;
-            background:white;
-        }
+            <label>Parent Phone</label>
+            <input type="text" id="parentPhone">
 
-        label{
-            display:block;
-            margin-top:12px;
-            font-weight:bold;
-        }
+            <button class="next-btn" onclick="nextStep()">Next</button>
+        </div>
 
-        input,
-        select,
-        textarea{
-            width:100%;
-            padding:10px;
-            margin-top:5px;
-            border:1px solid #ccc;
-            border-radius:5px;
-        }
+        <!-- STEP 2: Player Info -->
+        <div class="step" id="step2">
+            <h3>Player Information</h3>
 
-        textarea{
-            resize:vertical;
-        }
+            <label>Player Name</label>
+            <input type="text" id="playerName">
 
-        .btn{
-            margin-top:15px;
-            background:#b30000;
-            color:white;
-            border:none;
-            padding:12px 18px;
-            cursor:pointer;
-            border-radius:5px;
-        }
+            <label>Birthdate</label>
+            <input type="date" id="birthdate">
 
-        .btn:hover{
-            background:#900;
-        }
+            <label>School</label>
+            <input type="text" id="school">
 
-        .removeBtn{
-            background:#666;
-        }
+            <label>Grade</label>
+            <input type="number" id="grade">
 
-        .removeBtn:hover{
-            background:#444;
-        }
+            <label>Gender</label>
+            <select id="gender">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+            </select>
 
-        .submit-btn{
-            background:green;
-            font-size:18px;
-            width:100%;
-            padding:15px;
-        }
+            <label>League</label>
+            <select id="league">
+                <option value="Flag">Flag</option>
+                <option value="Jr Pro">Jr Pro</option>
+            </select>
 
-        .submit-btn:hover{
-            background:#006600;
-        }
+            <label>Shirt Size</label>
+            <select id="shirtSize">
+                <option>YS</option>
+                <option>YM</option>
+                <option>YL</option>
+                <option>S</option>
+                <option>M</option>
+                <option>L</option>
+                <option>XL</option>
+            </select>
 
-        .note{
-            color:#555;
-            margin-top:10px;
-        }
+            <button class="back-btn" onclick="prevStep()">Back</button>
+            <button class="next-btn" onclick="nextStep()">Next</button>
+        </div>
 
-        #reviewBox{
-            background:white;
-            border:1px solid #ccc;
-            padding:15px;
-            min-height:120px;
-        }
+        <!-- STEP 3: Medical Info -->
+        <div class="step" id="step3">
+            <h3>Medical Information</h3>
 
-        hr{
-            margin:25px 0;
-        }
+            <label>Doctor Name</label>
+            <input type="text" id="doctorName">
 
-    </style>
+            <label>Doctor Phone</label>
+            <input type="text" id="doctorPhone">
 
+            <label>Allergies / Medical Notes</label>
+            <textarea id="allergies"></textarea>
+
+            <button class="back-btn" onclick="prevStep()">Back</button>
+            <button class="next-btn" onclick="nextStep()">Next</button>
+        </div>
+
+        <!-- STEP 4: Payment Plan -->
+        <div class="step" id="step4">
+            <h3>Payment Plan</h3>
+
+            <label>Select Payment Option</label>
+            <select id="paymentPlan">
+                <option value="full">Pay in Full</option>
+                <option value="split">Pay in 2 Payments</option>
+            </select>
+
+            <p id="siblingNote" class="info-note">
+                Sibling discount applies only to Pay-in-Full.
+            </p>
+
+            <button class="back-btn" onclick="prevStep()">Back</button>
+            <button class="next-btn" onclick="nextStep()">Next</button>
+        </div>
+
+        <!-- STEP 5: Review & Pay -->
+        <div class="step" id="step5">
+            <h3>Review & Pay</h3>
+
+            <div id="reviewBox"></div>
+
+            <button class="back-btn" onclick="prevStep()">Back</button>
+            <button class="submit-btn" onclick="submitRegistration()">Submit & Pay</button>
+        </div>
+
+    </div>
+</div>
+
+<script src="registration.js"></script>
+
+</body>
+</html>
+
+
+You can turn registrations off directly in this HTML file without deleting any of the registration code.
+
+Replace everything inside <div class="container"> ... </div> with this:
+
+<div class="container">
+
+    <h1>Player Registration</h1>
+    <h2>Bath County Flag & Jr Pro Football</h2>
+
+    <div class="registration-closed">
+        <h3>Registration is Closed</h3>
+
+        <p>
+            Registration for the 2026 Bath County Flag & Jr Pro Football season
+            is now closed.
+        </p>
+
+        <p>
+            If you have already registered a player, you can still access your
+            parent account and existing registration information.
+        </p>
+
+        <p>
+            Thank you for supporting Bath County Football!
+        </p>
+    </div>
+
+</div>
+
+So your entire file can temporarily become:
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Registration – Bath County Football</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
 
 <div class="container">
 
-<h1>Bath County Flag & Jr Pro Football</h1>
-<h2>Player Registration</h2>
+    <h1>Player Registration</h1>
+    <h2>Bath County Flag & Jr Pro Football</h2>
 
-<form id="registrationForm">
+    <div class="registration-closed">
+        <h3>Registration is Closed</h3>
 
-<div class="form-section">
+        <p>
+            Registration for the 2026 Bath County Flag & Jr Pro Football season
+            is now closed.
+        </p>
 
-<h3>Parent Information</h3>
+        <p>
+            If you have already registered a player, you can still access your
+            parent account and existing registration information.
+        </p>
 
-<label>Parent Name</label>
-<input
-type="text"
-id="parentName"
-required>
-
-<label>Email</label>
-<input
-type="email"
-id="parentEmail"
-required>
-
-<label>Phone</label>
-<input
-type="tel"
-id="parentPhone"
-required>
-
-<label>Address</label>
-<input
-type="text"
-id="parentAddress"
-required>
+        <p>
+            Thank you for supporting Bath County Football!
+        </p>
+    </div>
 
 </div>
-
-
-<div class="form-section">
-
-<h3>Players</h3>
-
-<div id="playersContainer"></div>
-
-<button
-type="button"
-id="addPlayerBtn"
-class="btn">
-+ Add Player
-</button>
-
-<p class="note">
-Add one player at a time. You may register multiple children on one form.
-</p>
-
-</div>
-
-
-<div class="form-section">
-
-<h3>Payment Plan</h3>
-
-<label>Choose Payment Option</label>
-
-<select id="paymentPlan" required>
-
-<option value="">Select One</option>
-
-<option value="full">
-Pay In Full
-</option>
-
-<option value="plan">
-2 Payment Plan
-</option>
-
-</select>
-
-<p class="note">
-</p>
-
-</div>
-
-
-<div class="form-section">
-
-<h3>Review Registration</h3>
-
-<div id="reviewBox">
-
-Click "Refresh Review" after entering your information.
-
-</div>
-
-<button
-type="button"
-id="reviewBtn"
-class="btn">
-Refresh Review
-</button>
-
-</div>
-
-
-<div class="form-section">
-
-<button
-type="button"
-id="submitBtn"
-class="submit-btn">
-Submit Registration & Pay
-</button>
-
-</div>
-
-</form>
-
-</div>
-
-<script src="scripts/registration.js"></script>
 
 </body>
 </html>
+
+Notice that I also removed:
+
+<script src="registration.js"></script>
+
+from the closed version. That keeps the registration JavaScript from running unnecessarily.
+
+I would make one additional change
+
+This closes the visible form, which is good, but I would also protect the Google Apps Script submission endpoint. Otherwise, technically, someone who still has an old copy of the form open could submit it.
+
+In your Code.gs, you probably have something similar to:
+
+function registerPlayer(data) {
+
+or:
+
+function submitRegistration(data) {
+
+or perhaps your doPost(e) handles registration.
+
+At the very beginning of whichever function actually writes a new registration to the Registrations sheet, add:
+
+const REGISTRATION_OPEN = false;
+
+if (!REGISTRATION_OPEN) {
+  return {
+    success: false,
+    message: "Registration is currently closed."
+  };
+}
+
+Then when you open registration again next season, you could simply change:
+
+const REGISTRATION_OPEN = false;
+
+to:
+
+const REGISTRATION_OPEN = true;
+
+That gives you a much safer master switch.
+
+If you paste your current registration.js and Code.gs next, I can identify the exact registration function and tell you precisely where to put the switch so we don't accidentally interfere with parent login, waivers, equipment, messages, or your admin/coach dashboards.
+
+just give me the full file
+
+Absolutely. Replace the entire contents of your current registration HTML file with this. This keeps the page but removes the registration form and JavaScript so no one can register through this page.
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Player Registration – Bath County Football</title>
+
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        .registration-closed {
+            max-width: 650px;
+            margin: 40px auto;
+            padding: 35px 25px;
+            text-align: center;
+            background-color: #f5f5f5;
+            border-radius: 10px;
+            border: 2px solid #333;
+        }
+
+        .registration-closed h3 {
+            font-size: 28px;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .registration-closed p {
+            font-size: 18px;
+            line-height: 1.6;
+            margin: 15px 0;
+        }
+
+        .registration-closed .closed-message {
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .parent-login-btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 24px;
+            background-color: #333;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 17px;
+            font-weight: bold;
+        }
+
+        .parent-login-btn:hover,
+        .parent-login-btn:focus {
+            opacity: 0.85;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Player Registration</h1>
+    <h2>Bath County Flag & Jr Pro Football</h2>
+
+    <div class="registration-closed">
+
+        <h3>Registration is Closed</h3>
+
+        <p class="closed-message">
+            Registration for the 2026 Bath County Flag & Jr Pro Football season
+            is now closed.
+        </p>
+
+        <p>
+            If you have already registered a player, you can still access your
+            parent account and existing registration information.
+        </p>
+
+        <p>
+            Thank you for supporting Bath County Football!
+        </p>
+
+    </div>
+
+</div>
+
+</body>
+</html>
+
+This does not delete any existing registrations from your Google Sheet and doesn't change the parent, coach, or admin systems. It simply removes the registration form from this page.
