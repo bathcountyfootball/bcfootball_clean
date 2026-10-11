@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<title>Bath County Wildcats Football</title>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="css/styles.css" rel="stylesheet"/>
+<!-- High School page: light Wildcats theme; overrides shared stylesheet only here. -->
+<style>
+    :root { color-scheme: light; --wildcat-red:#B91C2B; --wildcat-red-dark:#8F1520; --wildcat-light:#F3F4F6; --wildcat-border:#DDE1E6; --wildcat-text:#27313F; --wildcat-muted:#526071; }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin:0 !important; background:#F3F4F6 !important; background-image:none !important; color:var(--wildcat-text) !important; font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; line-height:1.6; }
+    body::before, body::after { display:none !important; }
+    /* Preserve the original stadium light and fog animations at reduced opacity. */
+    .stadium-lights, .fog-layer { opacity:.22; pointer-events:none; }
+    .bc-badge { opacity:1; }
+    .hero-header, .banner, .ticker, main, footer { isolation:isolate; }
+    .hero-header { position:relative; padding:2.5rem 1rem 0 !important; text-align:center; background:#fff !important; background-image:none !important; border-top:9px solid var(--wildcat-red); border-bottom:1px solid var(--wildcat-border); box-shadow:none !important; min-height:0 !important; }
+    /* Let the original logo animation and effects come from css/styles.css. */
+    .glow-title, .hero-header h1 { color:var(--wildcat-red-dark) !important; font-weight:800; letter-spacing:-.03em; line-height:1.15; font-size:clamp(2rem,5vw,3.5rem); margin:1rem auto .35rem; }
+    .subhead, .hero-header h2 { color:var(--wildcat-muted) !important; text-shadow:none !important; font-size:clamp(1rem,2.4vw,1.3rem); margin:.25rem auto 1.75rem; }
+    .navbar { background:var(--wildcat-red) !important; background-image:none !important; box-shadow:none !important; border:0 !important; margin:0 -1rem !important; padding:.25rem 1rem !important; position:relative; }
+    .navbar ul, #navlist { display:flex !important; flex-wrap:wrap; justify-content:center; gap:.25rem .7rem; list-style:none; margin:0 auto !important; padding:.5rem 0 !important; max-width:1200px; }
+    .navbar li { margin:0 !important; padding:0 !important; list-style:none !important; }
+    .navbar a { display:block; padding:.65rem .9rem; color:#fff !important; background:transparent !important; text-shadow:none !important; text-decoration:none; font-weight:650; border-radius:6px; border:0 !important; box-shadow:none !important; }
+    .navbar a:hover, .navbar a:focus-visible, .navbar a.active { background:#fff !important; color:var(--wildcat-red-dark) !important; }
+    a:focus-visible { outline:3px solid #F9BD65 !important; outline-offset:3px; }
+    .ticker { background-color:#EDEFF2 !important; color:var(--wildcat-red-dark) !important; border-block:1px solid var(--wildcat-border); box-shadow:none !important; }
+    .ticker__content { color:var(--wildcat-red-dark) !important; text-shadow:none !important; font-weight:700; }
+    .banner { background-color:#fff !important; color:var(--wildcat-red-dark) !important; padding:1.6rem 1rem !important; box-shadow:none !important; border-bottom:1px solid var(--wildcat-border); text-align:center; }
+    .banner h1 { margin:0 !important; color:var(--wildcat-red-dark) !important; font-size:clamp(1.35rem,3.5vw,2.3rem); }
+    .slideshow-container { width:min(1100px,calc(100% - 2rem)) !important; margin:2rem auto !important; background:#fff !important; padding:.65rem !important; border:1px solid var(--wildcat-border) !important; border-radius:14px !important; box-shadow:0 10px 30px #27313F12 !important; overflow:hidden; }
+    .slide img { display:block; width:100%; height:auto; max-height:540px; object-fit:cover; border-radius:9px; }
+    main { width:min(1200px,calc(100% - 2rem)) !important; max-width:1200px !important; margin:0 auto !important; padding:0 0 3rem !important; color:var(--wildcat-text) !important; background:transparent !important; }
+    .card, .flex-child.card { background:#fff !important; background-image:none !important; border:1px solid var(--wildcat-border) !important; border-radius:14px !important; box-shadow:0 5px 18px #27313F0C !important; color:var(--wildcat-text) !important; padding:1.6rem !important; text-align:left; }
+    .section-title, .card h1, .card h2 { color:var(--wildcat-red-dark) !important; text-shadow:none !important; border-bottom:2px solid #F2DADD; padding-bottom:.65rem; font-size:clamp(1.3rem,2.5vw,1.8rem); margin-top:0; }
+    .card li, .card p, .card strong { color:var(--wildcat-text) !important; text-shadow:none !important; }
+    .follow-links a { color:var(--wildcat-red-dark) !important; text-decoration:underline; text-underline-offset:3px; font-weight:650; }
+    .follow-links a:hover { color:var(--wildcat-red) !important; }
+    .flex-container { display:grid !important; grid-template-columns:repeat(2,minmax(0,1fr)); align-items:start; gap:1.5rem; margin:0 !important; }
+    .flex-child { width:auto !important; min-width:0; max-width:none !important; margin:0 !important; flex:none !important; }
+    .card-grid { display:grid; grid-template-columns:1fr; gap:.85rem; }
+    .info-card { color:var(--wildcat-text) !important; background:#F8F9FA !important; background-image:none !important; border:1px solid var(--wildcat-border) !important; border-left:4px solid var(--wildcat-red) !important; border-radius:9px !important; box-shadow:none !important; padding:1rem 1.15rem !important; margin:0 !important; text-shadow:none !important; }
+    .info-card h3 { color:var(--wildcat-red-dark) !important; text-shadow:none !important; margin:.1rem 0 .5rem; }
+    .info-card p, .info-card strong { color:var(--wildcat-text) !important; margin:.25rem 0; }
+    footer { background:#E6E9ED !important; background-image:none !important; color:var(--wildcat-muted) !important; border-top:1px solid var(--wildcat-border); text-align:center; padding:1.4rem 1rem !important; box-shadow:none !important; }
+    footer p { color:var(--wildcat-muted) !important; margin:0; text-shadow:none !important; }
+    @media(max-width:760px) { .flex-container { grid-template-columns:1fr; } .hero-header { padding-top:1.5rem !important; } .navbar a { padding:.55rem .65rem; font-size:.9rem; } .card, .flex-child.card { padding:1.15rem !important; } }
+    @media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
+  
+    /* Archive-friendly tables and restored hype video. */
+    .hype-video { width:min(1080px,calc(100% - 2rem)); margin:1.5rem auto 2rem; text-align:center; }
+    .hype-video video { display:block; width:100%; height:auto; max-height:600px; background:#f3f4f6; object-fit:contain; border:5px solid #fff; border-radius:14px; box-shadow:0 8px 26px #27313f24; }
+    .hype-video figcaption { color:var(--wildcat-muted); margin-top:.6rem; }
+    .archive-toggle { margin:1rem 0; color:var(--wildcat-text); }
+    .archive-toggle summary { cursor:pointer; font-weight:750; padding:.75rem 1rem; background:#f7f7f8; border:1px solid var(--wildcat-border); border-radius:8px; color:var(--wildcat-red-dark); }
+    .archive-note { font-size:.9rem; color:var(--wildcat-muted) !important; margin-top:.7rem; }
+    .table-scroll { max-width:100%; overflow-x:auto; border-radius:9px; border:1px solid var(--wildcat-border); margin-top:1rem; }
+    table.heritage-table { border-collapse:collapse; width:100%; min-width:440px; background:#fff; color:var(--wildcat-text); }
+    .heritage-table th { background:var(--wildcat-red) !important; color:#fff !important; padding:.8rem .65rem; text-align:left; font-weight:700; }
+    .heritage-table td { padding:.72rem .65rem; border-bottom:1px solid var(--wildcat-border); color:var(--wildcat-text) !important; background:#fff !important; text-shadow:none !important; }
+    .heritage-table tbody tr:nth-child(even) td { background:#f7f8fa !important; }
+    .heritage-table a { color:var(--wildcat-red-dark) !important; text-decoration:underline; }
+    .heritage-table td a:hover { color:var(--wildcat-red); }
+    .follow-links { display:flex; gap:.65rem 1.5rem; flex-wrap:wrap; list-style:none; padding:0; }
+    .follow-links li { margin:0; }
+    .year-panel { margin:1rem 0; }
+    .year-panel .card-grid { max-height:520px; overflow-y:auto; padding-right:.25rem; }
+    .ticker__content { display:block; width:max-content; animation: wildcat-marquee 24s linear infinite !important; }
+    @keyframes wildcat-marquee { from { transform:translateX(0); } to { transform:translateX(-50%); } }
+    .ticker { overflow:hidden; }
+    @media(prefers-reduced-motion:reduce) { .ticker__content { animation:none !important; white-space:normal; width:auto; } }
+    @media(max-width:760px) { .hype-video { margin:1rem auto; } }
+</style>
+</head>
+<body>
+<!-- Background Layers -->
+<div class="stadium-lights"></div>
+<div class="fog-layer"></div>
+<!-- BC Badge -->
+<div class="bc-badge"></div>
+<header class="hero-header">
+<div class="logo-3d"></div>
+<h1 class="glow-title">Bath County High School Wildcats</h1>
+<h2 class="subhead">Head Coach: Brandon Brewer</h2>
+<!-- Removed intro dust + video -->
+<nav class="navbar">
+<ul id="navlist">
+<li><a href="index.html">Home</a></li>
+<li><a href="flag.html">Flag Football</a></li>
+<li><a href="jrpro.html">Jr Pro Football</a></li>
+<li><a href="middleschool.html">Middle School</a></li>
+<li><a class="active" href="highschool.html">High School</a></li>
+</ul>
+</nav>
+</header>
+<!-- TICKER -->
+<div class="ticker">
+<div class="ticker__content">Wildcats • Friday Night Lights • Bath County Pride • Fear the Red • Defend the Hill • Wildcats • Friday Night Lights • Bath County Pride • Fear the Red • Defend the Hill  •  Wildcats • Friday Night Lights • Bath County Pride • Fear the Red • Defend the Hill • Wildcats • Friday Night Lights • Bath County Pride • Fear the Red • Defend the Hill</div>
+</div>
+<!-- Banner -->
+<div class="banner">
+<h1>🏈 Bath County Wildcats Football 🏈</h1>
+</div>
+<!-- Slideshow -->
+<figure class="hype-video"><video aria-label="Bath County Wildcats hype video" autoplay="" controls="" muted="" playsinline="" preload="metadata"><source src="videos/hypevid.mp4" type="video/mp4"/>Your browser does not support HTML5 video.</video><figcaption>Wildcat hype video · Select play or unmute for sound</figcaption></figure><div class="slideshow-container">
+<div class="slide fade"><img alt="Bath County Wildcats team photo" src="images/team1.jpg"/></div>
+<div class="slide fade"><img alt="Wildcats football game action" src="images/game1.jpg"/></div>
+<div class="slide fade"><img alt="Wildcats football fans" src="images/fans.jpg"/></div>
+</div>
+<main>
+<!-- Removed claw/scratch divider -->
+<br/><br/>
+<section class="card">
+<h1 class="section-title">FOLLOW THE CATS</h1>
+<ul class="follow-links">
+<li><a href="https://www.facebook.com/profile.php?id=61556586286358&amp;mibextid=JRoKGi">Facebook</a></li>
+<li><a href="https://stream.gatewayradio.net/cwa/WKCA">WKCA</a></li>
+<li><a href="https://www.facebook.com/@fromcorner2corner/?mibextid=JRoKGi">From Corner to Corner Podcast</a></li>
+<li><a href="https://www.instagram.com/bcfootball_1964?igsh=MWVteGdrMDUzZTB5Ng">Instagram</a></li><li><a href="https://x.com/BCWildcatFB?t=By46rjiETGe-a4qHqopaog&amp;s=09">X</a></li><li><a href="https://scoreboard.12dt.com/scoreboard/khsaa/kyfb24/?id=91863">Riherds Scoreboard</a></li></ul>
+</section>
+<br/><br/>
+<section class="card">
+<h1 class="section-title">News and Updates</h1>
+<ul class="news-list">
+<li>Incoming Freshmen can condition with the team Mon–Tues–Thur each week.</li>
+<li>TBA: Parent Tailgate at the field planned for Spring.</li>
+</ul>
+</section>
+<br/><br/>
+<!-- CARD LAYOUT FOR SCHEDULE + ROSTER -->
+<div class="flex-container">
+<div class="flex-child card">
+<h2 class="section-title">2026 Wildcat Football Schedule</h2><p class="archive-note">Current season entries below load from the site data files. Expand the archive for the original detailed table.</p>
+<div class="card-grid" id="scheduleCards"></div>
+<details class="archive-toggle"><summary>View 2025 schedule table (archive)</summary><p class="archive-note">This is the historical 2025 information from the earlier website, not a confirmed 2026 schedule.</p><div class="table-scroll"><table class="heritage-table">
+<thead>
+<tr>
+<th>Week</th>
+<th>Date</th>
+<th>Opponent</th>
+<th>Location</th>
+</tr>
+</thead>
+<tbody class="highschool">
+<tr>
+<td>Scrimmage 1</td>
+<td>August 8</td>
+<td>East Ridge, West Carter, Harlan</td>
+<td>HOME</td>
+</tr>
+<tr>
+<td>Scrimmage 2</td>
+<td>August 15</td>
+<td>EKC vs Paris</td>
+<td>HOME</td>
+</tr>
+<tr>
+<td>1</td>
+<td>August 22</td>
+<td>Fairview</td>
+<td><a href="https://maps.app.goo.gl/d2c57ctd8Np1VoCa8">2123 Main St W, Ashland</a></td>
+</tr>
+<tr>
+<td>2</td>
+<td>August 29</td>
+<td>Clark County Bowl vs Paintsville</td>
+<td><a href="https://maps.app.goo.gl/uRXy737ppdtSpNWJ8">GRC</a></td>
+</tr>
+<tr>
+<td>3</td>
+<td>September 5</td>
+<td>Rowan County</td>
+<td>HOME</td>
+</tr>
+<tr>
+<td>4</td>
+<td>September 12</td>
+<td>Estill County</td>
+<td><a href="https://maps.app.goo.gl/MpZkam9e7W6QfWyGA">397 Engineer Rd, Irvine</a></td>
+</tr>
+<tr>
+<td>5</td>
+<td>September 19</td>
+<td>Powell County</td>
+<td><a href="https://maps.app.goo.gl/vRPAzkwXj2BJBpRh9">700 W College Ave, Stanton</a></td>
+</tr>
+<tr>
+<td>6</td>
+<td>September 26</td>
+<td>Lewis County</td>
+<td>HOME</td>
+</tr>
+<tr>
+<td>7</td>
+<td>October 3</td>
+<td>East Carter</td>
+<td>HOME</td>
+</tr>
+<tr>
+<td>8</td>
+<td>October 10</td>
+<td>BYE WEEK</td>
+<td>BYE WEEK</td>
+</tr>
+<tr>
+<td>9</td>
+<td>October 17</td>
+<td>Russell</td>
+<td>HOME</td>
+</tr>
+<tr>
+<td>10</td>
+<td>October 24</td>
+<td>Fleming County</td>
+<td><a href="https://maps.app.goo.gl/dJhor2Vx2Kz5eqN7A">1658 Elizaville Rd, Flemingsburg</a></td>
+</tr>
+<tr>
+<td>11</td>
+<td>October 31</td>
+<td>Nicholas County</td>
+<td>HOME</td>
+</tr>
+</tbody>
+<tfoot>
+</tfoot>
+</table></div></details></div>
+<div class="flex-child card">
+<h2 class="section-title">2026 Wildcat Roster</h2><p class="archive-note">Current season entries below load from the site data files. Expand the archive for the original detailed table.</p>
+<div class="card-grid" id="rosterCards"></div>
+<details class="archive-toggle"><summary>View 2025 roster table (archive)</summary><p class="archive-note">This is the historical 2025 information from the earlier website, not a confirmed 2026 roster.</p><div class="table-scroll"><table class="heritage-table">
+<thead>
+<tr>
+<th>Jersey</th>
+<th>Player</th>
+<th>Position</th>
+<th>Grade</th>
+<th>Player Profile</th>
+</tr>
+</thead>
+<tbody class="highschool">
+<tr>
+<td>34</td>
+<td>Elias Armstrong</td>
+<td>LB/RB</td>
+<td>Senior</td>
+<td></td></tr>
+<tr>
+<td>64</td>
+<td>Brody Johnson</td>
+<td>DL/OL</td> <td>Senior</td>
+<td></td></tr>
+<tr>
+<td>21</td>
+<td>Braden Montjoy</td>
+<td>LB/TE</td>
+<td>Senior</td>
+<td></td></tr>
+<tr>
+<td>50</td>
+<td>Jackson Rice</td>
+<td>DL/OL</td>
+<td>Senior</td>
+<td></td></tr>
+<tr>
+<td>63</td>
+<td>Aiden Short</td>
+<td>DL/OL</td>
+<td>Senior</td>
+<td></td></tr>
+<tr>
+<td>79</td>
+<td>Brooks Staton</td>
+<td>DL/OL</td>
+<td>Senior</td>
+<td></td></tr>
+<tr>
+<td>6</td>
+<td>Sean Wagner</td>
+<td>LB/RB</td>
+<td>Senior</td>
+<td></td></tr>
+<tr>
+<td>20</td>
+<td>Jordan Yates</td>
+<td>DB/WR</td>
+<td>Senior</td>
+<td></td></tr>
+<tr>
+<td>4</td>
+<td>Branson Bartlett</td>
+<td>DL/OL</td>
+<td>Junior</td>
+<td></td></tr>
+<tr>
+<td>58</td>
+<td>Carson Cline</td>
+<td>DL/OL</td>
+<td>Junior</td>
+<td></td></tr>
+<tr>
+<td>25</td>
+<td>Parker Crouch</td>
+<td>LB/RB</td>
+<td>Junior</td>
+<td></td></tr>
+<td>2</td>
+<td>Logan Jones</td>
+<td>DB/WR</td>
+<td>Junior</td>
+<td><a href="loganjones.html">View</a></td>
+<tr>
+<td>7</td>
+<td>Walker Karrick</td>
+<td>DB/QB</td>
+<td>Junior</td>
+<td></td></tr>
+<tr>
+<td>70</td>
+<td>John Montjoy</td>
+<td>DL/OK</td>
+<td>Junior</td>
+<td></td></tr>
+<tr>
+<td>9</td>
+<td>Skylar Bowling</td>
+<td>DB/WR</td>
+<td>Sophomore</td>
+<td></td></tr>
+<tr>
+<td>75</td>
+<td>Hunter Charles</td>
+<td>DL/OL</td>
+<td>Sophomore</td>
+<td></td></tr>
+<tr>
+<td>77</td>
+<td>Jacob Ginter</td>
+<td>DL/OL</td>
+<td>Sophomore</td>
+<td></td></tr>
+<tr>
+<td>8</td>
+<td>Eli Jackson</td>
+<td>DB/WR</td>
+<td>Sophomore</td>
+<td></td></tr>
+<tr>
+<td>11</td>
+<td>Johnny Manley</td>
+<td>DB/WR</td>
+<td>Sophomore</td>
+<td></td></tr>
+<tr>
+<td>62</td>
+<td>John Mays</td>
+<td>DL/OL</td>
+<td>Sophomore</td>
+<td></td></tr>
+<tr>
+<td>73</td>
+<td>Hunter Rowland</td>
+<td>DL/OL</td>
+<td>Sophomore</td>
+<td></td></tr>
+</tbody>
+<tfoot>
+</tfoot>
+</table></div></details></div>
+</div>
+</main>
+<footer>
+<p>© 2026 Bath County Quarterback Club<br/><a href="mailto:bathcountyquarterbackclub@gmail.com">bathcountyquarterbackclub@gmail.com</a></p>
+</footer>
+<!-- JS -->
+<script>
+    // Slideshow
+    let slideIndex = 0;
+    showSlides();
+    function showSlides() {
+      let slides = document.getElementsByClassName("slide");
+      for (let i = 0; i < slides.length; i++) slides[i].style.display = "none";
+      slideIndex++;
+      if (slideIndex > slides.length) slideIndex = 1;
+      slides[slideIndex-1].style.display = "block";
+      setTimeout(showSlides, 3000);
+    }
+
+    // Load Schedule Cards
+    fetch("data/schedule.json?v=17")
+      .then(res => res.json())
+      .then(data => renderScheduleCards(data));
+
+    function renderScheduleCards(data) {
+      const container = document.getElementById("scheduleCards");
+      container.innerHTML = "";
+      data.forEach(row => {
+        const card = document.createElement("div");
+        card.className = "info-card";
+        card.innerHTML = `
+          <h3>${row.Week || row.Game || "Game"}</h3>
+          <p><strong>Date:</strong> ${row.Date || "TBA"}</p>
+          <p><strong>Opponent:</strong> ${row.Opponent || "TBA"}</p>
+          <p><strong>Location:</strong> ${row.Location || "TBA"}</p>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // Load Roster Cards
+    fetch("data/roster.json?v=17")
+      .then(res => res.json())
+      .then(data => renderRosterCards(data));
+
+    function renderRosterCards(data) {
+      const container = document.getElementById("rosterCards");
+      container.innerHTML = "";
+      data.forEach(row => {
+        const card = document.createElement("div");
+        card.className = "info-card";
+        card.innerHTML = `
+          <h3>#${row.Jersey || "?"} — ${row.Player || "Player"}</h3>
+          <p><strong>Position:</strong> ${row.Position || "TBA"}</p>
+          <p><strong>Graduation:</strong> ${row["Graduation Year"] || "TBA"}</p>
+        `;
+        container.appendChild(card);
+      });
+    }
+  </script>
+</body>
+</html>
