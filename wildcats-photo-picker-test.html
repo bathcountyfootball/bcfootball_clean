@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Wildcats Photo Picker — Private Test</title><script src="https://accounts.google.com/gsi/client" async defer></script><style>
+:root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#27313f;background:#f1f3f5}*{box-sizing:border-box}body{margin:0}.top{background:#b91c2b;color:white;padding:32px 20px;text-align:center}.top h1{margin:0;font-size:clamp(1.5rem,4vw,2.5rem)}main{width:min(900px,calc(100% - 32px));margin:28px auto}.panel{background:white;padding:22px;margin:16px 0;border:1px solid #dedfe3;border-radius:12px}button,a.picker{border:0;background:#b91c2b;color:white;border-radius:8px;padding:12px 18px;font-weight:650;cursor:pointer;display:inline-block;text-decoration:none}button:disabled{opacity:.45;cursor:not-allowed}.secondary{background:#596574}p{line-height:1.55}.hint{color:#526071}#status{white-space:pre-wrap;background:#f8f9fa;border-left:4px solid #b91c2b;padding:14px;overflow-wrap:anywhere}ol{line-height:1.7}li{overflow-wrap:anywhere}small{color:#526071}button+button{margin-left:8px}@media(max-width:580px){button{width:100%;margin:7px 0}button+button{margin-left:0}}</style></head><body>
+<header class="top"><h1>Wildcats Photo Picker</h1><p>Private setup test — select photos without copying them to your computer</p></header>
+<main><section class="panel"><h2>1. Authorize Google Photos</h2><p>Sign in using the Google account you added as an OAuth test user.</p><button id="signin">Connect Google Photos</button></section>
+<section class="panel"><h2>2. Choose a small sample</h2><p>Start with 3–5 photos for our jersey #2 proof of concept.</p><button id="pick" disabled>Open Google Photos Picker</button> <a id="pickerLink" class="picker" target="_blank" rel="noopener noreferrer" hidden>Choose photos in Google Photos ↗</a><p class="hint">After choosing your photos, return to this page and click “Check selection.”</p><button id="check" class="secondary" disabled>Check selection</button> <button id="reset" class="secondary" disabled>End selection session</button></section>
+<section class="panel"><h2>3. Selected photo metadata</h2><p>Only filenames and basic metadata are shown. This test does <strong>not</strong> download, upload, scan, or store the image files, and does not publish anything to your football site.</p><div id="status" role="status" aria-live="polite">Waiting for Google authorization.</div><p id="count"></p><ol id="results"></ol><small>Google's temporary media references expire. This test does not create lasting photo URLs or jersey-number matches.</small></section></main>
+<script>
+'use strict';
+const CLIENT_ID='621887645391-e95dr3fgn24ue5ioa0t23ef699p6vpj5.apps.googleusercontent.com';
+const SCOPE='https://www.googleapis.com/auth/photospicker.mediaitems.readonly';
+const ENDPOINT='https://photospicker.googleapis.com/v1';
+let accessToken='',session=null,tokenClient=null;
+const $=id=>document.getElementById(id);
+const status=msg=>{$('status').textContent=msg};
+const errorText=e=>e?.message||JSON.stringify(e);
+async function callAPI(path,options={}) {
+  if(!accessToken) throw new Error('Please authorize Google Photos first.');
+  const res=await fetch(`${ENDPOINT}${path}`,{...options,headers:{'Authorization':`Bearer ${accessToken}`,...options.headers}});
+  const body=await res.text();let data;try{data=body?JSON.parse(body):{}}catch{data={message:body}}
+  if(!res.ok) throw new Error(`${res.status}: ${data.error?.message||data.message||'Request failed'}`);
+  return data;
+}
+$('signin').onclick=()=>{
+  if(!window.google?.accounts?.oauth2){status('Google sign-in has not finished loading; retry in a moment.');return}
+  tokenClient=google.accounts.oauth2.initTokenClient({client_id:CLIENT_ID,scope:SCOPE,callback:resp=>{
+    if(resp.error){status('Authorization error: '+resp.error);return}
+    accessToken=resp.access_token;
+    $('pick').disabled=false;
+    status('Authorized. Now open the Google Photos Picker and choose a few photos.');
+  }});
+  tokenClient.requestAccessToken({prompt:'consent'});
+};
+$('pick').onclick=async()=>{
+  try{
+    status('Creating photo-selection session…');
+    if(session?.id)await callAPI('/sessions/'+encodeURIComponent(session.id),{method:'DELETE'}).catch(()=>{});
+    session=await callAPI('/sessions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pickingConfig:{maxItemCount:'20'}})});
+    const link=$('pickerLink');link.href=session.pickerUri;link.hidden=false;
+    $('check').disabled=false;$('reset').disabled=false;$('results').replaceChildren();$('count').textContent='';
+    status('Session created. Click “Choose photos in Google Photos ↗”, select a few photos, and then return to check the selection.');
+  }catch(e){status('Unable to open photo picker: '+errorText(e))}
+};
+$('check').onclick=async()=>{
+ try{
+  if(!session)throw new Error('Open the picker first.');
+  const s=await callAPI('/sessions/'+encodeURIComponent(session.id));
+  if(!s.mediaItemsSet){status('Google Photos selection is not complete. Choose photos, click Done, then try again.');return}
+  const items=[];let token='';
+  do{
+    const params=new URLSearchParams({sessionId:session.id,pageSize:'100'});
+    if(token)params.set('pageToken',token);
+    const result=await callAPI('/mediaItems?'+params.toString());
+    items.push(...(result.mediaItems||[]));token=result.nextPageToken||'';
+  }while(token);
+  $('results').replaceChildren();
+  for(const item of items){const li=document.createElement('li');li.textContent=`${item.mediaFile?.filename||item.filename||'(unnamed photo)'} — ${item.mimeType||'unknown type'}`;$('results').appendChild(li)}
+  $('count').textContent=`${items.length} selected item(s)`;
+  status('Success: your selections are readable! No photo files were downloaded or saved.');
+ }catch(e){status('Unable to read selection: '+errorText(e))}
+};
+$('reset').onclick=async()=>{
+ try{if(session?.id)await callAPI('/sessions/'+encodeURIComponent(session.id),{method:'DELETE'});session=null;$('pickerLink').hidden=true;$('check').disabled=true;$('reset').disabled=true;$('results').replaceChildren();$('count').textContent='';status('Selection session ended.');}catch(e){status('Unable to end session: '+errorText(e))}
+};
+</script></body></html>
