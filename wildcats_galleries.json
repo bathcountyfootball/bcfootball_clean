@@ -1,9 +1,17 @@
 [
   {
+    "game": "East Carter",
+    "date": "2026 season",
+    "category": "Varsity games",
+    "note": "Photos and videos",
+    "url": "https://photos.app.goo.gl/3ZsVdnDgNPsY4Rp86",
+    "cover": ""
+  },
+  {
     "game": "August 7 Scrimmage",
     "date": "August 7, 2026",
     "category": "Scrimmages",
-    "note": "Photos and videos",
+    "note": "2026 Scrimmage",
     "url": "https://photos.app.goo.gl/AozS8CnBPGsdHiBy5",
     "cover": ""
   },
@@ -11,7 +19,7 @@
     "game": "Nicholas Scrimmage",
     "date": "2026 season",
     "category": "Scrimmages",
-    "note": "Photos and videos",
+    "note": "Wildcats vs Nicholas County",
     "url": "https://photos.app.goo.gl/wYFc1QHFBAhcUCCe6",
     "cover": ""
   },
@@ -19,7 +27,7 @@
     "game": "JV vs Morgan",
     "date": "2026 season",
     "category": "JV games",
-    "note": "Photos and videos",
+    "note": "JV Wildcats vs JV Morgan County",
     "url": "https://photos.app.goo.gl/D7bAxqdHC8FLoBof8",
     "cover": ""
   },
@@ -125,14 +133,6 @@
     "category": "Community events",
     "note": "Photos and videos",
     "url": "https://photos.app.goo.gl/QRc1D7FJPTWVBgi39",
-    "cover": ""
-  },
-  {
-    "game": "East Carter",
-    "date": "2026 season",
-    "category": "Varsity games",
-    "note": "Photos and videos",
-    "url": "https://photos.app.goo.gl/3ZsVdnDgNPsY4Rp86",
     "cover": ""
   }
 ]
