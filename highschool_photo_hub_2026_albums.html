@@ -32,6 +32,7 @@ main{padding-bottom:70px}.intro{display:grid;grid-template-columns:1.5fr .7fr;al
 .mast.mast-photo-first .sub{margin-top:11px;font-size:.95rem}
 .mast.mast-photo-first .hero-cta{margin-top:15px}
 @media(max-width:600px){.hero-photo{height:295px;background-position:center 42%}.mast.mast-photo-first .hero-title-band .shell{padding:25px 0 30px}.mast.mast-photo-first h1 em{display:block;margin-left:0}}
+ .gallery-data-status{font-size:.78rem;color:var(--sub);margin:-5px 0 14px}.gallery-data-status.warning{color:#8c3b17}
 </style>
 </head>
 <body>
@@ -45,7 +46,7 @@ main{padding-bottom:70px}.intro{display:grid;grid-template-columns:1.5fr .7fr;al
 <div class="ticker" aria-label="Wildcats spirit banner"><div class="ticker-track" aria-hidden="true"><span>Fear the Red ✦ Defend the Hill ✦ Wildcat Pride ✦ Friday Night Lights ✦ Capturing Every Moment ✦</span><span>Fear the Red ✦ Defend the Hill ✦ Wildcat Pride ✦ Friday Night Lights ✦ Capturing Every Moment ✦</span></div></div>
 <main class="shell">
 <section class="intro" aria-label="Welcome"><div><p class="eyebrow">For our players, families &amp; community</p><h2>The moments are yours to keep.</h2><p>From the first kickoff to the final whistle, every game brings moments worth remembering. Browse the photo and video albums shared from Bath County Wildcats football games and download your favorites from Google Photos.</p><div class="actions"><a class="btn" href="#albums">Explore game galleries ↓</a><a class="btn alt" href="#downloads">How to download</a></div></div><aside class="intro-aside"><strong>📷 A season in pictures</strong><p>Photos and videos are organized by game and event. As new albums become available, they’ll appear here so everyone can find them in one place.</p></aside></section>
-<section class="section" id="albums"><div class="section-head"><div><p class="eyebrow">2026 season • 17 shared albums</p><h2>Photo &amp; Video Galleries</h2></div><p>Browse game-day photography, videos, scrimmages and special events. Every album opens in Google Photos.</p></div><div class="filter-bar"><label for="albumSearch" class="sr" style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)">Search albums</label><input id="albumSearch" type="search" placeholder="Search games, opponents or events…" autocomplete="off"><span id="albumCount" class="count" aria-live="polite"></span></div><div id="albumGrid" class="album-grid"></div><p id="noMatches" class="empty" hidden>No matching galleries. Try a different search.</p></section>
+<section class="section" id="albums"><div class="section-head"><div><p class="eyebrow">2026 season • <span id="totalAlbumCount">17</span> shared albums</p><h2>Photo &amp; Video Galleries</h2></div><p>Browse game-day photography, videos, scrimmages and special events. Every album opens in Google Photos.</p></div><div class="filter-bar"><label for="albumSearch" class="sr" style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)">Search albums</label><input id="albumSearch" type="search" placeholder="Search games, opponents or events…" autocomplete="off"><span id="albumCount" class="count" aria-live="polite"></span></div><p id="galleryDataStatus" class="gallery-data-status" role="status" aria-live="polite" hidden></p><div id="albumGrid" class="album-grid"></div><p id="noMatches" class="empty" hidden>No matching galleries. Try a different search.</p></section>
 <section class="section" id="downloads"><div class="section-head"><div><p class="eyebrow">A little help</p><h2>How to save your favorites</h2></div></div><div class="help-grid"><div class="step"><span>1</span><strong>Find your game</strong><p>Search by opponent or event, or browse all the season’s galleries.</p></div><div class="step"><span>2</span><strong>Open Google Photos</strong><p>Use the album button to see the shared photos and videos.</p></div><div class="step"><span>3</span><strong>Download and enjoy</strong><p>Open a photo or video and use Google Photos' download option. Availability depends on album sharing permissions.</p></div></div></section>
 </main>
 <footer class="foot"><div class="shell foot-inner"><span>© 2026 Bath County Wildcats Football • Photos shared for the Wildcat community</span><span><a href="index.html">Football home</a> · <a href="mailto:kristiejones859@gmail.com">Contact</a></span></div></footer>
@@ -73,18 +74,41 @@ const fallbackAlbums = [
   {"game": "East Carter", "date": "2026 season", "category": "Varsity games", "note": "Photos and videos", "url": "https://photos.app.goo.gl/3ZsVdnDgNPsY4Rp86", "cover": ""},
 ];
 let albums = fallbackAlbums;
-const grid=document.getElementById('albumGrid'),input=document.getElementById('albumSearch'),count=document.getElementById('albumCount'),empty=document.getElementById('noMatches');
+const grid=document.getElementById('albumGrid'),input=document.getElementById('albumSearch'),count=document.getElementById('albumCount'),empty=document.getElementById('noMatches'),totalCount=document.getElementById('totalAlbumCount'),dataStatus=document.getElementById('galleryDataStatus');
 function validGooglePhotos(url){try{const u=new URL(url);return u.protocol==='https:' && ['photos.google.com','photos.app.goo.gl'].includes(u.hostname)}catch{return false}}
-function render(){const term=input.value.trim().toLowerCase();const found=albums.filter(a=>[a.game,a.date,a.note,a.category].join(' ').toLowerCase().includes(term));grid.replaceChildren();for(const album of found){const card=document.createElement('article');card.className='album';const media=document.createElement('div');media.className='album-media';if(album.cover){const img=document.createElement('img');img.src=album.cover;img.alt='';img.loading='lazy';img.onerror=()=>img.remove();media.append(img)}const label=document.createElement('span');label.className='media-label';label.textContent='Wildcats • '+album.category;media.append(label);const content=document.createElement('div');content.className='album-content';const date=document.createElement('span');date.className='date';date.textContent=album.date;const title=document.createElement('h3');title.textContent=album.game;const desc=document.createElement('p');desc.textContent=album.note;content.append(date,title,desc);if(validGooglePhotos(album.url)){const a=document.createElement('a');a.href=album.url;a.target='_blank';a.rel='noopener noreferrer';a.className='btn';a.textContent='View photos & videos ↗';a.setAttribute('aria-label',`View ${album.game} album in Google Photos (opens new tab)`);content.append(a)}else{const pending=document.createElement('span');pending.className='pending';pending.textContent='Album link coming soon';content.append(pending)}card.append(media,content);grid.append(card)}count.textContent=`${found.length} ${found.length===1?'gallery':'galleries'}`;empty.hidden=found.length!==0}
+function render(){totalCount.textContent=albums.length;const term=input.value.trim().toLowerCase();const found=albums.filter(a=>[a.game,a.date,a.note,a.category].join(' ').toLowerCase().includes(term));grid.replaceChildren();for(const album of found){const card=document.createElement('article');card.className='album';const media=document.createElement('div');media.className='album-media';if(album.cover){const img=document.createElement('img');img.src=album.cover;img.alt='';img.loading='lazy';img.onerror=()=>img.remove();media.append(img)}const label=document.createElement('span');label.className='media-label';label.textContent='Wildcats • '+album.category;media.append(label);const content=document.createElement('div');content.className='album-content';const date=document.createElement('span');date.className='date';date.textContent=album.date;const title=document.createElement('h3');title.textContent=album.game;const desc=document.createElement('p');desc.textContent=album.note;content.append(date,title,desc);if(validGooglePhotos(album.url)){const a=document.createElement('a');a.href=album.url;a.target='_blank';a.rel='noopener noreferrer';a.className='btn';a.textContent='View photos & videos ↗';a.setAttribute('aria-label',`View ${album.game} album in Google Photos (opens new tab)`);content.append(a)}else{const pending=document.createElement('span');pending.className='pending';pending.textContent='Album link coming soon';content.append(pending)}card.append(media,content);grid.append(card)}count.textContent=`${found.length} ${found.length===1?'gallery':'galleries'}`;empty.hidden=found.length!==0}
 input.addEventListener('input',render);render();
-// When hosted on GitHub Pages, gallery records can be updated through wildcats_galleries.json.
-// The embedded records remain a fallback if this page is opened as a local file.
-if(location.protocol!=='file:'){
-  fetch('wildcats_galleries.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('No external gallery file');return r.json()}).then(data=>{
-    if(!Array.isArray(data))throw Error('Invalid gallery file');
-    albums=data.filter(a=>a && typeof a.game==='string' && typeof a.url==='string');render();
-  }).catch(()=>{/* Offline fallback preserves the original seventeen galleries. */});
+// The published hub reads the exported Gallery Manager data on GitHub Pages.
+// Opening this HTML directly via file:// uses the original records for safe preview.
+async function loadGalleryData(){
+  if(location.protocol==='file:'){
+    dataStatus.hidden=false;
+    dataStatus.textContent='Local preview: showing built-in galleries. To see manager updates, publish wildcats_galleries.json alongside this page on GitHub Pages.';
+    return;
+  }
+  try{
+    const response=await fetch('./wildcats_galleries.json',{cache:'no-store'});
+    if(!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data=await response.json();
+    if(!Array.isArray(data)) throw new Error('Gallery data must be a JSON array');
+    // Reject malformed data rather than making the page appear empty or losing links.
+    const validated=data.map((item,index)=>{
+      if(!item || typeof item.game!=='string' || !item.game.trim() || typeof item.url!=='string' || !validGooglePhotos(item.url)){
+        throw new Error(`Invalid gallery at position ${index+1}`);
+      }
+      return {game:item.game,date:typeof item.date==='string'?item.date:'2026 season',category:typeof item.category==='string'?item.category:'Other',note:typeof item.note==='string'?item.note:'Photos and videos',url:item.url,cover:typeof item.cover==='string'?item.cover:''};
+    });
+    albums=validated;
+    render();
+    dataStatus.hidden=true;
+  }catch(error){
+    console.warn('Wildcats gallery data unavailable; displaying built-in galleries.',error);
+    dataStatus.hidden=false;
+    dataStatus.classList.add('warning');
+    dataStatus.textContent='Showing original galleries because wildcats_galleries.json could not be loaded. Check that the JSON file is beside this HTML page.';
+  }
 }
+loadGalleryData();
 
 </script>
 </body></html>
