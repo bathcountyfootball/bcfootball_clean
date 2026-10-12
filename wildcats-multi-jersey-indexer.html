@@ -11,12 +11,12 @@ const CLIENT_ID='621887645391-e95dr3fgn24ue5ioa0t23ef699p6vpj5.apps.googleuserco
 const SCOPE='https://www.googleapis.com/auth/photospicker.mediaitems.readonly';
 const ENDPOINT='https://photospicker.googleapis.com/v1';
 let accessToken='',session=null,tokenClient=null;let selectedRecords=[];let tempObjectUrls=[];let scanGeneration=0;let ocrWorker=null;
+const $=id=>document.getElementById(id);
 const games=[['scrim-aug7','August 7 Scrimmage'],['scrim-nicholas','Nicholas Scrimmage'],['jv-morgan','JV vs Morgan'],['pineville','Pineville'],['jv-west-carter','JV vs West Carter'],['rowan','Rowan'],['fairview','Fairview'],['hero-breakfast','Hero Breakfast'],['homecoming-parade','Homecoming Parade'],['estill','Estill'],['homecoming-court','Homecoming Court'],['homecoming','Homecoming'],['homecoming-raw','Homecoming RAW'],['lewis-videos','Lewis Videos'],['lewis','Lewis'],['powderpuff','Powderpuff'],['east-carter','East Carter']];
 for(const [v,name] of games){const opt=document.createElement('option');opt.value=v;opt.textContent=name;$('game').appendChild(opt);}
 function numberTags(raw){return [...new Set(String(raw).split(/[,;\s]+/).map(s=>s.replace(/^#/,'')).filter(s=>/^\d{1,2}$/.test(s)&&Number(s)<=99).map(s=>String(Number(s))))].sort((a,b)=>Number(a)-Number(b));}
 function validateTags(raw){const tokens=String(raw).split(/[,;\s]+/).filter(Boolean);return tokens.every(t=>/^#?\d{1,2}$/.test(t)&&Number(t.replace('#',''))<=99);}
 
-const $=id=>document.getElementById(id);
 const status=msg=>{$('status').textContent=msg};
 const errorText=e=>e?.message||JSON.stringify(e);
 async function callAPI(path,options={}) {
