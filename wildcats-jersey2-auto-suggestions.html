@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Wildcats Photo Picker — Private Test</title><script src="https://accounts.google.com/gsi/client" async defer></script><style>
+:root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#27313f;background:#f1f3f5}*{box-sizing:border-box}body{margin:0}.top{background:#b91c2b;color:white;padding:32px 20px;text-align:center}.top h1{margin:0;font-size:clamp(1.5rem,4vw,2.5rem)}main{width:min(900px,calc(100% - 32px));margin:28px auto}.panel{background:white;padding:22px;margin:16px 0;border:1px solid #dedfe3;border-radius:12px}button,a.picker{border:0;background:#b91c2b;color:white;border-radius:8px;padding:12px 18px;font-weight:650;cursor:pointer;display:inline-block;text-decoration:none}button:disabled{opacity:.45;cursor:not-allowed}.secondary{background:#596574}p{line-height:1.55}.hint{color:#526071}#status{white-space:pre-wrap;background:#f8f9fa;border-left:4px solid #b91c2b;padding:14px;overflow-wrap:anywhere}ol{line-height:1.7}li{overflow-wrap:anywhere}small{color:#526071}button+button{margin-left:8px}@media(max-width:580px){button{width:100%;margin:7px 0}button+button{margin-left:0}} .photo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-top:18px}.photo-tile{border:1px solid #dedfe3;border-radius:10px;padding:12px;min-width:0;background:#fff}.photo-tile img{width:100%;height:150px;object-fit:contain;background:#f1f3f5;border-radius:7px}.photo-tile p{overflow-wrap:anywhere;font-size:.85rem}.photo-tile label{display:block;font-weight:600;margin:8px 0}.photo-tile input{accent-color:#b91c2b} .error{color:#a20f23;font-size:.85rem}.suggestion{padding:7px;border-radius:7px;background:#f1f3f5;font-size:.84rem}.suggestion.found{background:#fce8e9;color:#921124}.suggestion.review{background:#fff2d7;color:#775108}.buttonbar{display:flex;gap:10px;flex-wrap:wrap}.buttonbar button{margin:0}.loading{color:#526071}.photo-tile label{cursor:pointer}.notice{background:#fff5da;padding:12px;border-radius:8px} </style></head><body>
+<header class="top"><h1>Wildcats Photo Picker</h1><p>Private jersey #2 recognition pilot — photos stay in browser memory</p></header>
+<main><section class="panel"><h2>1. Authorize Google Photos</h2><p>Sign in using the Google account you added as an OAuth test user.</p><button id="signin">Connect Google Photos</button></section>
+<section class="panel"><h2>2. Choose a small sample</h2><p>Start with 3–5 photos for our jersey #2 proof of concept.</p><button id="pick" disabled>Open Google Photos Picker</button> <a id="pickerLink" class="picker" target="_blank" rel="noopener noreferrer" hidden>Choose photos in Google Photos ↗</a><p class="hint">After choosing your photos, return to this page and click “Check selection.”</p><button id="check" class="secondary" disabled>Check selection</button> <button id="reset" class="secondary" disabled>End selection session</button></section>
+<section class="panel"><h2>3. Scan and verify jersey #2</h2><p>First load your selected photos. Then select <b>Suggest jersey numbers</b> to run experimental OCR <em>locally in this browser</em>. It may miss #2, misread other digits, or confuse scoreboard numbers. <b>Only your checked confirmations are exported.</b></p><p class="notice">OCR is an aid, not player identification. Please check every photo before exporting. OCR does not know whether a number belongs to a Wildcat or an opposing player.</p><div id="status" role="status" aria-live="polite">Waiting for Google authorization.</div><p id="count"></p><ol id="results"></ol><div class="buttonbar"><button id="scan" disabled>Suggest jersey numbers (experimental)</button><button id="cancelScan" class="secondary" disabled>Stop scan</button></div><p class="hint" id="scanInfo">OCR is optional. Manual checkboxes continue to work.</p><div id="photoGrid" class="photo-grid"></div><p><button id="export" class="secondary" disabled>Export verified #2 index (JSON)</button></p><small>The export contains filenames, selected-item IDs, and labels only — NOT photos, permanent image URLs, or downloadable photo links. Google's temporary media references expire, so this is an indexing pilot, not a public photo gallery.</small></section></main>
+<script>
+'use strict';
+const CLIENT_ID='621887645391-e95dr3fgn24ue5ioa0t23ef699p6vpj5.apps.googleusercontent.com';
+const SCOPE='https://www.googleapis.com/auth/photospicker.mediaitems.readonly';
+const ENDPOINT='https://photospicker.googleapis.com/v1';
+let accessToken='',session=null,tokenClient=null;let selectedRecords=[];let tempObjectUrls=[];let scanGeneration=0;let ocrWorker=null;
+const $=id=>document.getElementById(id);
+const status=msg=>{$('status').textContent=msg};
+const errorText=e=>e?.message||JSON.stringify(e);
+async function callAPI(path,options={}) {
+  if(!accessToken) throw new Error('Please authorize Google Photos first.');
+  const res=await fetch(`${ENDPOINT}${path}`,{...options,headers:{'Authorization':`Bearer ${accessToken}`,...options.headers}});
+  const body=await res.text();let data;try{data=body?JSON.parse(body):{}}catch{data={message:body}}
+  if(!res.ok) throw new Error(`${res.status}: ${data.error?.message||data.message||'Request failed'}`);
+  return data;
+}
+$('signin').onclick=()=>{
+  if(!window.google?.accounts?.oauth2){status('Google sign-in has not finished loading; retry in a moment.');return}
+  tokenClient=google.accounts.oauth2.initTokenClient({client_id:CLIENT_ID,scope:SCOPE,callback:resp=>{
+    if(resp.error){status('Authorization error: '+resp.error);return}
+    accessToken=resp.access_token;
+    $('pick').disabled=false;
+    status('Authorized. Now open the Google Photos Picker and choose a few photos.');
+  }});
+  tokenClient.requestAccessToken({prompt:'consent'});
+};
+$('pick').onclick=async()=>{
+  try{
+    status('Creating photo-selection session…');
+    if(session?.id)await callAPI('/sessions/'+encodeURIComponent(session.id),{method:'DELETE'}).catch(()=>{});
+    session=await callAPI('/sessions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pickingConfig:{maxItemCount:'20'}})});
+    const link=$('pickerLink');link.href=session.pickerUri;link.hidden=false;
+    $('check').disabled=false;$('reset').disabled=false;clearPreviews();$('results').replaceChildren();$('count').textContent='';
+    status('Session created. Click “Choose photos in Google Photos ↗”, select a few photos, and then return to check the selection.');
+  }catch(e){status('Unable to open photo picker: '+errorText(e))}
+};
+$('check').onclick=async()=>{
+ try{
+  if(!session)throw new Error('Open the picker first.');
+  const s=await callAPI('/sessions/'+encodeURIComponent(session.id));
+  if(!s.mediaItemsSet){status('Google Photos selection is not complete. Choose photos, click Done, then try again.');return}
+  const items=[];let token='';
+  do{
+    const params=new URLSearchParams({sessionId:session.id,pageSize:'100'});
+    if(token)params.set('pageToken',token);
+    const result=await callAPI('/mediaItems?'+params.toString());
+    items.push(...(result.mediaItems||[]));token=result.nextPageToken||'';
+  }while(token);
+  clearPreviews();
+  selectedRecords=items.filter(item=>(item.type==='PHOTO'||(item.mediaFile?.mimeType||'').startsWith('image/'))).map(item=>({id:item.id||'',filename:item.mediaFile?.filename||'(unnamed photo)',number2:false}));
+  $('results').replaceChildren();
+  $('count').textContent=`${items.length} selected item(s), ${selectedRecords.length} photo(s)`;
+  status('Selections loaded. Attempting secure, temporary photo previews...');
+  const grid=$('photoGrid');
+  for(let i=0;i<selectedRecords.length;i++){
+    const item=items.filter(x=>(x.type==='PHOTO'||(x.mediaFile?.mimeType||'').startsWith('image/')))[i];
+    const record=selectedRecords[i];
+    const tile=document.createElement('div');tile.className='photo-tile';
+    const label=document.createElement('p');label.textContent=record.filename;tile.appendChild(label);
+    const preview=document.createElement('div');tile.appendChild(preview);
+    const checkLabel=document.createElement('label');
+    const cb=document.createElement('input');cb.type='checkbox';cb.onchange=()=>{record.number2=cb.checked};
+    checkLabel.append(cb,document.createTextNode(' Jersey #2 visible'));tile.appendChild(checkLabel);
+    const suggestion=document.createElement('p');suggestion.className='suggestion';suggestion.textContent='Not scanned';tile.appendChild(suggestion);record.suggestionNode=suggestion;record.checkBox=cb;grid.appendChild(tile);
+    const base=item.mediaFile?.baseUrl;
+    if(!base){preview.textContent='No image URL provided by Google.';continue}
+    try{
+      const r=await fetch(base+'=w800-h800',{headers:{Authorization:`Bearer ${accessToken}`}});
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      const blob=await r.blob();if(!blob.type.startsWith('image/'))throw new Error('Response was not an image');
+      const localUrl=URL.createObjectURL(blob);tempObjectUrls.push(localUrl);record.blob=blob;
+      const img=document.createElement('img');img.alt='Selected photo: '+record.filename;img.src=localUrl;preview.appendChild(img);
+    }catch(err){const note=document.createElement('p');note.className='error';note.textContent='Preview blocked or unavailable: '+errorText(err)+'. The Google Photos Picker API may require a server-side proxy for image bytes.';preview.appendChild(note)}
+  }
+  $('export').disabled=selectedRecords.length===0;$('scan').disabled=!selectedRecords.some(r=>r.blob);
+  status('Review the previews and check each photo containing #2. If previews fail, do not guess: we need a secure server-side processing step.');
+ }catch(e){status('Unable to read selection: '+errorText(e))}
+};
+$('reset').onclick=async()=>{
+ try{if(session?.id)await callAPI('/sessions/'+encodeURIComponent(session.id),{method:'DELETE'});session=null;clearPreviews();$('pickerLink').hidden=true;$('check').disabled=true;$('reset').disabled=true;clearPreviews();$('results').replaceChildren();$('count').textContent='';status('Selection session ended.');}catch(e){status('Unable to end session: '+errorText(e))}
+};
+function clearPreviews(){scanGeneration++;$('scan').disabled=true;$('cancelScan').disabled=true;$('scanInfo').textContent='OCR is optional. Manual checkboxes continue to work.';for(const url of tempObjectUrls)URL.revokeObjectURL(url);tempObjectUrls=[];selectedRecords=[];$('photoGrid').replaceChildren();$('export').disabled=true;}
+$('export').onclick=()=>{
+ const output={format:'wildcats-photo-index-pilot-v2',jersey:'2',game:'unassigned',generatedAt:new Date().toISOString(),notes:'Manually confirmed labels only. Google Picker IDs and preview URLs are not permanent public photo links.',photos:selectedRecords.map(({id,filename,number2})=>({id,filename,jerseyNumbers:number2?['2']:[]}))};
+ const blob=new Blob([JSON.stringify(output,null,2)],{type:'application/json'});
+ const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='wildcats-jersey-2-review.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+};
+
+// Optional, experimental OCR: reads temporary, authorized images only in this tab.
+// No image or OCR pixels are submitted to an application server. The OCR library is loaded from a CDN.
+async function loadTesseract(){
+ if(window.Tesseract)return window.Tesseract;
+ await new Promise((resolve,reject)=>{
+   const script=document.createElement('script');
+   script.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+   script.onload=resolve;script.onerror=()=>reject(new Error('Could not load OCR library; manual tagging still works.'));
+   document.head.appendChild(script);
+ });
+ if(!window.Tesseract)throw new Error('OCR library unavailable.');
+ return window.Tesseract;
+}
+async function getWorker(){
+ if(ocrWorker)return ocrWorker;
+ const T=await loadTesseract();
+ ocrWorker=await T.createWorker('eng',1,{logger:()=>{}});
+ await ocrWorker.setParameters({tessedit_char_whitelist:'0123456789',tessedit_pageseg_mode:'11'});
+ return ocrWorker;
+}
+async function imageCanvas(blob,which){
+ const bitmap=await createImageBitmap(blob);
+ try{
+  const max=1400;
+  const source=which==='center'?{x:bitmap.width*.2,y:bitmap.height*.10,w:bitmap.width*.6,h:bitmap.height*.8}:{x:0,y:0,w:bitmap.width,h:bitmap.height};
+  const scale=Math.min(1,max/Math.max(source.w,source.h));
+  const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(source.w*scale));canvas.height=Math.max(1,Math.round(source.h*scale));
+  const ctx=canvas.getContext('2d',{willReadFrequently:true});
+  ctx.drawImage(bitmap,source.x,source.y,source.w,source.h,0,0,canvas.width,canvas.height);
+  // Grayscale and contrast help on a subset of jerseys; original-color scan is also attempted.
+  if(which==='center'){
+   const frame=ctx.getImageData(0,0,canvas.width,canvas.height);
+   for(let i=0;i<frame.data.length;i+=4){const avg=0.299*frame.data[i]+0.587*frame.data[i+1]+0.114*frame.data[i+2];const v=Math.max(0,Math.min(255,(avg-128)*1.6+128));frame.data[i]=frame.data[i+1]=frame.data[i+2]=v;}
+   ctx.putImageData(frame,0,0);
+  }
+  return canvas;
+ }finally{bitmap.close()}
+}
+function digitTwoEvidence(data){
+ // OCR output is noisy: report only possible standalone '2' or two-digit jersey ending/starting with 2.
+ // The reviewer, not the model, decides the checkbox.
+ const lines=(data?.text||'').split(/\s+/).filter(Boolean);
+ const candidates=lines.map(s=>s.replace(/\D/g,'')).filter(s=>s.length>=1&&s.length<=2&&s.includes('2'));
+ return [...new Set(candidates)].slice(0,6);
+}
+$('scan').onclick=async()=>{
+ const generation=++scanGeneration;
+ $('scan').disabled=true;$('cancelScan').disabled=false;
+ let worker;
+ try{
+  $('scanInfo').textContent='Loading experimental OCR model (first use can take a minute)…';
+  worker=await getWorker();
+  const records=selectedRecords.filter(r=>r.blob);
+  for(let i=0;i<records.length;i++){
+    if(generation!==scanGeneration)break;
+    const record=records[i];record.suggestionNode.textContent='Scanning…';
+    $('scanInfo').textContent=`Scanning ${i+1} of ${records.length}: ${record.filename}`;
+    const found=[];
+    for(const crop of ['full','center']){
+      if(generation!==scanGeneration)break;
+      const canvas=await imageCanvas(record.blob,crop);
+      const result=await worker.recognize(canvas);
+      found.push(...digitTwoEvidence(result.data));
+      canvas.width=0;canvas.height=0;
+    }
+    if(generation!==scanGeneration)break;
+    const candidates=[...new Set(found)];
+    record.suggestionNode.textContent=candidates.length?`Possible #2 (OCR read ${candidates.join(', ')}). Verify visually.`:'No #2 detected — it could still be present. Verify visually.';
+    record.suggestionNode.className='suggestion '+(candidates.length?'found':'review');
+    // Never automatically tick the verified box.
+  }
+  if(generation===scanGeneration)$('scanInfo').textContent='OCR pass complete. Review every photo and mark verified #2 matches.';
+ }catch(e){$('scanInfo').textContent='OCR unavailable: '+errorText(e)+' Manual review is still available.'}
+ finally{if(generation===scanGeneration){$('scan').disabled=!selectedRecords.some(r=>r.blob);$('cancelScan').disabled=true;}}
+};
+$('cancelScan').onclick=()=>{scanGeneration++;$('cancelScan').disabled=true;$('scan').disabled=false;$('scanInfo').textContent='Scan stopped. Review results already shown; remaining photos were not scanned.'};
+
+</script></body></html>
