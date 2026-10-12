@@ -17,12 +17,30 @@ main{padding-bottom:70px}.intro{display:grid;grid-template-columns:1.5fr .7fr;al
 .album-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:11px}.album{display:flex;flex-direction:column;min-width:0;background:white;border:1px solid var(--line);border-radius:9px;overflow:hidden;box-shadow:var(--shadow);transition:transform .2s,box-shadow .2s}.album:hover{transform:translateY(-3px);box-shadow:0 14px 30px #11182714}.album-media{height:67px;background:linear-gradient(120deg,#7a1425,#c9273f 68%,#ec929f);padding:10px;display:flex;align-items:end;position:relative;overflow:hidden;color:white}.album-media:after{content:'';position:absolute;inset:0;background:linear-gradient(transparent,#4806117a)}.album-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.album-media .media-label{z-index:1;position:relative;text-transform:uppercase;letter-spacing:.09em;font-size:.59rem;font-weight:900}.album-content{padding:11px;display:flex;flex-direction:column;flex:1}.album .date{font-size:.68rem;color:var(--red2);font-weight:850;text-transform:uppercase;letter-spacing:.06em}.album h3{font-size:.98rem;line-height:1.24;margin:4px 0 4px}.album p{font-size:.77rem;margin:0 0 9px;color:var(--sub)}.album .btn{align-self:stretch;margin-top:auto;font-size:.72rem;padding:8px 7px}.album .pending{margin-top:auto;color:var(--sub)}.empty{background:white;border:1px dashed #aab2bd;border-radius:9px;padding:27px;color:var(--sub)}
 .help-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.step{border:1px solid var(--line);background:white;border-radius:9px;padding:18px}.step span{display:grid;place-items:center;width:27px;height:27px;border-radius:50%;background:#fbe8ea;color:var(--red);font-weight:850;margin-bottom:9px}.step strong{display:block}.step p{margin:5px 0 0;color:var(--sub);font-size:.85rem}.foot{background:white;border-top:1px solid var(--line);padding:24px 0}.foot-inner{display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap;color:var(--sub);font-size:.82rem}.foot a{color:var(--red);text-decoration:none;font-weight:750}.foot a:hover{text-decoration:underline}
 @media(max-width:1050px){.album-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}@media(max-width:800px){.album-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.intro{grid-template-columns:1fr}.mast{min-height:350px}}@media(max-width:600px){.shell{width:min(100% - 26px,1200px)}.album-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.mast{min-height:320px}.mast .shell{padding:54px 0}.help-grid{grid-template-columns:1fr}.intro{padding-top:28px}.album-media{height:61px}.ticker span{font-size:.62rem}.section{padding-top:27px}}@media(max-width:390px){.album-grid{gap:8px}.album-content{padding:9px}.album .btn{font-size:.67rem}.album h3{font-size:.9rem}}@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* Photo-first hero: give the players their own uninterrupted image area. */
+.mast.mast-photo-first{min-height:0;display:block;background:#171b25;isolation:initial}
+.mast.mast-photo-first:before{display:none}
+.mast.mast-photo-first:after{z-index:2}
+.hero-photo{height:clamp(320px,40vw,570px);background-image:linear-gradient(180deg,rgba(12,16,23,.05) 35%,rgba(12,16,23,.33) 100%),url('images/wildcats-hero.jpg');background-size:cover;background-position:center 39%;background-repeat:no-repeat}
+.hero-title-band{background:linear-gradient(115deg,#111720,#25242e 60%,#351922);border-top:1px solid rgba(255,255,255,.12)}
+.mast.mast-photo-first .hero-title-band .shell{padding:29px 0 33px}
+.mast.mast-photo-first .kicker{margin-bottom:9px;font-size:.68rem}
+.mast.mast-photo-first h1{font-size:clamp(2.3rem,4.2vw,4.4rem);line-height:1;max-width:none}
+.mast.mast-photo-first h1 em{display:inline;margin-left:.18em}
+.mast.mast-photo-first .hero-line{margin-top:15px;width:60px}
+.mast.mast-photo-first .sub{margin-top:11px;font-size:.95rem}
+.mast.mast-photo-first .hero-cta{margin-top:15px}
+@media(max-width:600px){.hero-photo{height:295px;background-position:center 42%}.mast.mast-photo-first .hero-title-band .shell{padding:25px 0 30px}.mast.mast-photo-first h1 em{display:block;margin-left:0}}
 </style>
 </head>
 <body>
 <a class="skip" href="#albums">Skip to albums</a>
-<header class="mast">
- <div class="shell"><p class="kicker">Bath County Wildcats · 2026 Season</p><h1>Friday Nights.<em>Forever Remembered.</em></h1><div class="hero-line" aria-hidden="true"></div><p class="sub">Football photography &amp; video. Every game. Every memory. All in one place.</p><a class="hero-cta" href="#albums">Explore Galleries <span aria-hidden="true">↘</span></a></div>
+<header class="mast mast-photo-first">
+ <div class="hero-photo" role="img" aria-label="Bath County Wildcats players entering the football field through smoke and fireworks"></div>
+ <div class="hero-title-band">
+  <div class="shell"><p class="kicker">Bath County Wildcats · 2026 Season</p><h1>Friday Nights.<em>Forever Remembered.</em></h1><div class="hero-line" aria-hidden="true"></div><p class="sub">Football photography &amp; video. Every game. Every memory. All in one place.</p><a class="hero-cta" href="#albums">Explore Galleries <span aria-hidden="true">↘</span></a></div>
+ </div>
 </header>
 <div class="ticker" aria-label="Wildcats spirit banner"><div class="ticker-track" aria-hidden="true"><span>Fear the Red ✦ Defend the Hill ✦ Wildcat Pride ✦ Friday Night Lights ✦ Capturing Every Moment ✦</span><span>Fear the Red ✦ Defend the Hill ✦ Wildcat Pride ✦ Friday Night Lights ✦ Capturing Every Moment ✦</span></div></div>
 <main class="shell">
